@@ -10,37 +10,41 @@ import Description from "@/components/products/productDetail/tab/Description";
 import Reviews from "@/components/products/productDetail/tab/Reviews";
 import QA from "@/components/products/productDetail/tab/QA";
 import SimilarProducts from "@/components/products/SimilarProducts";
+import { catalogProducts } from "@/lib/products";
 
-const products = [
-  {
-    name: "Walton WSI-18 Inverter AC 1.5 Ton",
-    images: [
-      "https://meemelectronics.com/wp-content/uploads/2025/01/AS18TZ4RMATD01AU-1024x1024.png",
-      "https://static-01.daraz.com.bd/p/e0ab016ad143eed9124ba0501fac08c4.jpg",
-      "https://www.estorejamuna.com/uploads/products/906/thumb/11754370521.jpg",
-    ],
-    price: 68900,
-    originalPrice: 73900,
-    rating: 4.7,
+export default function ProductDetailPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const slugify = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+  const baseProduct = catalogProducts.find(
+    (p) => slugify(p.name) === params.slug,
+  );
+
+  if (!baseProduct) return notFound();
+
+  const product = {
+    ...baseProduct,
+    images: [baseProduct.image],
     description:
       "High performance inverter AC designed for Bangladeshi climate with fast cooling, low voltage operation and long-lasting compressor.",
-  },
-];
-
-export default function ProductDetailPage({}: { params: { slug: string } }) {
-  const product = products[0];
-
-  if (!product) return notFound();
+  };
 
   const [tab, setTab] = useState<"desc" | "reviews" | "qa">("desc");
 
   return (
-    <section className="pt-34 pb-20">
+    <section className="pt-[8.5rem] pb-20">
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
-          <ProductDetailPhoto />
+          <ProductDetailPhoto product={product} />
 
-          <ProductShortDetails />
+          <ProductShortDetails product={product} />
         </div>
 
         <div className="mt-20 mx-auto">
@@ -59,10 +63,8 @@ export default function ProductDetailPage({}: { params: { slug: string } }) {
             )}
           </div>
         </div>
-      <SimilarProducts/>
+        <SimilarProducts />
       </div>
     </section>
   );
 }
-
-

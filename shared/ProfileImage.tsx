@@ -5,7 +5,7 @@ import { memo } from "react";
 const ProfileImage = memo(() => (
   <Link href="/profile" className="cursor-pointer">
     <Image
-      src="https://i.ibb.co.com/67fpNVMH/profile.jpg"
+      src="https://i.ibb.co/67fpNVMH/profile.jpg"
       alt="Profile"
       width={40}
       height={40}

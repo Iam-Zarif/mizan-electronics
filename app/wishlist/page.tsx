@@ -53,7 +53,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <section className="pt-30 pb-24">
+    <section className="pt-[7.5rem] pb-24">
       <div className="mx-auto max-w-7xl px-4">
         {/* Header */}
         <div className="mb-8 flex justify-between items-center w-full">
@@ -106,6 +106,7 @@ export default function WishlistPage() {
                   src={p.image}
                   alt={p.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-contain transition-transform duration-500 group-hover:scale-110"
                 />
               </div>

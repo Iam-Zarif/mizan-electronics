@@ -61,7 +61,7 @@ export default function TopSellingServices() {
   return (
     <section className="relative py-24 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mb-14 flex items-end justify-between gap-6">
+        <div className="mb-14 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-1.5 text-sm font-medium text-white shadow-lg">
               <Zap className="h-4 w-4" />
@@ -72,8 +72,8 @@ export default function TopSellingServices() {
             </h2>
           </div>
 
-          <Link href="/services">
-            <Button size="lg" className="group cursor-pointer">
+          <Link href="/services" className="w-full sm:w-auto">
+            <Button size="lg" className="group w-full cursor-pointer sm:w-auto">
               View All Services
               <ArrowRight className="ml-2 h-5 w-5 transition group-hover:translate-x-1.5" />
             </Button>

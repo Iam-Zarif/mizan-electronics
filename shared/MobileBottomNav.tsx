@@ -7,16 +7,19 @@ import {
   HiOutlineHome,
 } from "react-icons/hi";
 import { BsBoxSeam, BsBoxSeamFill } from "react-icons/bs";
-import { FiInfo, FiPhone } from "react-icons/fi";
-import { FaCircleExclamation } from "react-icons/fa6";
+import { FiPhone } from "react-icons/fi";
 import { FaPhoneAlt } from "react-icons/fa";
+import {
+  MdHomeRepairService,
+  MdOutlineHomeRepairService,
+} from "react-icons/md";
 
 const MobileBottomNav = () => {
   const pathname = usePathname();
 
   return (
     <div className="fixed bottom-1 left-0 right-0 z-50 md:hidden">
-      <div className="mx-auto w-ull px-2 ">
+      <div className="mx-auto w-full px-2 ">
         <div className="flex  justify-between rounded-full  bg-white/90 border dark:border-neutral-200 border-neutral-100 px-6 w-full pt-3 pb-1 shadow-xl backdrop-blur-xl dark:bg-black/90">
           <Item
             href="/"
@@ -33,11 +36,11 @@ const MobileBottomNav = () => {
             iconActive={<BsBoxSeamFill  className="text-lg"/>}
           />
           <Item
-            href="/about"
-            label="About"
-            active={pathname === "/about"}
-            icon={<FiInfo  className="text-lg"/>}
-            iconActive={<FaCircleExclamation  className="text-lg"/>}
+            href="/services"
+            label="Services"
+            active={pathname === "/services"}
+            icon={<MdOutlineHomeRepairService className="text-lg" />}
+            iconActive={<MdHomeRepairService className="text-lg" />}
           />
           <Item
             href="/contact"

@@ -1,29 +1,18 @@
 import { Star, Zap, ShieldCheck, Plus, Minus, Truck } from "lucide-react";
-import { notFound } from "next/navigation";
 import { useState } from "react";
 
-const ProductShortDetails = () => {
-      const [qty, setQty] = useState(1);
-        const products = [
-          {
-            name: "Walton WSI-18 Inverter AC 1.5 Ton",
-            images: [
-              "https://meemelectronics.com/wp-content/uploads/2025/01/AS18TZ4RMATD01AU-1024x1024.png",
-              "https://static-01.daraz.com.bd/p/e0ab016ad143eed9124ba0501fac08c4.jpg",
-              "https://www.estorejamuna.com/uploads/products/906/thumb/11754370521.jpg",
-            ],
-            price: 68900,
-            originalPrice: 73900,
-            rating: 4.7,
-            description:
-              "High performance inverter AC designed for Bangladeshi climate with fast cooling, low voltage operation and long-lasting compressor.",
-          },
-        ];
-        const product = products[0];
-      
-        if (!product) return notFound();
-          const discount =
-    product.originalPrice && product.originalPrice - product.price;
+type Product = {
+  name: string;
+  images: string[];
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  description: string;
+};
+
+const ProductShortDetails = ({ product }: { product: Product }) => {
+  const [qty, setQty] = useState(1);
+  const discount = product.originalPrice && product.originalPrice - product.price;
     
   return (
      <div className="space-y-5">
@@ -96,7 +85,7 @@ const ProductShortDetails = () => {
             </div>
 
             <button
-              className="w-full flexjustify-center group  items-center gap-2
+              className="w-full flex justify-center group items-center gap-2
                     rounded-full px-8 py-3
                     bg-indigo-600 text-white text-sm font-semibold
                     shadow-[0_0_40px_rgba(99,102,241,0.45)]

@@ -15,7 +15,7 @@ const Footer = () => {
   return (
     <footer className="relative pt-8 lg:pt-14 overflow-hidden w-full">
       <motion.div
-        className="absolute -z-10 right-[-25%] bottom-[-30%] h-130 w-130 rounded-full bg-[#e18b94]/25 blur-[180px]"
+        className="absolute -z-10 right-[-25%] bottom-[-30%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/25 blur-[180px]"
         animate={{ x: [0, -140, 0], y: [0, 100, 0] }}
         transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
       />
@@ -42,6 +42,7 @@ const Footer = () => {
                   alt="Mizan Electronics"
                   width={52}
                   height={52}
+                  className="h-auto w-auto"
                 />
                 <span className="text-2xl font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
                   MIZAN ELECTRONICS
@@ -63,7 +64,6 @@ const Footer = () => {
                 <FooterLink href="/" label="Home" />
                 <FooterLink href="/products" label="Products" />
                 <FooterLink href="/services" label="Services" />
-                <FooterLink href="/about" label="About Us" />
                 <FooterLink href="/contact" label="Contact" />
               </ul>
             </div>

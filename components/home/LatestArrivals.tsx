@@ -158,7 +158,7 @@ function LatestArrivals() {
   return (
     <section className="relative py-20 overflow-hidden">
       <motion.div
-        className="absolute -z-10 right-[-25%] top-[15%] h-130 w-130 rounded-full bg-indigo-500/20 blur-[160px]"
+        className="absolute -z-10 right-[-25%] top-[15%] h-[32.5rem] w-[32.5rem] rounded-full bg-indigo-500/20 blur-[160px]"
         animate={{ x: [0, -120, 0], y: [0, 80, 0] }}
         transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
       />
@@ -196,6 +196,7 @@ function LatestArrivals() {
                   src={product.image}
                   alt={product.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-contain  w-full  transition-transform duration-500 group-hover:scale-110"
                 />
               </div>

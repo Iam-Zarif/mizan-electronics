@@ -10,12 +10,11 @@ import {
   HiShoppingCart,
   HiOutlineShoppingCart,
 } from "react-icons/hi";
-import { FiInfo, FiPhone } from "react-icons/fi";
+import { FiPhone } from "react-icons/fi";
 import { usePathname } from "next/navigation";
 import { BsBoxSeam, BsBoxSeamFill } from "react-icons/bs";
 import { FaPhoneAlt } from "react-icons/fa";
 import { Sun, Moon } from "lucide-react";
-import { FaCircleExclamation } from "react-icons/fa6";
 import logo from "@/public/mizan.png";
 import ProfileImage from "./ProfileImage";
 import MobileBottomNav from "./MobileBottomNav";
@@ -51,6 +50,7 @@ const Navbar = () => {
                 alt="Mizan Electronics"
                 width={48}
                 height={48}
+                className="h-auto w-auto"
               />
               <span className="hidden sm:block font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
                 MIZAN ELECTRONICS

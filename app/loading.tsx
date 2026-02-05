@@ -26,6 +26,7 @@ export default function Loading() {
               width={48}
               height={48}
               priority
+              className="h-auto w-auto"
             />
           </div>
         </motion.div>

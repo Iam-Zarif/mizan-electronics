@@ -31,7 +31,7 @@ type TablistProps = {
 
 const Tablist = ({ setTab, tab }: TablistProps) => {
   return (
-    <div className="flex justify-center gap-8 border-b">
+    <div className="flex flex-wrap justify-center gap-6 border-b">
       <TabButton
         active={tab === "desc"}
         onClick={() => setTab("desc")}

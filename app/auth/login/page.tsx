@@ -19,7 +19,7 @@ export default function LoginPage() {
           alt="Mizan Electronics"
           width={48}
           height={48}
-          className="mx-auto"
+          className="mx-auto h-auto w-auto"
         />
         <h1 className="text-center mt-3 text-3xl font-extrabold bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           Welcome Back

@@ -171,7 +171,7 @@ const SimilarProducts = () => {
 
   return (
     <section className="mt-24">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="font-extrabold text-2xl tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           Similar Products
         </h2>
@@ -208,7 +208,7 @@ const SimilarProducts = () => {
           {Array.from({ length: totalPages }).map((_, pageIndex) => (
             <div
               key={pageIndex}
-              className="grid w-full shrink-0 grid-cols-4 gap-5"
+              className="grid w-full shrink-0 grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
             >
               {products
                 .slice(
@@ -226,6 +226,7 @@ const SimilarProducts = () => {
                         src={product.image}
                         alt={product.name}
                         fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="object-contain transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>

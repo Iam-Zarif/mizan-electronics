@@ -23,7 +23,7 @@ function BrandMarquee() {
     <section className="relative overflow-hidden pb-12 sm:pb-16 lg:pb-20">
       {/* background glow */}
       <motion.div
-        className="absolute -z-10 left-[20%] bottom-[-35%] h-130 w-130 rounded-full bg-[#e18b94]/20 blur-[160px]"
+        className="absolute -z-10 left-[20%] bottom-[-35%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/20 blur-[160px]"
         animate={{ x: [0, 120, 0], y: [0, -80, 0] }}
         transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
       />
@@ -57,8 +57,8 @@ function BrandMarquee() {
                   className="
                     flex items-center justify-center
                     w-28 h-16
-                    sm:w-32 sm:h-18
-                    lg:w-40 lg:h-22.5
+                    sm:w-32 sm:h-[4.5rem]
+                    lg:w-40 lg:h-[5.625rem]
                     rounded-2xl
                     bg-white dark:bg-black/40
                     shadow-[0_12px_40px_-20px_rgba(0,0,0,0.35)]

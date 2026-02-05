@@ -121,13 +121,13 @@ export default function TestimonialsClients() {
   return (
     <section className="relative py-14 overflow-hidden">
       <motion.div
-        className="absolute -z-10 left-[-25%] top-[10%] h-130 w-130 rounded-full bg-indigo-500/20 blur-[160px]"
+        className="absolute -z-10 left-[-25%] top-[10%] h-[32.5rem] w-[32.5rem] rounded-full bg-indigo-500/20 blur-[160px]"
         animate={{ x: [0, 120, 0], y: [0, -80, 0] }}
         transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
       />
 
       <motion.div
-        className="absolute -z-10 right-[-25%] bottom-[0%] h-130 w-130 rounded-full bg-[#e18b94]/20 blur-[160px]"
+        className="absolute -z-10 right-[-25%] bottom-[0%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/20 blur-[160px]"
         animate={{ x: [0, -120, 0], y: [0, 80, 0] }}
         transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
       />
@@ -171,9 +171,15 @@ export default function TestimonialsClients() {
                 <Quote className="absolute right-6 top-6 h-7 w-7 text-indigo-500/20" />
 
                 <div className="mb-5 flex items-center gap-5">
-                  <div className="relative h-24 w-24 rounded-full bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 p-0.5">
+                    <div className="relative h-24 w-24 rounded-full bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 p-0.5">
                     <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
-                      <Image src={t.image} alt={t.name} fill className="object-cover" />
+                      <Image
+                        src={t.image}
+                        alt={t.name}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
                     </div>
                   </div>
 
@@ -235,7 +241,13 @@ export default function TestimonialsClients() {
                 whileHover={{ scale: 1.08 }}
                 className="relative h-10 w-28 grayscale transition hover:grayscale-0"
               >
-                <Image src={logo} alt="Client Logo" fill className="object-contain" />
+                <Image
+                  src={logo}
+                  alt="Client Logo"
+                  fill
+                  sizes="112px"
+                  className="object-contain"
+                />
               </motion.div>
             ))}
           </div>

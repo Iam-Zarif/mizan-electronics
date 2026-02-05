@@ -78,7 +78,7 @@ const SERVICES = [
 
 export default function ServicesPage() {
   return (
-    <section className="relative pt-30 pb-10">
+    <section className="relative pt-[7.5rem] pb-10">
       <div className="mx-auto max-w-7xl px-4">
         <motion.div
           initial={{ opacity: 0, y: 14 }}

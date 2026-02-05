@@ -30,7 +30,7 @@ export function ProfileDetails() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
               <Image
-                src="https://i.ibb.co.com/67fpNVMH/profile.jpg"
+                src="https://i.ibb.co/67fpNVMH/profile.jpg"
                 alt="Profile"
                 width={64}
                 height={64}

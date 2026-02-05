@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function CheckoutPage() {
   return (
-    <section className="pt-30 pb-24">
+    <section className="pt-[7.5rem] pb-24">
       <div className="mx-auto max-w-7xl px-4">
         <h1 className="mb-8 text-xl md:text-3xl font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           Checkout

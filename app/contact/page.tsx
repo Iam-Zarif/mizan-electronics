@@ -7,12 +7,12 @@ export default function ContactPage() {
   return (
     <section className="relative pt-6 overflow-hidden">
       <motion.div
-        className="absolute -z-10 left-[-30%] top-[10%] h-130 w-130 rounded-full bg-indigo-500/20 blur-[160px]"
+        className="absolute -z-10 left-[-30%] top-[10%] h-[32.5rem] w-[32.5rem] rounded-full bg-indigo-500/20 blur-[160px]"
         animate={{ x: [0, 120, 0], y: [0, -80, 0] }}
         transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
       />
       <motion.div
-        className="absolute -z-10 right-[-25%] bottom-[5%] h-130 w-130 rounded-full bg-pink-500/20 blur-[160px]"
+        className="absolute -z-10 right-[-25%] bottom-[5%] h-[32.5rem] w-[32.5rem] rounded-full bg-pink-500/20 blur-[160px]"
         animate={{ x: [0, -120, 0], y: [0, 80, 0] }}
         transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
       />
@@ -82,7 +82,7 @@ export default function ContactPage() {
       <div className="w-full border-t border-black/10 dark:border-white/10">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d228.05118722637374!2d90.42540447549791!3d23.860560362397848!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c5d8dda21269%3A0xcbab59a170bfbbf2!2sLK%20PLaza%2C%20Dhaka%201230!5e0!3m2!1sen!2sbd!4v1768852056193!5m2!1sen!2sbd"
-          className="h-140 w-full border-0"
+          className="h-[35rem] w-full border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         />

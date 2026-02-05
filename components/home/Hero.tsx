@@ -11,20 +11,20 @@
       id: 1,
       title: "Smart Electronics",
       subtitle: "Upgrade your lifestyle with premium gadgets",
-      image: " https://i.ibb.co.com/r2x4hdB8/ac2-removebg-preview.png",
+      image: "https://i.ibb.co/r2x4hdB8/ac2-removebg-preview.png",
     },
 
     {
       id: 2,
       title: "Next-Gen Devices",
       subtitle: "Performance. Design. Innovation.",
-      image: "https://i.ibb.co.com/nNCrXhxp/ac1-removebg-preview.png",
+      image: "https://i.ibb.co/nNCrXhxp/ac1-removebg-preview.png",
     },
     {
       id: 3,
       title: "Reliable Technology",
       subtitle: "Built for everyday excellence",
-      image: "https://i.ibb.co.com/JWpRvLH3/ac3-removebg-preview.png",
+      image: "https://i.ibb.co/JWpRvLH3/ac3-removebg-preview.png",
     },
   ];
 
@@ -39,19 +39,19 @@
     return (
       <section className="relative pt-24 lg:pt-0 lg:min-h-screen overflow-hidden flex items-center">
         <motion.div
-          className="absolute -z-10 left-[-25%] top-[-35%] h-130 w-130 rounded-full bg-pink-500/25 blur-[160px]"
+          className="absolute -z-10 left-[-25%] top-[-35%] h-[32.5rem] w-[32.5rem] rounded-full bg-pink-500/25 blur-[160px]"
           animate={{ x: [0, 140, 0], y: [0, 100, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
         />
 
         <motion.div
-          className="absolute -z-10 right-[-25%] top-[5%] h-130 w-130 rounded-full bg-indigo-500/25 blur-[160px]"
+          className="absolute -z-10 right-[-25%] top-[5%] h-[32.5rem] w-[32.5rem] rounded-full bg-indigo-500/25 blur-[160px]"
           animate={{ x: [0, -140, 0], y: [0, -100, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         />
 
         <motion.div
-          className="absolute -z-10 left-[20%] bottom-[-35%] h-130 w-130 rounded-full bg-[#e18b94]/20 blur-[160px]"
+          className="absolute -z-10 left-[20%] bottom-[-35%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/20 blur-[160px]"
           animate={{ x: [0, 120, 0], y: [0, -80, 0] }}
           transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
         />
@@ -92,7 +92,7 @@
                 </Button>
               </div>
 
-              <div className="flex w-full items-stretch gap-5 pt-8">
+              <div className="flex w-full flex-col items-stretch gap-5 pt-8 sm:flex-row">
                 <motion.div
                   animate={{ backgroundPosition: ["0% 50%", "180% 50%"] }}
                   transition={{
@@ -123,6 +123,7 @@
                     alt="Fast Delivery"
                     width={40}
                     height={40}
+                    unoptimized
                     className="mb-4"
                   />
                   <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
@@ -161,6 +162,7 @@
                     alt="Warranty"
                     width={40}
                     height={40}
+                    unoptimized
                     className="mb-4"
                   />
                   <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
@@ -199,6 +201,7 @@
                     alt="Easy Returns"
                     width={40}
                     height={40}
+                    unoptimized
                     className="mb-4"
                   />
                   <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
@@ -208,7 +211,7 @@
               </div>
             </motion.div>
 
-            <div className="relative h-105 sm:h-130 md:h-145 flex items-center justify-center">
+            <div className="relative h-[26.25rem] sm:h-[32.5rem] md:h-[36.25rem] flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={slides[index].id}
@@ -231,6 +234,7 @@
                       src={slides[index].image}
                       alt={slides[index].title}
                       fill
+                      sizes="(max-width: 768px) 90vw, 50vw"
                       priority
                       className="object-contain drop-shadow-[0_40px_80px_rgba(0,0,0,0.25)]"
                     />

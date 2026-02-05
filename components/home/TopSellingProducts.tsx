@@ -3,9 +3,15 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import { ArrowDown, Heart, ShoppingCart, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function TopSellingProducts() {
+  const slugify = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
   const topSellingProducts = [
     {
       id: 1,
@@ -144,7 +150,7 @@ export default function TopSellingProducts() {
   return (
     <section className="relative py-8 overflow-hidden">
       <motion.div
-        className="absolute -z-10 left-[-30%] top-[20%] h-130 w-130 rounded-full bg-pink-500/20 blur-[160px]"
+        className="absolute -z-10 left-[-30%] top-[20%] h-[32.5rem] w-[32.5rem] rounded-full bg-pink-500/20 blur-[160px]"
         animate={{ x: [0, 120, 0], y: [0, -80, 0] }}
         transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
       />
@@ -187,6 +193,7 @@ export default function TopSellingProducts() {
                     src={p.image}
                     alt={p.name}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-contain transition-transform duration-500 group-hover:scale-110"
                   />
 
@@ -239,18 +246,19 @@ export default function TopSellingProducts() {
                   </div>
                 </div>
 
-                <button
+                <Link
+                  href={`/products/${slugify(p.name)}`}
                   className="
-                    w-full cursor-pointer rounded-b-xl py-2.5 text-sm font-semibold
-                        text-indigo-600 bg-white
-                        shadow-[0_0_12px_rgba(99,102,241,0.25)]
-                        transition-all duration-300
-                        hover:font-bold hover:shadow-[0_0_48px_rgba(99,102,241,0.65)]
-                        hover:-translate-y-0.5
-                    "
+                    w-full cursor-pointer rounded-b-xl py-2.5 text-center text-sm font-semibold
+                    text-indigo-600 bg-white
+                    shadow-[0_0_12px_rgba(99,102,241,0.25)]
+                    transition-all duration-300
+                    hover:font-bold hover:shadow-[0_0_48px_rgba(99,102,241,0.65)]
+                    hover:-translate-y-0.5
+                  "
                 >
                   View Details
-                </button>
+                </Link>
               </motion.div>
             );
           })}
