@@ -10,6 +10,7 @@ export async function generateMetadata({ params }: Props) {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return {};
   const url = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+  const image = service.images?.[0];
   return {
     title: `AC Service | ${service.title}`,
     description: service.summary,
@@ -17,12 +18,14 @@ export async function generateMetadata({ params }: Props) {
       title: `AC Service | ${service.title}`,
       description: service.summary,
       url,
-      images: service.images?.length
-        ? service.images.map((img) => ({ url: img, width: 1200, height: 630 }))
-        : undefined,
+      images: image ? [{ url: image, width: 1200, height: 630, alt: service.title }] : undefined,
     },
     alternates: { canonical: url },
   };
+}
+
+export function generateStaticParams() {
+  return serviceItems.map((s) => ({ slug: s.slug }));
 }
 
 export default function ServiceDetail({ params }: Props) {
