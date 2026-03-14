@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mizan-electronics.vercel.app"),
+  metadataBase: new URL("https://mizanelectronics.vercel.app"),
   title: {
     default: "Mizan Electronics",
     template: "%s | Mizan Electronics",

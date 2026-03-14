@@ -12,7 +12,7 @@ export const revalidate = false;
 export async function generateMetadata({ params }: Props) {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return {};
-  const url = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+  const url = `https://mizanelectronics.vercel.app/services/${service.slug}`;
   const image = service.images?.[0];
   return {
     title: `AC Service | ${service.title}`,
@@ -35,7 +35,7 @@ export default function ServiceDetail({ params }: Props) {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return notFound();
 
-  const link = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+  const link = `https://mizanelectronics.vercel.app/services/${service.slug}`;
   const whatsappText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
   const messengerText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
   const whatsappBase = "https://wa.me/8801949397234?text=";

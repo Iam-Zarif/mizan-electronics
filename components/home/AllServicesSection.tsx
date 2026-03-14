@@ -25,7 +25,7 @@ export default function AllServicesSection() {
             const en = serviceEnText[service.slug];
             const title = locale === "en" && en ? en.title : service.title;
             const summary = locale === "en" && en ? en.summary : service.summary;
-            const serviceLink = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+            const serviceLink = `https://mizanelectronics.vercel.app/services/${service.slug}`;
             const waText = encodeURIComponent(`${serviceLink}\nI want to book ${title}`);
             const msText = encodeURIComponent(`${serviceLink}\nI want to book ${title}`);
             return (
