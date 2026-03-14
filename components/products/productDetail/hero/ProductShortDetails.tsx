@@ -12,7 +12,7 @@ type Product = {
 
 const ProductShortDetails = ({ product }: { product: Product }) => {
   const [qty, setQty] = useState(1);
-  const discount = product.originalPrice && product.originalPrice - product.price;
+  const discount = product.originalPrice ? product.originalPrice - product.price : null;
     
   return (
      <div className="space-y-5">
@@ -33,13 +33,13 @@ const ProductShortDetails = ({ product }: { product: Product }) => {
               <span className="text-3xl font-extrabold text-indigo-600">
                 ৳ {product.price.toLocaleString()}
               </span>
-              {discount && (
+              {discount !== null && (
                 <>
                   <span className="text-sm line-through text-neutral-400">
-                    ৳ {product.originalPrice.toLocaleString()}
+                    ৳ {product.originalPrice?.toLocaleString() ?? ""}
                   </span>
                   <span className="text-xs font-semibold text-green-600">
-                    Save ৳ {discount.toLocaleString()}
+                    {product.originalPrice ? `Save ৳ ${discount.toLocaleString()}` : ""}
                   </span>
                 </>
               )}
