@@ -71,7 +71,7 @@ export default function PackagesSection() {
 
               <div className="mt-auto flex flex-col sm:flex-row gap-2">
                 <Link
-                  href={`${messengerBase}${encodeURIComponent(`আমি ${pack.title} প্যাক সম্পর্কে জানতে চাই - লিংক: https://mizan-electronics.vercel.app/services`)}`}
+                  href={`${messengerBase}${encodeURIComponent(`${pack.title} | ${pack.price}\nকম্বো প্যাকেজ\nলিংক: https://mizan-electronics.vercel.app/services`)}`}
                   target="_blank"
                   className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
                 >
@@ -79,7 +79,7 @@ export default function PackagesSection() {
                   <GoArrowUpRight className="text-base" />
                 </Link>
                 <Link
-                  href={`${whatsappBase}${encodeURIComponent(`আমি ${pack.title} প্যাক বুক করতে চাই - লিংক: https://mizan-electronics.vercel.app/services`)}`}
+                  href={`${whatsappBase}${encodeURIComponent(`${pack.title} | ${pack.price}\nকম্বো প্যাকেজ\nলিংক: https://mizan-electronics.vercel.app/services`)}`}
                   target="_blank"
                   className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
                 >

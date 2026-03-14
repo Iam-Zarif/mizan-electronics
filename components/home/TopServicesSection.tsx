@@ -72,6 +72,8 @@ export default function TopServicesSection() {
               const en = serviceEnText[service.slug];
               const title = locale === "en" && en ? en.title : service.title;
               const summary = locale === "en" && en ? en.summary : service.summary;
+              const waText = encodeURIComponent(`${title} | ${service.price}\n${summary}\nলিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
+              const msText = encodeURIComponent(`${title} | ${service.price}\n${summary}\nলিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
               return (
               <div
                 key={service.id}
@@ -88,7 +90,7 @@ export default function TopServicesSection() {
                     <p className="hidden sm:block text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{summary}</p>
                     <div className="flex flex-col gap-2 pt-1">
                       <Link
-                        href={`${messengerBase}${encodeURIComponent(`আমি ${service.title} সম্পর্কে জানতে চাই - লিংক: https://mizan-electronics.vercel.app/services/${service.slug}`)}`}
+                        href={`${messengerBase}${msText}`}
                         target="_blank"
                         className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
                       >
@@ -96,7 +98,7 @@ export default function TopServicesSection() {
                         <GoArrowUpRight className="text-base" />
                       </Link>
                       <Link
-                        href={`${whatsappBase}${encodeURIComponent(`আমি ${service.title} বুক করতে চাই - লিংক: https://mizan-electronics.vercel.app/services/${service.slug}`)}`}
+                        href={`${whatsappBase}${waText}`}
                         target="_blank"
                         className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
                       >
