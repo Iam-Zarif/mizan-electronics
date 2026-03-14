@@ -6,6 +6,9 @@ import { serviceItems } from "@/lib/services";
 
 type Props = { params: { slug: string } };
 
+export const dynamic = "force-static";
+export const revalidate = false;
+
 export async function generateMetadata({ params }: Props) {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return {};
