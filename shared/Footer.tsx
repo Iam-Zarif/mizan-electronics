@@ -6,9 +6,11 @@ import { motion } from "motion/react";
 import { FaFacebookF, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import logo from "@/public/mizan.png";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/lib/i18n";
 
 const Footer = () => {
   const pathname = usePathname();
+  const { t, locale } = useLanguage();
     if (pathname.startsWith("/auth")) {
     return null;
   }
@@ -34,8 +36,8 @@ const Footer = () => {
             px-8 pt-14
           "
         >
-          <div className="grid gap-12 md:grid-cols-3">
-            <div>
+          <div className="grid gap-12 md:grid-cols-3 text-center md:text-left">
+            <div className="flex flex-col items-center md:items-start">
               <div className="flex items-center gap-4">
                 <Image
                   src={logo}
@@ -50,43 +52,40 @@ const Footer = () => {
               </div>
 
               <p className="mt-5 max-w-sm text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                Premium electronics, AC sales, installation & servicing you can
-                rely on. Trusted products, expert technicians and real
-                after-sales support.
+                {t("footer.tagline")}
               </p>
             </div>
 
-            <div>
+            <div className="flex flex-col items-center md:items-start">
               <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-500">
-                Navigation
+                {t("footer.navigation")}
               </p>
               <ul className="space-y-3 text-sm font-medium">
-                <FooterLink href="/" label="Home" />
-                <FooterLink href="/products" label="Products" />
-                <FooterLink href="/services" label="Services" />
-                <FooterLink href="/contact" label="Contact" />
+                <FooterLink href="/" label={t("nav.home")} />
+                <FooterLink href="/services" label={t("nav.services")} />
+                <FooterLink href="/auth/login" label={t("nav.login")} />
               </ul>
             </div>
 
-            <div>
+            <div className="flex flex-col items-center md:items-start">
               <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-500">
-                Follow Us
+                {t("footer.follow")}
               </p>
               <div className="flex items-center gap-5">
                 <SocialIcon
-                  href="https://facebook.com"
+                  href="https://www.facebook.com/profile.php?id=61583720444800"
                   icon={<FaFacebookF />}
                   color="text-blue-600"
                 />
 
                 <SocialIcon
-                  href="https://youtube.com"
+                  href="https://www.youtube.com/@MizanElectronicsService"
                   icon={<FaYoutube />}
                   color="text-red-500"
                 />
 
                 <SocialIcon
-                  href="https://wa.me/880000000000"
+                  href="https://wa.me/8801949397234"
                   icon={<FaWhatsapp />}
                   color="text-green-500"
                 />
@@ -95,7 +94,7 @@ const Footer = () => {
           </div>
 
           <div className="mt-14 border-t border-black/5 dark:border-white/10 py-3     text-center text-xs tracking-wide text-neutral-500">
-            © {new Date().getFullYear()} Mizan Electronics. All rights reserved.
+            © {new Date().getFullYear()} Mizan Electronics. {t("footer.rights")}
           </div>
         </motion.div>
       </div>

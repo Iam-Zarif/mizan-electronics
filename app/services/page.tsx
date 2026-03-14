@@ -1,225 +1,151 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import Image from "next/image";
 import { motion } from "motion/react";
-import {
-  Wrench,
-  Wind,
-  ShieldCheck,
-  Thermometer,
-  Zap,
-  ArrowRight,
-  CheckCircle,
-  Clock,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { GoArrowUpRight } from "react-icons/go";
+import { Search, Filter } from "lucide-react";
+import { serviceCategories, serviceItems, serviceEnText } from "@/lib/services";
 
-const SERVICES = [
-  {
-    title: "AC Installation",
-    icon: Wrench,
-    price: "৳ 2,500 – ৳ 4,500",
-    duration: "2–3 Hours",
-    features: [
-      "Indoor & outdoor unit setup",
-      "Copper pipe fitting",
-      "Gas pressure check",
-      "Cooling test & demo",
-    ],
-  },
-  {
-    title: "AC Gas Refill",
-    icon: Wind,
-    price: "৳ 3,200 – ৳ 6,000",
-    duration: "1–2 Hours",
-    features: [
-      "Leak detection",
-      "R32 / R410 gas refill",
-      "Cooling optimization",
-      "Performance testing",
-    ],
-  },
-  {
-    title: "Annual AC Servicing",
-    icon: ShieldCheck,
-    price: "৳ 1,800",
-    duration: "1 Hour",
-    features: [
-      "Indoor deep cleaning",
-      "Outdoor unit wash",
-      "Drain & filter cleanup",
-      "Health & cooling check",
-    ],
-  },
-  {
-    title: "Cooling Problem Fix",
-    icon: Thermometer,
-    price: "From ৳ 1,200",
-    duration: "Depends on issue",
-    features: [
-      "Low cooling diagnosis",
-      "Airflow problem fix",
-      "Sensor check",
-      "Gas & PCB inspection",
-    ],
-  },
-  {
-    title: "AC Repair",
-    icon: Zap,
-    price: "From ৳ 900",
-    duration: "Depends on damage",
-    features: [
-      "PCB repair",
-      "Fan motor replacement",
-      "Capacitor & sensor fix",
-      "Power issue solving",
-    ],
-  },
-];
+const whatsappBase = "https://wa.me/8801949397234?text=";
+const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 
 export default function ServicesPage() {
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"az" | "za" | "price-asc" | "price-desc">("az");
+  const [category, setCategory] = useState<string>("all");
+
+  const filtered = useMemo(() => {
+    const term = search.toLowerCase();
+    const filterCategory = category;
+
+    const parsePrice = (price: string) => {
+      const nums = [...price.matchAll(/\d+/g)].map((n) => Number(n[0]));
+      if (!nums.length) return 0;
+      const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+      return avg;
+    };
+
+    const list = serviceItems.filter((s) => {
+      if (filterCategory !== "all" && s.categoryId !== filterCategory) return false;
+      const en = serviceEnText[s.slug];
+      const haystack = [s.title, s.summary, en?.title ?? "", en?.summary ?? ""].join(" ").toLowerCase();
+      return haystack.includes(term);
+    });
+
+    return list.sort((a, b) => {
+      if (sort === "price-asc" || sort === "price-desc") {
+        const diff = parsePrice(a.price) - parsePrice(b.price);
+        return sort === "price-asc" ? diff : -diff;
+      }
+      return sort === "az" ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+    });
+  }, [search, sort, category]);
+
   return (
-    <section className="relative pt-[7.5rem] pb-10">
-      <div className="mx-auto max-w-7xl px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-14 max-w-3xl"
-        >
-          <span className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-1.5 text-sm font-medium text-white shadow-lg">
-            <Zap className="h-4 w-4" />
-            Professional AC Services
-          </span>
-
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight">
-            Reliable <span className="text-indigo-500">AC Services</span> You
-            Can Trust
-          </h1>
-
-          <p className="mt-4 text-neutral-600">
-            Expert technicians, transparent pricing, and same-day service
-            availability across Dhaka. Pay partially online or Cash on Delivery.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SERVICES.map((service, i) => {
-            const Icon = service.icon;
-
-            return (
-              <motion.div
-                key={i}
-                whileHover={{ y: -4 }}
-                className="rounded-3xl border border-neutral-200 bg-white p-6 transition hover:shadow-lg"
+    <section className="relative pt-24 pb-14">
+      <div className="mx-auto max-w-7xl px-4 space-y-10">
+        <div className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white">সব সার্ভিস</h1>
+            <div className="flex flex-wrap gap-2 sm:justify-end">
+              <div className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/80 px-3 py-2 shadow dark:bg-neutral-900/70">
+                <Search size={16} className="text-neutral-500" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="বাংলা বা ইংরেজিতে সার্চ করুন..."
+                  className="w-48 sm:w-72 bg-transparent text-sm outline-none"
+                />
+              </div>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="rounded-xl border border-white/20 bg-white/80 px-3 py-2 text-sm shadow dark:bg-neutral-900/70"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500 text-white shadow">
-                      <Icon size={22} />
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold">{service.title}</h3>
-                      <p className="text-sm text-neutral-500">
-                        {service.duration}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                    Available
-                  </span>
-                </div>
-
-                <ul className="mt-5 space-y-2">
-                  {service.features.map((f, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center gap-2 text-sm text-neutral-600"
-                    >
-                      <CheckCircle size={14} className="text-indigo-500" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-6 flex items-center justify-between border-t pt-4">
-                  <div>
-                    <p className="text-xs text-neutral-500">Starting Price</p>
-                    <p className="text-lg font-bold text-indigo-600">
-                      {service.price}
-                    </p>
-                  </div>
-
-                  <Button className="group cursor-pointer">
-                    Book Service
-                    <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
-                  </Button>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative mt-12 overflow-hidden rounded-3xl"
-        >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://mybayutcdn.bayut.com/mybayut/wp-content/uploads/Top-AC-Maintenance-Cleaning-Companies-in-Dubai-Cover-27-07-2021.jpg')",
-            }}
-          />
-
-          <div className="absolute inset-0 bg-black/55" />
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 p-10 text-white">
-            <div className="max-w-xl">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold backdrop-blur">
-                <Clock size={14} />
-                Emergency Support
-              </span>
-
-              <h3 className="mt-4 text-3xl font-extrabold leading-tight">
-                Same-Day AC Service
-                <br />
-                <span className="text-white/90">Across Dhaka City</span>
-              </h3>
-
-              <p className="mt-4 text-sm text-white/90">
-                Cooling failure? Power issue? Our certified technicians are
-                ready for urgent installations & repairs — pay partially online
-                or cash on delivery.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="group cursor-pointer">
-                Call for Emergency
-                <Clock className="ml-2 h-4 w-4 text-white" />
-              </Button>
-
-              <Button
-                size="lg"
-                className="
-      cursor-pointer
-      bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500
-      text-white
-      font-extrabold tracking-wide
-      shadow-xl
-      hover:opacity-90
-      active:scale-[0.98]
-      transition
-    "
+                <option value="all">সকল ক্যাটাগরি</option>
+                {serviceCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                className="rounded-xl border border-white/20 bg-white/80 px-3 py-2 text-sm shadow dark:bg-neutral-900/70"
               >
-                Book Service Now
-              </Button>
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+                <option value="price-asc">মূল্য: কম থেকে বেশি</option>
+                <option value="price-desc">মূল্য: বেশি থেকে কম</option>
+              </select>
             </div>
           </div>
-        </motion.div>
+
+          <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filtered.map((service) => (
+              <ServiceCard key={service.id} service={service} />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function ServiceCard({ service }: { service: (typeof serviceItems)[number] }) {
+  const waText = encodeURIComponent(`আমি ${service.title} বুক করতে চাই - লিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
+  const msText = encodeURIComponent(`আমি ${service.title} সম্পর্কে জানতে চাই - লিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
+
+  return (
+    <motion.div
+      whileHover={{ y: -4 }}
+      className="cursor-pointer rounded-3xl border border-white/15 bg-white shadow-[0_25px_60px_-40px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-neutral-900"
+    >
+      <div className="relative h-56 w-full overflow-hidden rounded-t-3xl">
+        <Image src={service.images[0]} alt={service.title} fill className="object-cover" />
+        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-[#2160ba] shadow">
+          {service.price}
+        </span>
+      </div>
+
+      <div className="space-y-3 px-4 py-4">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{service.title}</h4>
+            <p className="hidden sm:block mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{service.summary}</p>
+          </div>
+        </div>
+
+        <div className="space-y-1.5 text-sm text-neutral-600 dark:text-neutral-300">
+          {service.process.slice(0, 3).map((step, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#ec4899]" />
+              {step}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-2 pt-2">
+          <a
+            href={`${messengerBase}${msText}`}
+            target="_blank"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
+          >
+            মেসেঞ্জার (কুয়েরি)
+            <GoArrowUpRight className="text-base" />
+          </a>
+          <a
+            href={`${whatsappBase}${waText}`}
+            target="_blank"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
+          >
+            বুক করুন
+            <GoArrowUpRight className="text-base" />
+          </a>
+        </div>
+      </div>
+    </motion.div>
   );
 }

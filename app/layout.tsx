@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/shared/Navbar";
 import Footer from "@/shared/Footer";
 import FloatingContacts from "@/components/shared/FloatingContacts";
+import { LanguageProvider } from "@/lib/i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,15 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="bn">
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} bg-neutral-100 dark:bg-neutral-900 antialiased`}
       >
-        <FloatingContacts/>
-        <Navbar/>
-        {children}
-        <Footer/> 
+        <LanguageProvider>
+          <FloatingContacts/>
+          <Navbar/>
+          {children}
+          <Footer/> 
+        </LanguageProvider>
       </body>
     </html>
   );

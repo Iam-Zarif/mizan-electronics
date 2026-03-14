@@ -4,81 +4,8 @@ import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { Star, Quote } from "lucide-react";
 import { useEffect, useState } from "react";
-
-const testimonials = [
-  {
-    name: "Rahim Uddin",
-    role: "Homeowner • Dhaka",
-    image:
-      "https://www.shutterstock.com/image-photo/happy-smiling-bangladesh-man-standing-600nw-391162879.jpg",
-    rating: 5,
-    text: "Fast installation and very professional service. Cooling performance is excellent even in peak summer.",
-  },
-  {
-    name: "Nusrat Jahan",
-    role: "Apartment Owner",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4XsXWm9yquQq6ZDelFw5CPJiaoAXdrcGHJQ&s",
-    rating: 5,
-    text: "Highly satisfied with their AC servicing. Technician was polite and explained everything clearly.",
-  },
-  {
-    name: "Tanvir Ahmed",
-    role: "Office Manager",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKGwh0FDKjDqR8D7vkarFhMQNcDC9YfiMwtQ&s",
-    rating: 4.9,
-    text: "We installed multiple inverter ACs for our office. Great pricing and after-sales support.",
-  },
-  {
-    name: "Farhana Islam",
-    role: "Villa Owner",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH-5qOOZPXuqCvuaqFBMPS20cdn8xEDxwNsw&s",
-    rating: 5,
-    text: "Excellent experience from purchase to installation. Highly recommended.",
-  },
-  {
-    name: "Imran Hossain",
-    role: "Retail Shop Owner",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbtdGT_m-yNG88PNncgdpFlEfs7Rchm8BWMQ&s",
-    rating: 4.8,
-    text: "Energy efficiency is noticeably better. Reduced electricity bills within the first month.",
-  },
-  {
-    name: "Sadia Rahman",
-    role: "Flat Owner • Uttara",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDz0Iqpag_veZCpLoAAzKQujcyAoJaEYyrmA&s",
-    rating: 5,
-    text: "Prompt delivery and clean installation. The technician was very careful and skilled.",
-  },
-  {
-    name: "Mahmudul Hasan",
-    role: "Restaurant Manager",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_YLGuqACiYwa7swk-r9CuFTTp2unzzqpt2A&s",
-    rating: 4.9,
-    text: "Cooling is powerful even during rush hours. Perfect for commercial usage.",
-  },
-  {
-    name: "Tahmina Akter",
-    role: "Interior Designer",
-    image:
-      "https://img.freepik.com/free-photo/indian-woman-posing-cute-stylish-outfit-camera-smiling_482257-122351.jpg?semt=ais_hybrid&w=740&q=80",
-    rating: 5,
-    text: "Sleek design and silent operation. Matches modern interiors beautifully.",
-  },
-  {
-    name: "Arif Khan",
-    role: "Tech Consultant",
-    image:
-      "https://media.istockphoto.com/id/1156714752/photo/portrait-of-an-indian-corporate-male-executive.jpg?s=612x612&w=0&k=20&c=gVrjy68_xvQg0_x0EM3hIxC-0Mu2oXj8BGgfDBspL-0=",
-    rating: 4.8,
-    text: "Smart features work flawlessly. App control and temperature accuracy are impressive.",
-  },
-];
+import { testimonials as testimonialData } from "@/lib/testimonials";
+import { useLanguage } from "@/lib/i18n";
 
 const clients = [
   "/brands/walton.png",
@@ -86,10 +13,10 @@ const clients = [
   "/brands/lg.png",
   "/brands/singer.png",
   "/brands/haier.png",
-  "/brands/walton.png",
 ];
 
 export default function TestimonialsClients() {
+  const { t, locale } = useLanguage();
   const [index, setIndex] = useState(0);
   const [perView, setPerView] = useState(3);
 
@@ -106,16 +33,14 @@ export default function TestimonialsClients() {
 
   useEffect(() => {
     const t = setInterval(() => {
-      setIndex((p) => (p + perView) % testimonials.length);
+      setIndex((p) => (p + perView) % testimonialData.length);
     }, 4800);
     return () => clearInterval(t);
   }, [perView]);
 
-  const visible = Array.from({ length: perView }).map(
-    (_, i) => testimonials[(index + i) % testimonials.length]
-  );
+  const visible = Array.from({ length: perView }).map((_, i) => testimonialData[(index + i) % testimonialData.length]);
 
-  const totalTabs = Math.ceil(testimonials.length / perView);
+  const totalTabs = Math.ceil(testimonialData.length / perView);
   const activeTab = Math.floor(index / perView);
 
   return (
@@ -134,16 +59,13 @@ export default function TestimonialsClients() {
 
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-16 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-1.5 text-sm font-medium text-white shadow-lg">
+          <span className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-1.5 text-sm font-medium text-white shadow-lg">
             <Quote className="h-4 w-4" />
-            Trusted by Thousands
+            {t("sections.testimonialsTitle")}
           </span>
           <h2 className="mt-4 text-3xl md:text-4xl font-extrabold">
-            What Our Customers Say
+            {t("sections.testimonialsSubtitle")}
           </h2>
-          <p className="mt-3 text-neutral-600 dark:text-neutral-400">
-            Real experiences from people who trust our products & services
-          </p>
         </div>
 
         <AnimatePresence mode="wait">
@@ -153,9 +75,12 @@ export default function TestimonialsClients() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -40 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-2.5 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center"
           >
-            {visible.map((t, i) => (
+            {visible.map((t, i) => {
+              const comment = locale === "en" && t.commentEn ? t.commentEn : t.comment;
+              const location = locale === "en" && t.locationEn ? t.locationEn : t.location;
+              return (
               <motion.div
                 key={i}
                 whileHover={{ y: -8 }}
@@ -171,21 +96,19 @@ export default function TestimonialsClients() {
                 <Quote className="absolute right-6 top-6 h-7 w-7 text-indigo-500/20" />
 
                 <div className="mb-5 flex items-center gap-5">
-                    <div className="relative h-24 w-24 rounded-full bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 p-0.5">
-                    <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
-                      <Image
-                        src={t.image}
-                        alt={t.name}
-                        fill
-                        sizes="96px"
-                        className="object-cover"
-                      />
-                    </div>
+                  <div className="relative h-16 w-16 rounded-full bg-linear-to-br from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] p-0.5 overflow-hidden">
+                    {t.avatar ? (
+                      <Image src={t.avatar} alt={t.name} fill className="object-cover rounded-full" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-sm font-bold text-[#2160ba]">
+                        {t.name.slice(0, 2)}
+                      </div>
+                    )}
                   </div>
 
                   <div>
-                    <p className="text-2xl font-bold">{t.name}</p>
-                    <p className="text-base text-neutral-500">{t.role}</p>
+                    <p className="text-xl font-bold">{t.name}</p>
+                    <p className="text-sm text-neutral-500">{location}</p>
                   </div>
                 </div>
 
@@ -199,10 +122,11 @@ export default function TestimonialsClients() {
                 </div>
 
                 <p className="text-base text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                  “{t.text}”
+                  “{comment}”
                 </p>
               </motion.div>
-            ))}
+            );
+            })}
           </motion.div>
         </AnimatePresence>
 
@@ -231,7 +155,7 @@ export default function TestimonialsClients() {
 
         <div className="mt-20">
           <p className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-neutral-500">
-            Trusted by leading brands
+            {locale === "en" ? "Trusted by leading brands" : "বিশ্বস্ত ব্র্যান্ডের আস্থা"}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-10 opacity-80">

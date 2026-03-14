@@ -1,21 +1,21 @@
-import BrandMarquee from "./BrandMarquee"
-import Hero from "./Hero"
-import LatestArrivals from "./LatestArrivals"
-import TestimonialsClients from "./TestimonialsClients"
-import TopSellingProducts from "./TopSellingProducts"
-import TopSellingServices from "./TopSellingServices"
+import Hero from "./Hero";
+import ServiceCategoriesSection from "./ServiceCategoriesSection";
+import TopServicesSection from "./TopServicesSection";
+import AllServicesSection from "./AllServicesSection";
+import TestimonialsClients from "./TestimonialsClients";
+import PackagesSection from "./PackagesSection";
 
 const HomeComponent = () => {
   return (
     <>
-        <Hero/>
-        <BrandMarquee/>
-        <LatestArrivals/>
-        <TopSellingProducts/>
-        <TopSellingServices/>
-        <TestimonialsClients/>
+      <Hero />
+      <ServiceCategoriesSection />
+      <TopServicesSection />
+      <PackagesSection />
+      <AllServicesSection />
+      <TestimonialsClients />
     </>
-  )
-}
+  );
+};
 
-export default HomeComponent
+export default HomeComponent;

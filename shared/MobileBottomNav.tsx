@@ -2,17 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  HiHome,
-  HiOutlineHome,
-} from "react-icons/hi";
-import { BsBoxSeam, BsBoxSeamFill } from "react-icons/bs";
+import { HiHome, HiOutlineHome } from "react-icons/hi";
 import { FiPhone } from "react-icons/fi";
 import { FaPhoneAlt } from "react-icons/fa";
-import {
-  MdHomeRepairService,
-  MdOutlineHomeRepairService,
-} from "react-icons/md";
+import { MdHomeRepairService, MdOutlineHomeRepairService } from "react-icons/md";
 
 const MobileBottomNav = () => {
   const pathname = usePathname();
@@ -23,28 +16,21 @@ const MobileBottomNav = () => {
         <div className="flex  justify-between rounded-full  bg-white/90 border dark:border-neutral-200 border-neutral-100 px-6 w-full pt-3 pb-1 shadow-xl backdrop-blur-xl dark:bg-black/90">
           <Item
             href="/"
-            label="Home"
+            label="হোম"
             active={pathname === "/"}
             icon={<HiOutlineHome  className="text-lg"/>}
             iconActive={<HiHome  className="text-lg"/>}
           />
           <Item
-            href="/products"
-            label="Products"
-            active={pathname === "/products"}
-            icon={<BsBoxSeam  className="text-lg"/>}
-            iconActive={<BsBoxSeamFill  className="text-lg"/>}
-          />
-          <Item
             href="/services"
-            label="Services"
+            label="সার্ভিস"
             active={pathname === "/services"}
             icon={<MdOutlineHomeRepairService className="text-lg" />}
             iconActive={<MdHomeRepairService className="text-lg" />}
           />
           <Item
             href="/contact"
-            label="Contact"
+            label="যোগাযোগ"
             active={pathname === "/contact"}
             icon={<FiPhone  className="text-lg"/>}
             iconActive={<FaPhoneAlt  className="text-lg"/>}
