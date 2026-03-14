@@ -14,8 +14,9 @@ export default function ServiceDetail({ params }: { params: { slug: string } }) 
   const service = useMemo(() => serviceItems.find((s) => s.slug === params.slug), [params.slug]);
   if (!service) return notFound();
 
-  const whatsappText = encodeURIComponent(`${service.title} | ${service.price}\n${service.summary}\nলিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
-  const messengerText = encodeURIComponent(`${service.title} | ${service.price}\n${service.summary}\nলিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
+  const link = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+  const whatsappText = encodeURIComponent(`I want to book ${service.title}\n${link}`);
+  const messengerText = encodeURIComponent(`I want to book ${service.title}\n${link}`);
 
   return (
     <section className="relative pt-24 pb-14">

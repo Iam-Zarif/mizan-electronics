@@ -41,8 +41,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
         <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((service) => {
-            const waText = encodeURIComponent(`${service.title} | ${service.price}\n${service.summary}\nলিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
-            const msText = encodeURIComponent(`${service.title} | ${service.price}\n${service.summary}\nলিংক: https://mizan-electronics.vercel.app/services/${service.slug}`);
+            const link = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+            const waText = encodeURIComponent(`I want to book ${service.title}\n${link}`);
+            const msText = encodeURIComponent(`I want to book ${service.title}\n${link}`);
             return (
               <div
                 key={service.id}
