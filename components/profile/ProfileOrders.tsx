@@ -88,8 +88,8 @@ export default function ProfileOrders() {
   const [orderTab, setOrderTab] = useState<OrderTab>("Ongoing");
 
   return (
-    <div className="mt-8">
-      <div className="mb-2 rounded-2xl border border-neutral-200 bg-white p-2">
+    <div className="">
+      <div className="mb-2 rounded-2xl border border-neutral-200 bg-white p-1">
         <div className="flex gap-2">
           {ORDER_TABS.map((t) => (
             <button
