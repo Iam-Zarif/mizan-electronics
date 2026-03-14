@@ -1,22 +1,39 @@
-"use client";
-
-import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GoArrowUpRight } from "react-icons/go";
 import { serviceItems } from "@/lib/services";
 
-const whatsappBase = "https://wa.me/8801949397234?text=";
-const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
+type Props = { params: { slug: string } };
 
-export default function ServiceDetail({ params }: { params: { slug: string } }) {
-  const service = useMemo(() => serviceItems.find((s) => s.slug === params.slug), [params.slug]);
+export async function generateMetadata({ params }: Props) {
+  const service = serviceItems.find((s) => s.slug === params.slug);
+  if (!service) return {};
+  const url = `https://mizan-electronics.vercel.app/services/${service.slug}`;
+  return {
+    title: `AC Service | ${service.title}`,
+    description: service.summary,
+    openGraph: {
+      title: `AC Service | ${service.title}`,
+      description: service.summary,
+      url,
+      images: service.images?.length
+        ? service.images.map((img) => ({ url: img, width: 1200, height: 630 }))
+        : undefined,
+    },
+    alternates: { canonical: url },
+  };
+}
+
+export default function ServiceDetail({ params }: Props) {
+  const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return notFound();
 
   const link = `https://mizan-electronics.vercel.app/services/${service.slug}`;
-  const whatsappText = encodeURIComponent(`I want to book ${service.title}\n${link}`);
-  const messengerText = encodeURIComponent(`I want to book ${service.title}\n${link}`);
+  const whatsappText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
+  const messengerText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
+  const whatsappBase = "https://wa.me/8801949397234?text=";
+  const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 
   return (
     <section className="relative pt-24 pb-14">

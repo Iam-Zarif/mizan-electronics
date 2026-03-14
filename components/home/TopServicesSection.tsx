@@ -73,8 +73,8 @@ export default function TopServicesSection() {
               const title = locale === "en" && en ? en.title : service.title;
               const summary = locale === "en" && en ? en.summary : service.summary;
               const serviceLink = `https://mizan-electronics.vercel.app/services/${service.slug}`;
-              const waText = encodeURIComponent(`I want to book ${title}\n${serviceLink}`);
-              const msText = encodeURIComponent(`I want to book ${title}\n${serviceLink}`);
+              const waText = encodeURIComponent(`${serviceLink}\nI want to book ${title}`);
+              const msText = encodeURIComponent(`${serviceLink}\nI want to book ${title}`);
               return (
               <div
                 key={service.id}
