@@ -172,7 +172,6 @@ const Navbar = () => {
                 <HiX size={22} />
               </button>
             </div>
-
             <div className="space-y-2 text-sm">
               <Link href="/" onClick={() => setOpenMobile(false)} className="block rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                 {t("nav.home")}
