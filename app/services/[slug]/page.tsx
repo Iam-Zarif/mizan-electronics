@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GoArrowUpRight } from "react-icons/go";
-import { serviceItems } from "@/lib/services";
+import { serviceItems, serviceCategories, categoryEnLabels, serviceEnText } from "@/lib/services";
 import type { Metadata } from "next";
 
 type Props = { params: { slug: string } };
@@ -37,9 +37,13 @@ export default function ServiceDetail({ params }: Props) {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return notFound();
 
-  const link = `https://mizanelectronics.vercel.app/services/${service.slug}`;
-  const whatsappText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
-  const messengerText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
+  const category = serviceCategories.find((c) => c.id === service.categoryId);
+  const en = serviceEnText[service.slug];
+  const title = en ? en.title : service.title;
+  const summary = en ? en.summary : service.summary;
+  const categoryLink = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
+  const whatsappText = encodeURIComponent(`${categoryLink}\nআমি ${service.title} বুক করতে চাই`);
+  const messengerText = encodeURIComponent(`${categoryLink}\nআমি ${service.title} বুক করতে চাই`);
   const whatsappBase = "https://wa.me/8801949397234?text=";
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 
@@ -48,10 +52,10 @@ export default function ServiceDetail({ params }: Props) {
       <div className="mx-auto max-w-6xl px-4 space-y-8">
         <header className="space-y-3">
           <p className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] px-4 py-1.5 text-sm font-semibold text-white shadow">
-            {service.categoryId}
+            {category ? category.name : service.categoryId}
           </p>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white">{service.title}</h1>
-          <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-300">{service.summary}</p>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white">{title}</h1>
+          <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-300">{summary}</p>
           <div className="flex flex-wrap gap-3">
             <span className="rounded-full bg-[#ecaa81]/20 px-3 py-1 text-xs font-semibold text-[#ecaa81]">{service.price}</span>
             <Link

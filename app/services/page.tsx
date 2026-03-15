@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { GoArrowUpRight } from "react-icons/go";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import { serviceCategories, serviceItems, serviceEnText } from "@/lib/services";
+import { useLanguage } from "@/lib/i18n";
 
 const whatsappBase = "https://wa.me/8801949397234?text=";
 const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
@@ -14,6 +15,7 @@ export default function ServicesPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"az" | "za" | "price-asc" | "price-desc">("az");
   const [category, setCategory] = useState<string>("all");
+  const { locale } = useLanguage();
 
   const filtered = useMemo(() => {
     const term = search.toLowerCase();
@@ -83,9 +85,9 @@ export default function ServicesPage() {
             </div>
           </div>
 
-          <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+              <ServiceCard key={service.id} service={service} locale={locale} />
             ))}
           </div>
         </div>
@@ -94,10 +96,13 @@ export default function ServicesPage() {
   );
 }
 
-function ServiceCard({ service }: { service: (typeof serviceItems)[number] }) {
-  const link = `https://mizanelectronics.vercel.app/services/${service.slug}`;
-  const waText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
-  const msText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
+function ServiceCard({ service, locale }: { service: (typeof serviceItems)[number]; locale: string }) {
+  const en = serviceEnText[service.slug];
+  const title = locale === "en" && en ? en.title : service.title;
+  const summary = locale === "en" && en ? en.summary : service.summary;
+  const link = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
+  const waText = encodeURIComponent(`${link}\nআমি ${title} বুক করতে চাই`);
+  const msText = encodeURIComponent(`${link}\nআমি ${title} বুক করতে চাই`);
 
   return (
     <motion.div
@@ -114,8 +119,8 @@ function ServiceCard({ service }: { service: (typeof serviceItems)[number] }) {
       <div className="space-y-3 px-4 py-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{service.title}</h4>
-            <p className="hidden sm:block mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{service.summary}</p>
+            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{title}</h4>
+            <p className="hidden sm:block mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{summary}</p>
           </div>
         </div>
 
