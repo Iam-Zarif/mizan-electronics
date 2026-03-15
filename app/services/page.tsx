@@ -9,7 +9,7 @@ import { serviceCategories, serviceItems, serviceEnText } from "@/lib/services";
 import { useLanguage } from "@/lib/i18n";
 
 const whatsappBase = "https://wa.me/8801949397234?text=";
-const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
+const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
 
 export default function ServicesPage() {
   const [search, setSearch] = useState("");

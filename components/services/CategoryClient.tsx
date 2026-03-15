@@ -14,7 +14,7 @@ type Props = {
 export default function CategoryClient({ category, items }: Props) {
   const { locale } = useLanguage();
   const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
+  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
   const categoryTitle = locale === "en" ? categoryEnLabels[category.id] ?? category.name : category.name;
   const categoryLink = `https://mizan-ac-servicing.vercel.app/services/category/${category.id}`;
 

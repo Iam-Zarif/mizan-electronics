@@ -10,7 +10,7 @@ import { useLanguage } from "@/lib/i18n";
 export default function AllServicesSection() {
   const { t, locale } = useLanguage();
   const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
+  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
   return (
     <section className="py-8 lg:py-14" id="all-services">
       <div className="mx-auto max-w-7xl px-4">

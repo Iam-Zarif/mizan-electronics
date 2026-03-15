@@ -49,7 +49,7 @@ export default function ServiceDetail({ params }: Props) {
     `${categoryLink}\nক্যাটাগরি: ${category ? category.name : ""}\nসার্ভিস: ${service.title}`
   );
   const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
+  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
 
   return (
     <section className="relative pt-24 pb-14">

@@ -16,7 +16,7 @@ export default function TopServicesSection() {
   const [isDragging, setIsDragging] = useState(false);
   const { t, locale } = useLanguage();
   const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
+  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
 
   useEffect(() => {
     const update = () => {
