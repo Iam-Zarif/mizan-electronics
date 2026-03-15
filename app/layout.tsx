@@ -26,15 +26,24 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Mizan Electronics",
     description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
-    url: "https://mizan-electronics.vercel.app",
+    url: "https://mizanelectronics.vercel.app",
     siteName: "Mizan Electronics",
     locale: "bn_BD",
     type: "website",
+    images: [
+      {
+        url: "https://i.ibb.co.com/rfvR43dy/facebook-profile.png",
+        width: 1200,
+        height: 630,
+        alt: "Mizan Electronics",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Mizan Electronics",
     description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
+    images: ["https://i.ibb.co.com/rfvR43dy/facebook-profile.png"],
   },
 };
 

@@ -9,26 +9,31 @@ const packages = [
     title: "ডিপ ক্লিন + গ্যাস টপ-আপ",
     price: "৳ ৩,৫০০ - ৪,২০০",
     includes: ["ইনডোর/আউটডোর জেট ওয়াশ", "ড্রেন স্যানিটাইজ", "গ্যাস প্রেসার টিউন"],
+    categoryId: "cleaning-maintenance",
   },
   {
     title: "ইনস্টলেশন + ফার্স্ট চেকআপ",
     price: "৳ ৫,৫০০ - ৬,৫০০",
     includes: ["স্প্লিট ইনস্টলেশন", "ভ্যাকুয়াম + লিক টেস্ট", "৩০ দিনের ভিতর ফ্রি চেকআপ"],
+    categoryId: "installation",
   },
   {
     title: "শিফটিং প্যাক",
     price: "৳ ৪,৫০০ - ৫,৫০০",
     includes: ["ডিসম্যান্টল + ট্রান্সপোর্ট", "রিইনস্টল", "বেসিক ক্লিন"],
+    categoryId: "shifting",
   },
   {
     title: "রিপেয়ার + স্পেয়ার চেক",
     price: "৳ ৩,২০০ - ৪,৮০০",
     includes: ["কুলিং/ওয়াটার লিক ডায়াগনস্টিক", "পার্টস কস্ট এস্টিমেট", "বেসিক টিউন-আপ"],
+    categoryId: "repair",
   },
   {
     title: "ইনস্টল + ডিপ ক্লিন বান্ডল",
     price: "৳ ৭,৮০০ - ৯,২০০",
     includes: ["স্প্লিট ইনস্টলেশন", "ডিপ ক্লিন (৩০ দিনের ভিতর)", "ভ্যাকুয়াম + লিক টেস্ট"],
+    categoryId: "installation",
   },
 ];
 
@@ -71,7 +76,7 @@ export default function PackagesSection() {
 
               <div className="mt-auto flex flex-col sm:flex-row gap-2">
                 <Link
-                  href={`${messengerBase}${encodeURIComponent(`https://mizanelectronics.vercel.app/services\nআমি বুক করতে চাই :${pack.title}`)}`}
+                  href={`${messengerBase}${encodeURIComponent(`https://mizanelectronics.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
                   target="_blank"
                   className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
                 >
@@ -79,7 +84,7 @@ export default function PackagesSection() {
                   <GoArrowUpRight className="text-base" />
                 </Link>
                 <Link
-                  href={`${whatsappBase}${encodeURIComponent(`https://mizanelectronics.vercel.app/services\nআমি বুক করতে চাই :${pack.title}`)}`}
+                  href={`${whatsappBase}${encodeURIComponent(`https://mizanelectronics.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
                   target="_blank"
                   className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
                 >
