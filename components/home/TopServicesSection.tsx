@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { serviceEnText, serviceItems } from "@/lib/services";
+import { serviceEnText, serviceItems, serviceCategories } from "@/lib/services";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -73,8 +73,13 @@ export default function TopServicesSection() {
               const title = locale === "en" && en ? en.title : service.title;
               const summary = locale === "en" && en ? en.summary : service.summary;
               const categoryLink = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
-              const waText = encodeURIComponent(`${categoryLink}\nআমি ${title} বুক করতে চাই`);
-              const msText = encodeURIComponent(`${categoryLink}\nআমি ${title} বুক করতে চাই`);
+              const categoryName = serviceCategories.find((c) => c.id === service.categoryId)?.name ?? "";
+              const waText = encodeURIComponent(
+                `${categoryLink}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${title}`
+              );
+              const msText = encodeURIComponent(
+                `${categoryLink}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${title}`
+              );
               return (
               <div
                 key={service.id}

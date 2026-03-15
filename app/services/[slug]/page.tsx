@@ -13,7 +13,7 @@ export const revalidate = false;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return {};
-  const url = `https://mizanelectronics.vercel.app/services/${service.slug}`;
+  const url = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
   const image = service.images?.[0];
   return {
     title: `AC Service | ${service.title}`,
@@ -42,8 +42,12 @@ export default function ServiceDetail({ params }: Props) {
   const title = en ? en.title : service.title;
   const summary = en ? en.summary : service.summary;
   const categoryLink = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
-  const whatsappText = encodeURIComponent(`${categoryLink}\nআমি ${service.title} বুক করতে চাই`);
-  const messengerText = encodeURIComponent(`${categoryLink}\nআমি ${service.title} বুক করতে চাই`);
+  const whatsappText = encodeURIComponent(
+    `${categoryLink}\nক্যাটাগরি: ${category ? category.name : ""}\nসার্ভিস: ${service.title}`
+  );
+  const messengerText = encodeURIComponent(
+    `${categoryLink}\nক্যাটাগরি: ${category ? category.name : ""}\nসার্ভিস: ${service.title}`
+  );
   const whatsappBase = "https://wa.me/8801949397234?text=";
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 

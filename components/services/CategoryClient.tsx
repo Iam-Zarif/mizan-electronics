@@ -40,8 +40,12 @@ export default function CategoryClient({ category, items }: Props) {
             const en = serviceEnText[service.slug];
             const title = locale === "en" && en ? en.title : service.title;
             const summary = locale === "en" && en ? en.summary : service.summary;
-            const waText = encodeURIComponent(`${categoryLink}\nআমি ${title} বুক করতে চাই`);
-            const msText = encodeURIComponent(`${categoryLink}\nআমি ${title} বুক করতে চাই`);
+            const waText = encodeURIComponent(
+              `${categoryLink}\nক্যাটাগরি: ${category.name}\nসার্ভিস: ${title}`
+            );
+            const msText = encodeURIComponent(
+              `${categoryLink}\nক্যাটাগরি: ${category.name}\nসার্ভিস: ${title}`
+            );
             return (
               <div
                 key={service.id}
