@@ -35,7 +35,7 @@ export default function CategoryClient({ category, items }: Props) {
           </div>
         </div>
 
-        <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((service) => {
             const en = serviceEnText[service.slug];
             const title = locale === "en" && en ? en.title : service.title;

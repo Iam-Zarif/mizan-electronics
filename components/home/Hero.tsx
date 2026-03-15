@@ -5,28 +5,39 @@ import Image from "next/image";
 import { useLanguage } from "@/lib/i18n";
 import Link from "next/link";
 
-const slides = [
-  { id: 1, image: "https://i.ibb.co.com/Qj6Pzjxb/Mizan-Electronics.png" },
-  {
-    id: 2,
-    image:
-      "https://i.ibb.co.com/21ZsvK7z/Screenshot-2026-03-15-at-12-34-45-AM.png",
-  },
+const slidesDesktop = [
+  { id: 1, image: "https://i.ibb.co.com/JFHNJh98/mizan-ac-servicing-1.png" },
+  { id: 2, image: "https://i.ibb.co.com/TjcD0Zb/mizan-ac-servicing-2.png" },
+];
+
+const slidesMobile = [
+  { id: 1, image: "https://i.ibb.co.com/83z1smt/mizan-ac-servicing-responsive-mobile-1.png" },
+  { id: 2, image: "https://i.ibb.co.com/xqHvG4Gn/mizan-ac-servicing-responsive-mobile.png" },
 ];
 
 export default function Hero() {
   const { locale } = useLanguage();
   const [index, setIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 640);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const slides = isMobile ? slidesMobile : slidesDesktop;
 
   useEffect(() => {
     const timer = setInterval(() => setIndex((p) => (p + 1) % slides.length), 4200);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   return (
     <section className="relative overflow-hidden pt-16 lg:pt-22">
       <div className="w-full max-w-7xl mx-auto px-0">
-        <div className="relative w-full overflow-hidden rounded-2xl aspect-[19/9] sm:aspect-[18/8] md:aspect-[18/7] lg:aspect-[16/7]">
+        <div className="relative w-full overflow-hidden rounded-none sm:rounded-2xl aspect-19/17 sm:aspect-18/8 md:aspect-18/7 lg:aspect-16/7">
           {slides.map((slide, i) => (
             <div
               key={slide.id}

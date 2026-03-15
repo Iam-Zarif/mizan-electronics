@@ -42,16 +42,16 @@ export default function PackagesSection() {
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 
   return (
-    <section className="py-14">
+    <section className="py-8 lg:py-14">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-[#2160ba]">কম্বো প্যাকেজ</p>
-            <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white">বেশি সেভিংস, একবারেই সমাধান</h2>
+            <p className="text-xl lg:text-3xl font-semibold text-[#7b3dc8]">কম্বো প্যাকেজ</p>
+            <h2 className="text-base lg:text-lg font-medium text-neutral-700 dark:text-neutral-300">বেশি সেভিংস, একবারেই সমাধান</h2>
           </div>
         </div>
 
-        <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {packages.map((pack) => (
             <motion.div
               key={pack.title}

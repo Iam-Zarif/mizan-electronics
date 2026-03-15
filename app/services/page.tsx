@@ -49,7 +49,7 @@ export default function ServicesPage() {
       <div className="mx-auto max-w-7xl px-4 space-y-10">
         <div className="space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white">সব সার্ভিস</h1>
+            <h1 className="text-xl lg:text-3xl font-semibold text-neutral-900 dark:text-white">সব সার্ভিস</h1>
             <div className="flex flex-wrap gap-2 sm:justify-end">
               <div className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/80 px-3 py-2 shadow dark:bg-neutral-900/70">
                 <Search size={16} className="text-neutral-500" />
@@ -85,7 +85,7 @@ export default function ServicesPage() {
             </div>
           </div>
 
-        <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((service) => (
               <ServiceCard key={service.id} service={service} locale={locale} />
             ))}

@@ -13,13 +13,14 @@ export default function TopServicesSection() {
   const top = serviceItems.slice(0, 8);
   const [perView, setPerView] = useState(4);
   const [index, setIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const { t, locale } = useLanguage();
   const whatsappBase = "https://wa.me/8801949397234?text=";
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 
   useEffect(() => {
     const update = () => {
-      if (window.innerWidth < 640) setPerView(1.5);
+      if (window.innerWidth < 640) setPerView(1);
       else if (window.innerWidth < 1024) setPerView(3);
       else setPerView(4);
     };
@@ -31,20 +32,20 @@ export default function TopServicesSection() {
   const maxIndex = useMemo(() => Math.max(0, Math.ceil(top.length - Math.ceil(perView))), [top.length, perView]);
 
   useEffect(() => {
+    if (isDragging) return;
     const t = setInterval(() => setIndex((p) => (p >= maxIndex ? 0 : p + 1)), 5200);
     return () => clearInterval(t);
-  }, [maxIndex]);
+  }, [maxIndex, isDragging]);
 
   const translate = `translateX(-${(index * 100) / perView}%)`;
   const cardBasis = `${100 / perView}%`;
 
   return (
-    <section className="py-14" id="top-services">
+    <section className="py-8 lg:py-14" id="top-services">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-[#2160ba]">{t("sections.topTitle")}</p>
-            <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white">{t("sections.topTitle")}</h2>
+            <p className="text-xl lg:text-3xl font-semibold text-[#7b3dc8]">{t("sections.topTitle")}</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -60,14 +61,29 @@ export default function TopServicesSection() {
             >
               <ChevronRight size={18} />
             </button>
-            <Link href="#all-services" className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-[#2160ba] hover:underline">
+            <Link
+              href="#all-services"
+              className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-[#2160ba] px-3 py-1.5 rounded-full border border-[#2160ba]/30 hover:border-[#2160ba] hover:bg-[#2160ba]/5"
+            >
               {t("sections.allShowMore")}
             </Link>
           </div>
         </div>
 
         <div className="relative overflow-hidden ">
-          <div className="flex transition-transform duration-500" style={{ transform: translate }}>
+          <motion.div
+            className="flex transition-transform duration-500 gap-2"
+            style={{ transform: translate }}
+            drag="x"
+            dragConstraints={{ left: -300, right: 300 }}
+            dragElastic={0.2}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={(_, info) => {
+              setIsDragging(false);
+              if (info.offset.x < -50) setIndex((p) => (p >= maxIndex ? 0 : p + 1));
+              if (info.offset.x > 50) setIndex((p) => (p <= 0 ? maxIndex : p - 1));
+            }}
+          >
             {top.map((service) => {
               const en = serviceEnText[service.slug];
               const title = locale === "en" && en ? en.title : service.title;
@@ -117,7 +133,7 @@ export default function TopServicesSection() {
               </div>
             );
             })}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

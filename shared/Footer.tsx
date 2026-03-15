@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { FaFacebookF, FaYoutube, FaWhatsapp } from "react-icons/fa";
-import logo from "@/public/mizan.png";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
 
@@ -17,7 +16,7 @@ const Footer = () => {
   return (
     <footer className="relative pt-8 lg:pt-14 overflow-hidden w-full">
       <motion.div
-        className="absolute -z-10 right-[-25%] bottom-[-30%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/25 blur-[180px]"
+        className="absolute -z-10 right-[-25%] bottom-[-30%] h-130 w-130 rounded-full bg-[#e18b94]/25 blur-[180px]"
         animate={{ x: [0, -140, 0], y: [0, 100, 0] }}
         transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
       />
@@ -40,14 +39,14 @@ const Footer = () => {
             <div className="flex flex-col items-center md:items-start">
               <div className="flex items-center gap-4">
                 <Image
-                  src={logo}
-                  alt="Mizan Electronics"
+                  src="https://i.ibb.co.com/n8s5NKXq/Mizan-AC-servicing.png"
+                  alt="Mizan AC Servicing"
                   width={52}
                   height={52}
                   className="h-auto w-auto"
                 />
                 <span className="text-2xl font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                  MIZAN ELECTRONICS
+                  Mizan AC Servicing
                 </span>
               </div>
 
@@ -94,7 +93,7 @@ const Footer = () => {
           </div>
 
           <div className="mt-14 border-t border-black/5 dark:border-white/10 py-3     text-center text-xs tracking-wide text-neutral-500">
-            © {new Date().getFullYear()} Mizan Electronics. {t("footer.rights")}
+            © {new Date().getFullYear()} Mizan AC Servicing. {t("footer.rights")}
           </div>
         </motion.div>
       </div>

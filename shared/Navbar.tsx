@@ -11,7 +11,6 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { HiOutlineHome, HiHome } from "react-icons/hi";
 import { MdHomeRepairService, MdOutlineHomeRepairService } from "react-icons/md";
 import logo from "@/public/mizan.png";
-import MobileBottomNav from "./MobileBottomNav";
 import { useLanguage } from "@/lib/i18n";
 
 const serviceLinks = [
@@ -49,12 +48,12 @@ const Navbar = () => {
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center justify-between rounded-full  border border-neutral-100 dark:border-white/10 lg:py-2.5 pt-3 pb-2 bg-white/60 px-4 backdrop-blur-xl shadow-lg dark:bg-black/50"
           >
-            <div className="flex items-center gap-2">
-              <Image src={logo} alt="Mizan Electronics" width={48} height={48} className="h-auto w-auto" />
+            <Link href="/" className="flex items-center gap-2 cursor-pointer">
+              <Image src={logo} alt="Mizan AC Servicing" width={48} height={48} className="h-auto w-auto" />
               <span className="hidden sm:block font-extrabold tracking-wide bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] bg-clip-text text-transparent">
-                MIZAN ELECTRONICS
+                Mizan AC Servicing
               </span>
-            </div>
+            </Link>
 
             <nav className="hidden md:flex items-center gap-6 px-5 text-sm">
               <NavItem href="/" label={t("nav.home")} active={pathname === "/"} icon={pathname === "/" ? <HiHome /> : <HiOutlineHome />} />
@@ -152,7 +151,9 @@ const Navbar = () => {
             </div>
             <button
               onClick={() => setOpenMobile(true)}
-              className="md:hidden inline-flex items-center justify-center rounded-xl p-2 text-gray-700 hover:text-black dark:text-gray-200"
+              className={`md:hidden inline-flex items-center justify-center rounded-xl p-2 text-gray-700 hover:text-black dark:text-gray-200 ${
+                pathname === "/" ? "bg-[#2160ba]/10" : ""
+              }`}
               aria-label="Open menu"
             >
               <HiMenu size={22} />
@@ -161,7 +162,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      <MobileBottomNav />
 
       {openMobile && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden">
@@ -173,7 +173,14 @@ const Navbar = () => {
               </button>
             </div>
             <div className="space-y-2 text-sm">
-              <Link href="/" onClick={() => setOpenMobile(false)} className="block rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+              <Link
+                href="/"
+                onClick={() => setOpenMobile(false)}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
+                  pathname === "/" ? "border border-[#2160ba]/30 bg-[#2160ba]/5 font-semibold" : ""
+                }`}
+              >
+                {pathname === "/" ? <HiHome className="text-[18px]" /> : <HiOutlineHome className="text-[18px]" />}
                 {t("nav.home")}
               </Link>
               {serviceLinks.map((item) => (
@@ -181,7 +188,9 @@ const Navbar = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpenMobile(false)}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
+                    pathname.startsWith(item.href) ? "border border-[#2160ba]/30 bg-[#2160ba]/5 font-semibold" : ""
+                  }`}
                 >
                   <item.icon className="text-[18px]" />
                   {locale === "en" ? item.en : item.bn}

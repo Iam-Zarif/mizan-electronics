@@ -12,15 +12,14 @@ export default function AllServicesSection() {
   const whatsappBase = "https://wa.me/8801949397234?text=";
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
   return (
-    <section className="py-14" id="all-services">
+    <section className="py-8 lg:py-14" id="all-services">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-6">
-          <p className="text-sm font-semibold text-[#2160ba]">{t("sections.allTitle")}</p>
-          <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white">{t("sections.allTitle")}</h2>
+          <p className="text-xl lg:text-3xl font-semibold text-[#7b3dc8]">{t("sections.allTitle")}</p>
           <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{t("sections.allSubtitle")}</p>
         </div>
 
-        <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {serviceItems.slice(0, 8).map((service) => {
             const en = serviceEnText[service.slug];
             const title = locale === "en" && en ? en.title : service.title;

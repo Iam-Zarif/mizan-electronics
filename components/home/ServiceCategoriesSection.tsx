@@ -19,16 +19,15 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
 export default function ServiceCategoriesSection() {
   const { t, locale } = useLanguage();
   return (
-    <section className="relative py-14" id="categories">
+    <section className="relative py-8 lg:py-14" id="categories">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mb-10 flex items-center justify-between gap-4">
+        <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-[#7b3dc8]">{t("sections.categoriesTitle")}</p>
-            <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white">{t("sections.categoriesSubtitle")}</h2>
+            <p className="text-xl lg:text-3xl font-semibold text-[#7b3dc8]">{t("sections.categoriesTitle")}</p>
           </div>
         </div>
 
-        <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {serviceCategories.map((cat) => {
             const Icon = iconMap[cat.id] ?? Wrench;
             return (

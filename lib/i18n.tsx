@@ -35,8 +35,8 @@ const translations: Record<Locale, TranslationDict> = {
       stats_rating: "গড় রেটিং",
     },
     sections: {
-      categoriesTitle: "এসি ক্যাটাগরি",
-      categoriesSubtitle: "ক্যাটাগরি অনুযায়ী পছন্দ করুন",
+      categoriesTitle: "এসি সার্ভিসিং ক্যাটাগরি",
+      categoriesSubtitle: "ক্যাটাগরি অনুযায়ী সার্ভিস বেছে নিন",
       topTitle: "আমাদের জনপ্রিয় এসি সার্ভিসগুলো",
       allTitle: "সব সার্ভিস এক ক্লিকে বুক করুন",
       allSubtitle: "এলাকা ভেদে দাম কম-বেশি হতে পারে।",
@@ -71,8 +71,8 @@ const translations: Record<Locale, TranslationDict> = {
       stats_rating: "Avg rating",
     },
     sections: {
-      categoriesTitle: "AC Categories",
-      categoriesSubtitle: "Pick the right service for your need",
+      categoriesTitle: "AC Servicing Categories",
+      categoriesSubtitle: "Pick the right service category for your need",
       topTitle: "Popular AC Services",
       allTitle: "Book any service in one click",
       allSubtitle: "Prices may vary by area.",
