@@ -3,13 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GoArrowUpRight } from "react-icons/go";
 import { serviceItems } from "@/lib/services";
+import type { Metadata } from "next";
 
 type Props = { params: { slug: string } };
 
 export const dynamic = "force-static";
 export const revalidate = false;
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = serviceItems.find((s) => s.slug === params.slug);
   if (!service) return {};
   const url = `https://mizanelectronics.vercel.app/services/${service.slug}`;
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: Props) {
     },
     alternates: { canonical: url },
   };
+  
 }
 
 export function generateStaticParams() {
@@ -36,8 +38,8 @@ export default function ServiceDetail({ params }: Props) {
   if (!service) return notFound();
 
   const link = `https://mizanelectronics.vercel.app/services/${service.slug}`;
-  const whatsappText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
-  const messengerText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
+  const whatsappText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
+  const messengerText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
   const whatsappBase = "https://wa.me/8801949397234?text=";
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
 

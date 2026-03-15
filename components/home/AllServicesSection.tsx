@@ -26,8 +26,8 @@ export default function AllServicesSection() {
             const title = locale === "en" && en ? en.title : service.title;
             const summary = locale === "en" && en ? en.summary : service.summary;
             const serviceLink = `https://mizanelectronics.vercel.app/services/${service.slug}`;
-            const waText = encodeURIComponent(`${serviceLink}\nI want to book ${title}`);
-            const msText = encodeURIComponent(`${serviceLink}\nI want to book ${title}`);
+            const waText = encodeURIComponent(`${serviceLink}\nআমি বুক করতে চাই :${title}`);
+            const msText = encodeURIComponent(`${serviceLink}\nআমি বুক করতে চাই :${title}`);
             return (
               <motion.div
                 key={service.id}

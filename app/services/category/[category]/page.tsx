@@ -2,13 +2,34 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { GoArrowUpRight } from "react-icons/go";
-import { serviceCategories, serviceItems } from "@/lib/services";
+import { categoryEnLabels, serviceCategories, serviceItems } from "@/lib/services";
+import type { Metadata } from "next";
+
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return serviceCategories.map((cat) => ({ category: cat.id }));
 }
 
-export const dynamicParams = true;
+export async function generateMetadata(
+  { params }: { params: Promise<{ category: string }> }
+): Promise<Metadata> {
+  const { category } = await params;
+  const cat = serviceCategories.find((c) => c.id === category);
+  if (!cat) return {};
+  const url = `https://mizanelectronics.vercel.app/services/category/${category}`;
+  return {
+    title: cat.name,
+    description: cat.description,
+    openGraph: {
+      title: cat.name,
+      description: cat.description,
+      url,
+      images: [{ url: cat.image, width: 1200, height: 630, alt: cat.name }],
+    },
+    alternates: { canonical: url },
+  };
+}
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
   const { category: categoryId } = await params;
@@ -26,10 +47,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <div className="mb-10 grid gap-6 lg:grid-cols-[1.1fr,0.9fr] items-center">
           <div className="space-y-3">
             <p className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] px-4 py-1.5 text-sm font-semibold text-white shadow">
-              {category.name}
+              {categoryEnLabels[category.id] ?? category.name}
             </p>
             <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white">
-              {category.name}
+              {categoryEnLabels[category.id] ?? category.name}
             </h1>
             <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-300">{category.description}</p>
           </div>
@@ -41,9 +62,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
         <div className="grid gap-2.5 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((service) => {
-            const link = `https://mizanelectronics.vercel.app/services/${service.slug}`;
-            const waText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
-            const msText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
+            const link = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
+            const waText = encodeURIComponent(`${link}\nআমি ${service.title} বুক করতে চাই`);
+            const msText = encodeURIComponent(`${link}\nআমি ${service.title} বুক করতে চাই`);
             return (
               <div
                 key={service.id}
@@ -70,7 +91,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                       <GoArrowUpRight className="text-base" />
                     </Link>
                     <Link
-                      href={`${whatsappBase}${encodeURIComponent(`আমি ${service.title} বুক করতে চাই - লিংক: https://mizan-electronics.vercel.app/services/${service.slug}`)}`}
+                      href={`${whatsappBase}${waText}`}
                       target="_blank"
                       className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
                     >

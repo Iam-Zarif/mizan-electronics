@@ -96,8 +96,8 @@ export default function ServicesPage() {
 
 function ServiceCard({ service }: { service: (typeof serviceItems)[number] }) {
   const link = `https://mizanelectronics.vercel.app/services/${service.slug}`;
-  const waText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
-  const msText = encodeURIComponent(`${link}\nI want to book ${service.title}`);
+  const waText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
+  const msText = encodeURIComponent(`${link}\nআমি বুক করতে চাই :${service.title}`);
 
   return (
     <motion.div
