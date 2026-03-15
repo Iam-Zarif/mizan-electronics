@@ -1,1 +1,1 @@
-https://mizanelectronics.vercel.app
+https://mizan-ac-servicing.vercel.app

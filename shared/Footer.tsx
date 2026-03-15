@@ -35,11 +35,11 @@ const Footer = () => {
             px-8 pt-14
           "
         >
-          <div className="grid gap-12 md:grid-cols-3 text-center md:text-left">
+          <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between text-center md:text-left">
             <div className="flex flex-col items-center md:items-start">
               <div className="flex items-center gap-4">
                 <Image
-                  src="https://i.ibb.co.com/n8s5NKXq/Mizan-AC-servicing.png"
+                  src="/mizan.png"
                   alt="Mizan AC Servicing"
                   width={52}
                   height={52}
@@ -51,7 +51,9 @@ const Footer = () => {
               </div>
 
               <p className="mt-5 max-w-sm text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                {t("footer.tagline")}
+                {locale === "en"
+                  ? "All-in-one AC care—install, deep clean, gas, repair, shifting & spares across Dhaka."
+                  : "সব এসি সেবার এক ঠিকানা—ইনস্টল, ডিপ ক্লিন, গ্যাস, রিপেয়ার, শিফটিং ও স্পেয়ার।"}
               </p>
             </div>
 
@@ -63,6 +65,20 @@ const Footer = () => {
                 <FooterLink href="/" label={t("nav.home")} />
                 <FooterLink href="/services" label={t("nav.services")} />
                 <FooterLink href="/auth/login" label={t("nav.login")} />
+              </ul>
+            </div>
+
+            <div className="flex flex-col items-center md:items-start">
+              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-500">
+                {locale === "en" ? "Service Categories" : "সার্ভিস ক্যাটাগরি"}
+              </p>
+              <ul className="space-y-3 text-sm font-medium">
+                <FooterLink href="/services/category/cleaning-maintenance" label="এসি পরিষ্কার ও রক্ষণাবেক্ষণ" />
+                <FooterLink href="/services/category/installation" label="এসি ইনস্টলেশন ও রি-ইনস্টলেশন" />
+                <FooterLink href="/services/category/repair" label="এসি মেরামত" />
+                <FooterLink href="/services/category/gas" label="এসি গ্যাস ও কুলিং সিস্টেম" />
+                <FooterLink href="/services/category/shifting" label="এসি শিফটিং ও আনইনস্টল" />
+                <FooterLink href="/services/category/spares" label="এসি কম্প্রেসর ও স্পেয়ার পার্টস" />
               </ul>
             </div>
 

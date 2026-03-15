@@ -100,7 +100,7 @@ function ServiceCard({ service, locale }: { service: (typeof serviceItems)[numbe
   const en = serviceEnText[service.slug];
   const title = locale === "en" && en ? en.title : service.title;
   const summary = locale === "en" && en ? en.summary : service.summary;
-  const link = `https://mizanelectronics.vercel.app/services/category/${service.categoryId}`;
+  const link = `https://mizan-ac-servicing.vercel.app/services/category/${service.categoryId}`;
   const categoryName = serviceCategories.find((c) => c.id === service.categoryId)?.name ?? "";
   const waText = encodeURIComponent(`${link}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${title}`);
   const msText = encodeURIComponent(`${link}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${title}`);

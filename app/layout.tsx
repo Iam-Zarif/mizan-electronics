@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mizanelectronics.vercel.app"),
+  metadataBase: new URL("https://mizan-ac-servicing.vercel.app"),
   title: {
     default: "Mizan AC Servicing",
     template: "%s | Mizan AC Servicing",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Mizan AC Servicing",
     description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
-    url: "https://mizanelectronics.vercel.app",
+    url: "https://mizan-ac-servicing.vercel.app",
     siteName: "Mizan AC Servicing",
     locale: "bn_BD",
     type: "website",

@@ -15,7 +15,7 @@ export async function generateMetadata(
   const { category } = await params;
   const cat = serviceCategories.find((c) => c.id === category);
   if (!cat) return {};
-  const url = `https://mizanelectronics.vercel.app/services/category/${category}`;
+  const url = `https://mizan-ac-servicing.vercel.app/services/category/${category}`;
   return {
     title: cat.name,
     description: cat.description,

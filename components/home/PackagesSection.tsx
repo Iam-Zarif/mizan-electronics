@@ -76,7 +76,7 @@ export default function PackagesSection() {
 
               <div className="mt-auto flex flex-col sm:flex-row gap-2">
                 <Link
-                  href={`${messengerBase}${encodeURIComponent(`https://mizanelectronics.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
+                  href={`${messengerBase}${encodeURIComponent(`https://mizan-ac-servicing.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
                   target="_blank"
                   className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
                 >
@@ -84,7 +84,7 @@ export default function PackagesSection() {
                   <GoArrowUpRight className="text-base" />
                 </Link>
                 <Link
-                  href={`${whatsappBase}${encodeURIComponent(`https://mizanelectronics.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
+                  href={`${whatsappBase}${encodeURIComponent(`https://mizan-ac-servicing.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
                   target="_blank"
                   className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
                 >

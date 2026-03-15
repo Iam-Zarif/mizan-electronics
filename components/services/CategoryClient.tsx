@@ -16,7 +16,7 @@ export default function CategoryClient({ category, items }: Props) {
   const whatsappBase = "https://wa.me/8801949397234?text=";
   const messengerBase = "https://www.facebook.com/messages/t/61583720444800?message=";
   const categoryTitle = locale === "en" ? categoryEnLabels[category.id] ?? category.name : category.name;
-  const categoryLink = `https://mizanelectronics.vercel.app/services/category/${category.id}`;
+  const categoryLink = `https://mizan-ac-servicing.vercel.app/services/category/${category.id}`;
 
   return (
     <section className="relative pt-24 pb-14">
