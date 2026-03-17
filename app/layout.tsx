@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 const socialPreviewImage =
-  "https://res.cloudinary.com/dj5olrziv/image/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_auto/v1773778353/mizan_ac_services_update_pxplj5.png";
+  "https://res.cloudinary.com/dj5olrziv/image/upload/v1773778353/mizan_ac_services_update_pxplj5.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mizan-ac-servicing.vercel.app"),
