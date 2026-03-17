@@ -16,7 +16,7 @@ import {
   type AuthUser,
   type ProfileFormInput,
 } from "@/lib/auth";
-import { firebaseAuth, googleAuthProvider } from "@/lib/firebase";
+import { getFirebaseAuth, getGoogleAuthProvider } from "@/lib/firebase";
 
 type AuthContextType = {
   user: AuthUser | null;
@@ -121,6 +121,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginWithGoogle = async (rememberMe: boolean) => {
     try {
+      const firebaseAuth = getFirebaseAuth();
+      const googleAuthProvider = getGoogleAuthProvider();
+
+      if (!firebaseAuth) {
+        throw new Error("Google login is not configured");
+      }
+
       const credential = await signInWithPopup(firebaseAuth, googleAuthProvider);
       const idToken = await credential.user.getIdToken();
 
