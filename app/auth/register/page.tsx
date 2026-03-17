@@ -44,6 +44,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const redirectTo = searchParams.get("redirect") || "/";
+  const loginHref = `/auth/login?redirect=${encodeURIComponent(redirectTo)}`;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -237,7 +238,7 @@ export default function RegisterPage() {
         <p className="mt-6 text-center text-sm text-neutral-500">
           Already have an account?{" "}
           <Link
-            href="/auth/login"
+            href={loginHref}
             className="font-semibold text-indigo-500 hover:underline"
           >
             Login

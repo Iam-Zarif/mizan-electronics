@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const redirectTo = searchParams.get("redirect") || "/";
+  const registerHref = `/auth/register?redirect=${encodeURIComponent(redirectTo)}`;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -183,7 +184,7 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-sm text-neutral-500">
           Don’t have an account?{" "}
           <Link
-            href="/auth/register"
+            href={registerHref}
             className="font-semibold text-indigo-500 hover:underline"
           >
             Register
