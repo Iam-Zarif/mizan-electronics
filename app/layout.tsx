@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const socialPreviewImage =
+  "https://res.cloudinary.com/dj5olrziv/image/upload/c_fill,w_1200,h_630,q_auto,f_auto/v1773776991/mizan_ac_services_vszl49.png";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://mizan-ac-servicing.vercel.app"),
   title: {
@@ -34,20 +37,18 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://res.cloudinary.com/dj5olrziv/image/upload/v1773776991/mizan_ac_services_vszl49.png",
+        url: socialPreviewImage,
         width: 1200,
         height: 630,
-        alt: "Mizan AC Servicing",
+        alt: "Mizan AC Servicing in Dhaka",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mizan AC Servicing",
+    title: "Mizan AC Servicing | AC Service in Dhaka",
     description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
-    images: [
-      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773776991/mizan_ac_services_vszl49.png",
-    ],
+    images: [socialPreviewImage],
   },
 };
 
