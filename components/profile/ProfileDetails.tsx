@@ -479,7 +479,7 @@ export function ProfileDetails() {
       </motion.div>
 
       {isVerificationModalOpen ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-90 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
             <button
               type="button"
