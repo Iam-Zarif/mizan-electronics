@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://res.cloudinary.com/dj5olrziv/image/upload/v1773776336/mizan_ac_service_banner_auth_vbsccc.png",
+        url: "https://res.cloudinary.com/dj5olrziv/image/upload/v1773776991/mizan_ac_services_vszl49.png",
         width: 1200,
         height: 630,
         alt: "Mizan AC Servicing",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "Mizan AC Servicing",
     description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
     images: [
-      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773776336/mizan_ac_service_banner_auth_vbsccc.png",
+      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773776991/mizan_ac_services_vszl49.png",
     ],
   },
 };
