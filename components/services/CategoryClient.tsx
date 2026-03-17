@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { GoArrowUpRight } from "react-icons/go";
 import { categoryEnLabels, serviceEnText, type ServiceCategory, type ServiceItem } from "@/lib/services";
 import { useLanguage } from "@/lib/i18n";
+import Image from "next/image";
+import ServiceCard from "@/components/services/ServiceCard";
 
 type Props = {
   category: ServiceCategory;
@@ -13,10 +12,7 @@ type Props = {
 
 export default function CategoryClient({ category, items }: Props) {
   const { locale } = useLanguage();
-  const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
   const categoryTitle = locale === "en" ? categoryEnLabels[category.id] ?? category.name : category.name;
-  const categoryLink = `https://mizan-ac-servicing.vercel.app/services/category/${category.id}`;
 
   return (
     <section className="relative pt-24 pb-14">
@@ -40,48 +36,16 @@ export default function CategoryClient({ category, items }: Props) {
             const en = serviceEnText[service.slug];
             const title = locale === "en" && en ? en.title : service.title;
             const summary = locale === "en" && en ? en.summary : service.summary;
-            const waText = encodeURIComponent(
-              `${categoryLink}\nক্যাটাগরি: ${category.name}\nসার্ভিস: ${title}`
-            );
-            const msText = encodeURIComponent(
-              `${categoryLink}\nক্যাটাগরি: ${category.name}\nসার্ভিস: ${title}`
-            );
             return (
-              <div
+              <ServiceCard
                 key={service.id}
-                className="rounded-3xl border border-white/15 bg-white/85 shadow-[0_25px_60px_-40px_rgba(0,0,0,0.35)] backdrop-blur dark:border-white/10 dark:bg-neutral-900/70"
-              >
-                <div className="relative h-48 w-full overflow-hidden rounded-t-3xl">
-                  <Image src={service.images[0]} alt={service.title} fill className="object-cover" />
-                  <span className="absolute left-3 top-3 rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-[#2160ba]">
-                    {service.price}
-                  </span>
-                </div>
-
-                <div className="space-y-3 px-4 py-4">
-                  <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{title}</h4>
-                  <p className="hidden sm:block text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{summary}</p>
-
-                  <div className="flex flex-col gap-2 pt-1">
-                    <Link
-                      href={`${messengerBase}${msText}`}
-                      target="_blank"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
-                    >
-                      মেসেঞ্জার (কুয়েরি)
-                      <GoArrowUpRight className="text-base" />
-                    </Link>
-                    <Link
-                      href={`${whatsappBase}${waText}`}
-                      target="_blank"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
-                    >
-                      বুক করুন
-                      <GoArrowUpRight className="text-base" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                service={service}
+                title={title}
+                summary={summary}
+                categoryName={category.name}
+                imageHeightClass="h-48"
+                className="bg-white/85 backdrop-blur dark:bg-neutral-900/70"
+              />
             );
           })}
         </div>

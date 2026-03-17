@@ -12,6 +12,7 @@ import { HiOutlineHome, HiHome } from "react-icons/hi";
 import { MdHomeRepairService, MdOutlineHomeRepairService } from "react-icons/md";
 import logo from "@/public/mizan.png";
 import { useLanguage } from "@/lib/i18n";
+import { useProvider } from "@/Providers/AuthProviders";
 
 const serviceLinks = [
   { href: "/services", bn: "সব সার্ভিস", en: "All Services", icon: MdOutlineHomeRepairService },
@@ -30,6 +31,9 @@ const Navbar = () => {
   const [openLang, setOpenLang] = useState(false);
   const [openMobile, setOpenMobile] = useState(false);
   const { locale, setLocale, t } = useLanguage();
+  const { user, isAuthLoading } = useProvider();
+  const accountHref = user ? "/profile" : "/auth/login";
+  const accountLabel = user ? t("nav.account") : t("nav.login");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -136,10 +140,10 @@ const Navbar = () => {
 
             <div className="hidden md:flex items-center gap-3">
               <Link
-                href="/auth/login"
+                href={accountHref}
                 className="hidden sm:flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm"
               >
-                {t("nav.login")}
+                {isAuthLoading ? "..." : accountLabel}
               </Link>
 
               <button
@@ -197,11 +201,11 @@ const Navbar = () => {
                 </Link>
               ))}
               <Link
-                href="/auth/login"
+                href={accountHref}
                 onClick={() => setOpenMobile(false)}
                 className="block rounded-lg px-3 py-2 text-center bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] text-white font-semibold hover:opacity-90"
               >
-                {t("nav.login")}
+                {isAuthLoading ? "..." : accountLabel}
               </Link>
               <button
                 onClick={() => {

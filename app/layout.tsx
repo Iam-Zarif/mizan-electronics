@@ -4,7 +4,9 @@ import "./globals.css";
 import Navbar from "@/shared/Navbar";
 import Footer from "@/shared/Footer";
 import FloatingContacts from "@/components/shared/FloatingContacts";
+import FirebaseAnalytics from "@/components/shared/FirebaseAnalytics";
 import { LanguageProvider } from "@/lib/i18n";
+import { AuthProvider } from "@/Providers/AuthProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,12 +60,15 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} bg-neutral-100 dark:bg-neutral-900 antialiased`}
       >
-        <LanguageProvider>
-          <FloatingContacts/>
-          <Navbar/>
-          {children}
-          <Footer/> 
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <FirebaseAnalytics />
+            <FloatingContacts />
+            <Navbar />
+            {children}
+            <Footer />
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,8 +1,8 @@
 "use client";
 
-import { GoArrowUpRight } from "react-icons/go";
-import Link from "next/link";
 import { motion } from "motion/react";
+import ServiceBookingActions from "@/components/services/ServiceBookingActions";
+import { serviceCategories } from "@/lib/services";
 
 const packages = [
   {
@@ -38,9 +38,6 @@ const packages = [
 ];
 
 export default function PackagesSection() {
-  const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
-
   return (
     <section className="py-8 lg:py-14">
       <div className="mx-auto max-w-7xl px-4">
@@ -74,23 +71,16 @@ export default function PackagesSection() {
                 ))}
               </ul>
 
-              <div className="mt-auto flex flex-col sm:flex-row gap-2">
-                <Link
-                  href={`${messengerBase}${encodeURIComponent(`https://mizan-ac-servicing.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
-                  target="_blank"
-                  className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
-                >
-                  মেসেঞ্জার (কুয়েরি)
-                  <GoArrowUpRight className="text-base" />
-                </Link>
-                <Link
-                  href={`${whatsappBase}${encodeURIComponent(`https://mizan-ac-servicing.vercel.app/services/category/${pack.categoryId}\nআমি বুক করতে চাই :${pack.title}`)}`}
-                  target="_blank"
-                  className="inline-flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
-                >
-                  বুক করুন
-                  <GoArrowUpRight className="text-base" />
-                </Link>
+              <div className="mt-auto">
+                <ServiceBookingActions
+                  categoryId={pack.categoryId}
+                  categoryName={
+                    serviceCategories.find((item) => item.id === pack.categoryId)
+                      ?.name ?? pack.title
+                  }
+                  serviceTitle={pack.title}
+                  stacked={false}
+                />
               </div>
             </motion.div>
           ))}

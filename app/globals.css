@@ -122,6 +122,23 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  :is(
+      a[href],
+      button,
+      summary,
+      [role="button"],
+      input[type="button"],
+      input[type="submit"],
+      input[type="reset"],
+      label[for]
+    ) {
+    cursor: pointer;
+  }
+
+  :is(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+  }
 }
 
 

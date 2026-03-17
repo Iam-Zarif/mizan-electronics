@@ -1,15 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
-import { motion } from "motion/react";
-import { GoArrowUpRight } from "react-icons/go";
 import { Search } from "lucide-react";
 import { serviceCategories, serviceItems, serviceEnText } from "@/lib/services";
 import { useLanguage } from "@/lib/i18n";
-
-const whatsappBase = "https://wa.me/8801949397234?text=";
-const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
+import ReusableServiceCard from "@/components/services/ServiceCard";
 
 export default function ServicesPage() {
   const [search, setSearch] = useState("");
@@ -100,59 +95,15 @@ function ServiceCard({ service, locale }: { service: (typeof serviceItems)[numbe
   const en = serviceEnText[service.slug];
   const title = locale === "en" && en ? en.title : service.title;
   const summary = locale === "en" && en ? en.summary : service.summary;
-  const link = `https://mizan-ac-servicing.vercel.app/services/category/${service.categoryId}`;
   const categoryName = serviceCategories.find((c) => c.id === service.categoryId)?.name ?? "";
-  const waText = encodeURIComponent(`${link}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${title}`);
-  const msText = encodeURIComponent(`${link}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${title}`);
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      className="cursor-pointer rounded-3xl border border-white/15 bg-white shadow-[0_25px_60px_-40px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-neutral-900"
-    >
-      <div className="relative h-56 w-full overflow-hidden rounded-t-3xl">
-        <Image src={service.images[0]} alt={service.title} fill className="object-cover" />
-        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-[#2160ba] shadow">
-          {service.price}
-        </span>
-      </div>
-
-      <div className="space-y-3 px-4 py-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{title}</h4>
-            <p className="hidden sm:block mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{summary}</p>
-          </div>
-        </div>
-
-        <div className="space-y-1.5 text-sm text-neutral-600 dark:text-neutral-300">
-          {service.process.slice(0, 3).map((step, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#ec4899]" />
-              {step}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-2 pt-2">
-          <a
-            href={`${messengerBase}${msText}`}
-            target="_blank"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
-          >
-            মেসেঞ্জার (কুয়েরি)
-            <GoArrowUpRight className="text-base" />
-          </a>
-          <a
-            href={`${whatsappBase}${waText}`}
-            target="_blank"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
-          >
-            বুক করুন
-            <GoArrowUpRight className="text-base" />
-          </a>
-        </div>
-      </div>
-    </motion.div>
+    <ReusableServiceCard
+      service={service}
+      title={title}
+      summary={summary}
+      categoryName={categoryName}
+      showProcess
+    />
   );
 }

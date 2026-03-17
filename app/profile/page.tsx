@@ -1,73 +1,127 @@
 "use client";
 
-import { useState } from "react";
-import { User, Package, Heart, ShoppingCart } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { X } from "lucide-react";
 import { ProfileDetails } from "@/components/profile/ProfileDetails";
-import ProfileOrders from "@/components/profile/ProfileOrders";
-import ProfileWishlist from "@/components/profile/ProfileWishlist";
-import ProfileCart from "@/components/profile/ProfileCart";
-
-const TABS = {
-  Profile: {
-    icon: User,
-    component: ProfileDetails,
-  },
-  Orders: {
-    icon: Package,
-    component: ProfileOrders,
-  },
-  Wishlist: {
-    icon: Heart,
-    component: ProfileWishlist,
-  },
-  Cart: {
-    icon: ShoppingCart,
-    component: ProfileCart,
-  },
-} as const;
-
-type TabType = keyof typeof TABS;
+import { ProfileAddressBook } from "@/components/profile/ProfileAddressBook";
+import { useProvider } from "@/Providers/AuthProviders";
+import { useLanguage } from "@/lib/i18n";
 
 export default function ProfilePage() {
-  const [tab, setTab] = useState<TabType>("Profile");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, isAuthLoading } = useProvider();
+  const { t } = useLanguage();
+  const hasShownBookingRequirement = useRef(false);
+  const [showPhoneRequiredModal, setShowPhoneRequiredModal] = useState(false);
+  const [showVerificationRequiredModal, setShowVerificationRequiredModal] =
+    useState(false);
 
-  const ActiveComponent = TABS[tab].component;
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      router.replace("/auth/login?redirect=/profile");
+    }
+  }, [isAuthLoading, router, user]);
+
+  useEffect(() => {
+    const required = searchParams.get("required");
+    if (
+      isAuthLoading ||
+      !user ||
+      (required !== "phone" && required !== "verification") ||
+      hasShownBookingRequirement.current
+    ) {
+      return;
+    }
+
+    hasShownBookingRequirement.current = true;
+    if (required === "phone") {
+      setShowPhoneRequiredModal(true);
+    } else {
+      setShowVerificationRequiredModal(true);
+    }
+    router.replace("/profile");
+  }, [isAuthLoading, router, searchParams, t, user]);
 
   return (
-    <section className="pt-25 pb-24">
-      <div className="mx-auto max-w-7xl px-4">
-        <h1 className="mb-6 text-3xl font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-          My Account
-        </h1>
+    <>
+      <section className="pt-24 pb-20 lg:pt-25 lg:pb-24">
+        <div className="mx-auto max-w-7xl px-4">
+          <h1 className="mb-4 text-[1.7rem] font-extrabold tracking-wide text-transparent bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text lg:mb-6 lg:text-3xl">
+            {t("profile.title")}
+          </h1>
 
-        <div className="mb-6 flex flex-wrap gap-4">
-          {Object.entries(TABS).map(([key, value]) => {
-            const Icon = value.icon;
-            const isActive = tab === key;
-
-            return (
-              <button
-                key={key}
-                onClick={() => setTab(key as TabType)}
-                className={`flex items-center gap-2 cursor-pointer rounded-full px-6 py-2 text-sm font-semibold transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-indigo-600 text-white shadow-md scale-105"
-                      : "bg-white text-neutral-700 hover:bg-neutral-100"
-                  }
-                `}
-              >
-                <Icon size={16} />
-                {key}
-              </button>
-            );
-          })}
+          <div className="mt-4">
+            <ProfileDetails />
+            <ProfileAddressBook />
+          </div>
         </div>
+      </section>
 
-        <div className="mt-4">
-          <ActiveComponent />
+      {showPhoneRequiredModal ? (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
+            <button
+              type="button"
+              onClick={() => setShowPhoneRequiredModal(false)}
+              className="absolute right-4 top-4 rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-3">
+              <p className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {t("profile.phone")}
+              </p>
+              <p className="text-sm leading-6 text-neutral-600 dark:text-neutral-300">
+                {t("profile.phoneRequiredForBooking")}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowPhoneRequiredModal(false)}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-3 text-sm font-semibold text-white shadow"
+            >
+              {t("profile.editProfile")}
+            </button>
+          </div>
         </div>
-      </div>
-    </section>
+      ) : null}
+
+      {showVerificationRequiredModal ? (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
+            <button
+              type="button"
+              onClick={() => setShowVerificationRequiredModal(false)}
+              className="absolute right-4 top-4 rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-3">
+              <p className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {t("profile.verifyNow")}
+              </p>
+              <p className="text-sm leading-6 text-neutral-600 dark:text-neutral-300">
+                {t("profile.verificationRequiredForBooking")}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowVerificationRequiredModal(false)}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-3 text-sm font-semibold text-white shadow"
+            >
+              {t("profile.verifyNow")}
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

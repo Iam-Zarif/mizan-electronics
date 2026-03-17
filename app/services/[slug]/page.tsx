@@ -1,9 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GoArrowUpRight } from "react-icons/go";
-import { serviceItems, serviceCategories, categoryEnLabels, serviceEnText } from "@/lib/services";
+import { serviceItems, serviceCategories, serviceEnText } from "@/lib/services";
 import type { Metadata } from "next";
+import ServiceBookingActions from "@/components/services/ServiceBookingActions";
 
 type Props = { params: { slug: string } };
 
@@ -41,15 +40,6 @@ export default function ServiceDetail({ params }: Props) {
   const en = serviceEnText[service.slug];
   const title = en ? en.title : service.title;
   const summary = en ? en.summary : service.summary;
-  const categoryLink = `https://mizan-ac-servicing.vercel.app/services/category/${service.categoryId}`;
-  const whatsappText = encodeURIComponent(
-    `${categoryLink}\nক্যাটাগরি: ${category ? category.name : ""}\nসার্ভিস: ${service.title}`
-  );
-  const messengerText = encodeURIComponent(
-    `${categoryLink}\nক্যাটাগরি: ${category ? category.name : ""}\nসার্ভিস: ${service.title}`
-  );
-  const whatsappBase = "https://wa.me/8801949397234?text=";
-  const messengerBase = "https://m.me/mizanACservicing?ref=booking&message=";
 
   return (
     <section className="relative pt-24 pb-14">
@@ -62,22 +52,16 @@ export default function ServiceDetail({ params }: Props) {
           <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-300">{summary}</p>
           <div className="flex flex-wrap gap-3">
             <span className="rounded-full bg-[#ecaa81]/20 px-3 py-1 text-xs font-semibold text-[#ecaa81]">{service.price}</span>
-            <Link
-              href={`${whatsappBase}${whatsappText}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-xs font-semibold text-white shadow cursor-pointer"
-            >
-              বুক করুন
-              <GoArrowUpRight className="text-base" />
-            </Link>
-            <Link
-              href={`${messengerBase}${messengerText}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-full border border-[#6366f1]/40 px-3 py-2 text-xs font-semibold text-[#6366f1] cursor-pointer"
-            >
-              মেসেঞ্জার (কুয়েরি)
-              <GoArrowUpRight className="text-base" />
-            </Link>
+            {category ? (
+              <div className="w-full max-w-sm">
+                <ServiceBookingActions
+                  categoryId={service.categoryId}
+                  categoryName={category.name}
+                  serviceTitle={title}
+                  stacked={false}
+                />
+              </div>
+            ) : null}
           </div>
         </header>
 

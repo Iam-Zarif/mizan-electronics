@@ -22,7 +22,7 @@ export default function Loading() {
           <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white dark:bg-black shadow-xl">
             <Image
               src={logo}
-              alt="Mizan Electronics"
+              alt="Mizan AC Servicing"
               width={48}
               height={48}
               priority
@@ -37,7 +37,7 @@ export default function Loading() {
           transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
           className="text-sm font-semibold tracking-widest bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
         >
-          MIZAN ELECTRONICS
+          MIZAN AC SERVICING
         </motion.div>
       </div>
     </div>
