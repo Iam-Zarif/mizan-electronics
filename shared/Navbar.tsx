@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { Languages, Sun, Moon, ChevronDown, UserRound, Wrench, Plug, Snowflake, Truck, Cog, Settings } from "lucide-react";
+import { Languages, Sun, Moon, ChevronDown, UserRound, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard } from "lucide-react";
 import { GoArrowUpRight } from "react-icons/go";
 import { HiMenu, HiX } from "react-icons/hi";
 import { HiOutlineHome, HiHome } from "react-icons/hi";
@@ -13,6 +13,8 @@ import { MdHomeRepairService, MdOutlineHomeRepairService } from "react-icons/md"
 import logo from "@/public/mizan.png";
 import { useLanguage } from "@/lib/i18n";
 import { useProvider } from "@/Providers/AuthProviders";
+import { isAdminUser } from "@/lib/auth";
+import { NotificationDropdown } from "@/components/shared/NotificationDropdown";
 
 const serviceLinks = [
   { href: "/services", bn: "সব সার্ভিস", en: "All Services", icon: MdOutlineHomeRepairService },
@@ -34,6 +36,8 @@ const Navbar = () => {
   const { user, isAuthLoading } = useProvider();
   const accountHref = user ? "/profile" : "/auth/login";
   const accountLabel = user ? t("nav.account") : t("nav.login");
+  const showDashboard = isAdminUser(user);
+  const showUserNotifications = Boolean(user) && !showDashboard;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -139,12 +143,24 @@ const Navbar = () => {
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
-              <Link
-                href={accountHref}
-                className="hidden sm:flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-              >
-                {isAuthLoading ? "..." : accountLabel}
-              </Link>
+              {showUserNotifications ? <NotificationDropdown /> : null}
+              {showDashboard ? (
+                <Link
+                  href="/dashboard"
+                  className="hidden sm:flex items-center justify-center gap-2 rounded-full border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50"
+                >
+                  <LayoutDashboard size={16} />
+                  {t("nav.dashboard")}
+                </Link>
+              ) : null}
+              {!showDashboard ? (
+                <Link
+                  href={accountHref}
+                  className="hidden sm:flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm"
+                >
+                  {isAuthLoading ? "..." : accountLabel}
+                </Link>
+              ) : null}
 
               <button
                 onClick={() => setDark(!dark)}
@@ -200,13 +216,37 @@ const Navbar = () => {
                   {locale === "en" ? item.en : item.bn}
                 </Link>
               ))}
-              <Link
-                href={accountHref}
-                onClick={() => setOpenMobile(false)}
-                className="block rounded-lg px-3 py-2 text-center bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] text-white font-semibold hover:opacity-90"
-              >
-                {isAuthLoading ? "..." : accountLabel}
-              </Link>
+              {!showDashboard ? (
+                <Link
+                  href={accountHref}
+                  onClick={() => setOpenMobile(false)}
+                  className="block rounded-lg px-3 py-2 text-center bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] text-white font-semibold hover:opacity-90"
+                >
+                  {isAuthLoading ? "..." : accountLabel}
+                </Link>
+              ) : null}
+              {showUserNotifications ? (
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-3 dark:border-neutral-800 dark:bg-neutral-800/70">
+                  <p className="mb-2 text-sm font-semibold text-neutral-900 dark:text-white">
+                    {t("nav.notifications")}
+                  </p>
+                  <p className="text-xs leading-5 text-neutral-500 dark:text-neutral-300">
+                    {locale === "en"
+                      ? "Service and invoice alerts will appear here."
+                      : "সার্ভিস ও ইনভয়েস সম্পর্কিত অ্যালার্ট এখানে দেখা যাবে।"}
+                  </p>
+                </div>
+              ) : null}
+              {showDashboard ? (
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpenMobile(false)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  <LayoutDashboard className="text-[18px]" />
+                  {t("nav.dashboard")}
+                </Link>
+              ) : null}
               <button
                 onClick={() => {
                   setDark(!dark);

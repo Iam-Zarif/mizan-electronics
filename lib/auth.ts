@@ -44,6 +44,16 @@ export type ProfileFormInput = {
   phone: string;
 };
 
+export const ADMIN_EMAIL = "mizan.electronics.store@gmail.com";
+
+export const isAdminUser = (
+  user: Pick<AuthUser, "email" | "isVerified"> | null | undefined,
+) =>
+  Boolean(
+    user?.isVerified &&
+      user.email?.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase(),
+  );
+
 export const normalizeUser = (input: Record<string, unknown>): AuthUser => ({
   id: String(input.id ?? input._id ?? ""),
   f_name: String(input.f_name ?? ""),

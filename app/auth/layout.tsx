@@ -1,12 +1,34 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import { useProvider } from "@/Providers/AuthProviders";
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { user, isAuthLoading } = useProvider();
+
+  useEffect(() => {
+    if (!isAuthLoading && user) {
+      router.replace("/");
+    }
+  }, [isAuthLoading, router, user]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="relative min-h-screen w-full overflow-hidden bg-neutral-50 dark:bg-black" />
+    );
+  }
+
+  if (user) {
+    return null;
+  }
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center bg-neutral-50 dark:bg-black">
       <motion.div

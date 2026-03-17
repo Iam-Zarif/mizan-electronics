@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "motion/react";
 import {
+  BadgeCheck,
   Camera,
   Loader2,
   LogOut,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
+import { isAdminUser } from "@/lib/auth";
 
 export function ProfileDetails() {
   const router = useRouter();
@@ -257,6 +259,7 @@ export function ProfileDetails() {
   }
 
   if (!user) return null;
+  const isAdmin = isAdminUser(user);
 
   const remainingVerificationMs = verificationExpiresAt
     ? Math.max(0, verificationExpiresAt - verificationNow)
@@ -295,6 +298,24 @@ export function ProfileDetails() {
                 </div>
               )}
             </div>
+
+            {isAdmin ? (
+              <motion.span
+                animate={{
+                  boxShadow: [
+                    "0 0 0 rgba(99,102,241,0.15)",
+                    "0 0 22px rgba(99,102,241,0.5)",
+                    "0 0 0 rgba(99,102,241,0.15)",
+                  ],
+                  scale: [1, 1.04, 1],
+                }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-1 -left-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-indigo-200 bg-white text-indigo-600"
+                title={t("profile.admin")}
+              >
+                <BadgeCheck size={15} />
+              </motion.span>
+            ) : null}
 
             <label className="absolute -bottom-1 -right-1 inline-flex cursor-pointer items-center justify-center rounded-full bg-indigo-600 p-2 text-white shadow">
               <Camera size={14} />

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { ProfileDetails } from "@/components/profile/ProfileDetails";
 import { ProfileAddressBook } from "@/components/profile/ProfileAddressBook";
+import { ProfileServicesTab } from "@/components/profile/ProfileServicesTab";
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
 
@@ -14,6 +15,7 @@ export default function ProfilePage() {
   const { user, isAuthLoading } = useProvider();
   const { t } = useLanguage();
   const hasShownBookingRequirement = useRef(false);
+  const [activeTab, setActiveTab] = useState<"profile" | "services">("profile");
   const [showPhoneRequiredModal, setShowPhoneRequiredModal] = useState(false);
   const [showVerificationRequiredModal, setShowVerificationRequiredModal] =
     useState(false);
@@ -52,9 +54,40 @@ export default function ProfilePage() {
             {t("profile.title")}
           </h1>
 
+          <div className="mb-4 inline-flex rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <button
+              type="button"
+              onClick={() => setActiveTab("profile")}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                activeTab === "profile"
+                  ? "bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow"
+                  : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              }`}
+            >
+              {t("profile.profileTab")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("services")}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                activeTab === "services"
+                  ? "bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow"
+                  : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              }`}
+            >
+              {t("profile.servicesTab")}
+            </button>
+          </div>
+
           <div className="mt-4">
-            <ProfileDetails />
-            <ProfileAddressBook />
+            {activeTab === "profile" ? (
+              <>
+                <ProfileDetails />
+                <ProfileAddressBook />
+              </>
+            ) : (
+              <ProfileServicesTab />
+            )}
           </div>
         </div>
       </section>
