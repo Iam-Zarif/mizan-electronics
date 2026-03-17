@@ -6,13 +6,29 @@ import { useLanguage } from "@/lib/i18n";
 import Link from "next/link";
 
 const slidesDesktop = [
-  { id: 1, image: "https://i.ibb.co.com/JFHNJh98/mizan-ac-servicing-1.png" },
-  { id: 2, image: "https://i.ibb.co.com/TjcD0Zb/mizan-ac-servicing-2.png" },
+  {
+    id: 1,
+    image:
+      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773765464/mizan_ac_servicing_1_npooxg.png",
+  },
+  {
+    id: 2,
+    image:
+      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773765463/mizan_ac_servicing_2_h7bus8.png",
+  },
 ];
 
 const slidesMobile = [
-  { id: 1, image: "https://i.ibb.co.com/83z1smt/mizan-ac-servicing-responsive-mobile-1.png" },
-  { id: 2, image: "https://i.ibb.co.com/xqHvG4Gn/mizan-ac-servicing-responsive-mobile.png" },
+  {
+    id: 1,
+    image:
+      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773765463/mizan_ac_servicing_responsive_mobile_kfkii0.png",
+  },
+  {
+    id: 2,
+    image:
+      "https://res.cloudinary.com/dj5olrziv/image/upload/v1773765463/mizan_ac_servicing_responsive_mobile_1_eazz5r.png",
+  },
 ];
 
 export default function Hero() {
@@ -49,6 +65,7 @@ export default function Hero() {
                 fill
                 className="object-cover"
                 priority={i === 0}
+                loading={i === 0 ? "eager" : "lazy"}
                 sizes="100vw"
               />
             </div>
