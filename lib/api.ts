@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const normalizeApiBaseUrl = (value?: string) => {
-  const fallback = "http://localhost:5001/api";
+  const fallback = "https://mizan-electronics-backend.vercel.app/api";
   if (!value) return fallback;
 
   const trimmed = value.trim().replace(/\/+$/, "");
