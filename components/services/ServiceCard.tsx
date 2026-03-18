@@ -2,11 +2,21 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
-import type { ServiceItem } from "@/lib/services";
 import ServiceBookingActions from "@/components/services/ServiceBookingActions";
 
+export type ServiceCardItem = {
+  id: string;
+  categoryId: string;
+  title: string;
+  summary: string;
+  price: string;
+  slug: string;
+  images: string[];
+  process: string[];
+};
+
 type Props = {
-  service: ServiceItem;
+  service: ServiceCardItem;
   title: string;
   summary: string;
   categoryName: string;
@@ -65,6 +75,7 @@ export default function ServiceCard({
           categoryId={service.categoryId}
           categoryName={categoryName}
           serviceTitle={title}
+          serviceSlug={service.slug}
         />
       </div>
     </motion.div>

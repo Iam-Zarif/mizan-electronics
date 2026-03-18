@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 import { Lock, LockOpen } from "lucide-react";
 import { z } from "zod";
 import { api, getErrorMessage } from "@/lib/api";
+import { emailSchema } from "@/lib/auth-validation";
 import logo from "@/public/mizan.png";
 
-const emailSchema = z.object({
-  email: z.email("Valid email is required"),
+const forgotEmailSchema = z.object({
+  email: emailSchema,
 });
 
 const resetSchema = z.object({
@@ -35,7 +36,7 @@ export default function ForgotPasswordPage() {
     setError("");
     setSuccess("");
 
-    const parsed = emailSchema.safeParse({ email });
+    const parsed = forgotEmailSchema.safeParse({ email });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Please check your email");
       return;

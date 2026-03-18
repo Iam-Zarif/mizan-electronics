@@ -1,19 +1,26 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { serviceEnText, serviceItems, serviceCategories } from "@/lib/services";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import ServiceCard from "@/components/services/ServiceCard";
+import { useLandingServiceCatalog } from "@/components/home/ServiceCatalogProvider";
+import {
+  ApiEmptyState,
+  ApiSkeletonBlock,
+} from "@/components/shared/ApiState";
 
 export default function TopServicesSection() {
-  const top = serviceItems.slice(0, 8);
   const [perView, setPerView] = useState(4);
   const [index, setIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const { t, locale } = useLanguage();
+  const { data, isLoading, error } = useLandingServiceCatalog();
+  const shouldShowSkeleton = isLoading || Boolean(error);
+
+  const top = useMemo(() => (data?.services ?? []).slice(0, 8), [data]);
 
   useEffect(() => {
     const update = () => {
@@ -26,7 +33,10 @@ export default function TopServicesSection() {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const maxIndex = useMemo(() => Math.max(0, Math.ceil(top.length - Math.ceil(perView))), [top.length, perView]);
+  const maxIndex = useMemo(
+    () => Math.max(0, Math.ceil(top.length - Math.ceil(perView))),
+    [top.length, perView],
+  );
 
   useEffect(() => {
     if (isDragging) return;
@@ -67,6 +77,18 @@ export default function TopServicesSection() {
           </div>
         </div>
 
+        {shouldShowSkeleton ? <ApiSkeletonBlock rows={3} /> : null}
+        {!shouldShowSkeleton && top.length === 0 ? (
+          <ApiEmptyState
+            title={locale === "en" ? "No services found" : "কোনো সার্ভিস পাওয়া যায়নি"}
+            description={
+              locale === "en"
+                ? "Top services will appear here once the service catalog is available."
+                : "সার্ভিস ক্যাটালগ তৈরি হলে টপ সার্ভিস এখানে দেখা যাবে।"
+            }
+          />
+        ) : null}
+        {!shouldShowSkeleton && top.length > 0 ? (
         <div className="relative overflow-hidden ">
           <motion.div
             className="flex transition-transform duration-500 gap-2"
@@ -82,13 +104,13 @@ export default function TopServicesSection() {
             }}
           >
             {top.map((service) => {
-              const en = serviceEnText[service.slug];
-              const title = locale === "en" && en ? en.title : service.title;
-              const summary = locale === "en" && en ? en.summary : service.summary;
-              const categoryName = serviceCategories.find((c) => c.id === service.categoryId)?.name ?? "";
+              const title = locale === "en" ? service.titleEn : service.title;
+              const summary = locale === "en" ? service.summaryEn : service.summary;
+              const categoryName =
+                data?.categories.find((c) => c.id === service.categoryId)?.name ?? "";
               return (
               <div
-                key={service.id}
+                key={service._id}
                 className="cursor-pointer px-2"
                 style={{ flex: `0 0 ${cardBasis}` }}
               >
@@ -105,6 +127,7 @@ export default function TopServicesSection() {
             })}
           </motion.div>
         </div>
+        ) : null}
       </div>
     </section>
   );

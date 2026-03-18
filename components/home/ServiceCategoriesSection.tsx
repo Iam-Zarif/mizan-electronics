@@ -1,11 +1,15 @@
 "use client";
 
 import React from "react";
-import { categoryEnLabels, serviceCategories } from "@/lib/services";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { Wrench, Plug, Snowflake, Cog, Hammer, Package } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { useLandingServiceCatalog } from "@/components/home/ServiceCatalogProvider";
+import {
+  ApiEmptyState,
+  ApiSkeletonBlock,
+} from "@/components/shared/ApiState";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   "cleaning-maintenance": Wrench,
@@ -18,6 +22,9 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
 
 export default function ServiceCategoriesSection() {
   const { t, locale } = useLanguage();
+  const { data, isLoading, error } = useLandingServiceCatalog();
+  const shouldShowSkeleton = isLoading || Boolean(error);
+
   return (
     <section className="relative py-8 lg:py-14" id="categories">
       <div className="mx-auto max-w-7xl px-4">
@@ -27,8 +34,20 @@ export default function ServiceCategoriesSection() {
           </div>
         </div>
 
-        <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {serviceCategories.map((cat) => {
+        {shouldShowSkeleton ? <ApiSkeletonBlock rows={4} /> : null}
+        {!shouldShowSkeleton && (!data || data.categories.length === 0) ? (
+          <ApiEmptyState
+            title={locale === "en" ? "No categories found" : "কোনো ক্যাটাগরি পাওয়া যায়নি"}
+            description={
+              locale === "en"
+                ? "Service categories will appear here once the catalog is available."
+                : "ক্যাটালগ তৈরি হলে সার্ভিস ক্যাটাগরি এখানে দেখা যাবে।"
+            }
+          />
+        ) : null}
+        {!shouldShowSkeleton && data?.categories.length ? (
+          <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {data.categories.map((cat) => {
             const Icon = iconMap[cat.id] ?? Wrench;
             return (
               <motion.a
@@ -42,13 +61,14 @@ export default function ServiceCategoriesSection() {
                   <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/25 to-transparent" />
                   <div className="absolute left-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-white/85 px-4 py-2 text-sm font-semibold text-[#6366f1] shadow">
                     <Icon size={16} />
-                    {locale === "en" ? categoryEnLabels[cat.id] ?? cat.name : cat.name}
+                    {locale === "en" ? cat.nameEn : cat.name}
                   </div>
                 </div>
               </motion.a>
             );
           })}
-        </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

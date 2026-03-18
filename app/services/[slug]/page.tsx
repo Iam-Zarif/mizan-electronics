@@ -58,6 +58,7 @@ export default function ServiceDetail({ params }: Props) {
                   categoryId={service.categoryId}
                   categoryName={category.name}
                   serviceTitle={title}
+                  serviceSlug={service.slug}
                   stacked={false}
                 />
               </div>

@@ -7,14 +7,9 @@ import { FaGoogle, FaFacebookF } from "react-icons/fa";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, LockOpen } from "lucide-react";
-import { z } from "zod";
 import { useProvider } from "@/Providers/AuthProviders";
+import { emailSchema, getFieldError, loginSchema } from "@/lib/auth-validation";
 import logo from "@/public/mizan.png";
-
-const loginSchema = z.object({
-  email: z.email("Valid email is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,13 +24,32 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+  });
+  const [activeField, setActiveField] = useState<"email" | "password" | null>(
+    null,
+  );
 
   const redirectTo = searchParams.get("redirect") || "/";
   const registerHref = `/auth/register?redirect=${encodeURIComponent(redirectTo)}`;
+  const emailError = getFieldError(emailSchema, form.email);
+  const passwordError = !form.password ? "Password is required" : "";
+  const activeMessage =
+    activeField === "email"
+      ? emailError
+      : activeField === "password"
+        ? passwordError
+        : "";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setTouched({
+      email: true,
+      password: true,
+    });
 
     const parsed = loginSchema.safeParse(form);
     if (!parsed.success) {
@@ -98,21 +112,46 @@ export default function LoginPage() {
             type="email"
             placeholder="Email address"
             value={form.email}
+            onFocus={() => setActiveField("email")}
+            onBlur={() => {
+              setTouched((current) => ({ ...current, email: true }));
+              setActiveField((current) => (current === "email" ? null : current));
+            }}
             onChange={(e) =>
               setForm((current) => ({ ...current, email: e.target.value }))
             }
-            className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
+            className={`w-full rounded-xl border bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 dark:border-white/10 ${
+              emailError && touched.email
+                ? "border-red-300 focus:ring-red-400"
+                : "border-black/10 focus:ring-indigo-500"
+            }`}
           />
+          {activeField === "email" && activeMessage ? (
+            <p className="mt-1 text-xs font-medium text-red-500">
+              {activeMessage}
+            </p>
+          ) : null}
 
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={form.password}
+              onFocus={() => setActiveField("password")}
+              onBlur={() => {
+                setTouched((current) => ({ ...current, password: true }));
+                setActiveField((current) =>
+                  current === "password" ? null : current,
+                );
+              }}
               onChange={(e) =>
                 setForm((current) => ({ ...current, password: e.target.value }))
               }
-              className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 pr-12 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
+              className={`w-full rounded-xl border bg-transparent px-4 py-3 pr-12 text-sm outline-none focus:ring-2 dark:border-white/10 ${
+                passwordError && touched.password
+                  ? "border-red-300 focus:ring-red-400"
+                  : "border-black/10 focus:ring-indigo-500"
+              }`}
             />
             <button
               type="button"
@@ -122,6 +161,11 @@ export default function LoginPage() {
               {showPassword ? <LockOpen size={18} /> : <Lock size={18} />}
             </button>
           </div>
+          {activeField === "password" && activeMessage ? (
+            <p className="mt-1 text-xs font-medium text-red-500">
+              {activeMessage}
+            </p>
+          ) : null}
 
           {error ? (
             <p className="text-sm font-medium text-red-500">{error}</p>

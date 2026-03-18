@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
@@ -28,20 +28,21 @@ const serviceLinks = [
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [dark, setDark] = useState(false);
   const [openServices, setOpenServices] = useState(false);
   const [openLang, setOpenLang] = useState(false);
   const [openMobile, setOpenMobile] = useState(false);
   const { locale, setLocale, t } = useLanguage();
-  const { user, isAuthLoading } = useProvider();
+  const { user, isAuthLoading, themePreference, setThemePreference } = useProvider();
+  const [mounted, setMounted] = useState(false);
   const accountHref = user ? "/profile" : "/auth/login";
   const accountLabel = user ? t("nav.account") : t("nav.login");
   const showDashboard = isAdminUser(user);
   const showUserNotifications = Boolean(user) && !showDashboard;
+  const isDark = themePreference === "dark";
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
+    setMounted(true);
+  }, []);
 
   if (pathname.startsWith("/auth")) {
     return null;
@@ -163,10 +164,18 @@ const Navbar = () => {
               ) : null}
 
               <button
-                onClick={() => setDark(!dark)}
+                onClick={() => void setThemePreference(isDark ? "light" : "dark")}
                 className="rounded-full bg-white/60 p-2 backdrop-blur transition hover:bg-white/80 dark:bg-white/10"
               >
-                {dark ? <Sun size={20} className="cursor-pointer" /> : <Moon size={20} className="cursor-pointer" />}
+                {mounted ? (
+                  isDark ? (
+                    <Sun size={20} className="cursor-pointer" />
+                  ) : (
+                    <Moon size={20} className="cursor-pointer" />
+                  )
+                ) : (
+                  <span className="block h-5 w-5" aria-hidden="true" />
+                )}
               </button>
             </div>
             <button
@@ -249,13 +258,13 @@ const Navbar = () => {
               ) : null}
               <button
                 onClick={() => {
-                  setDark(!dark);
+                  void setThemePreference(isDark ? "light" : "dark");
                   setOpenMobile(false);
                 }}
                 className="flex items-center gap-2 w-full rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               >
-                {dark ? <Sun size={18} /> : <Moon size={18} />}
-                <span>{dark ? (locale === "en" ? "Light mode" : "লাইট মোড") : (locale === "en" ? "Dark mode" : "ডার্ক মোড")}</span>
+                {mounted ? (isDark ? <Sun size={18} /> : <Moon size={18} />) : <span className="block h-[18px] w-[18px]" aria-hidden="true" />}
+                <span>{isDark ? (locale === "en" ? "Light mode" : "লাইট মোড") : (locale === "en" ? "Dark mode" : "ডার্ক মোড")}</span>
               </button>
             </div>
 

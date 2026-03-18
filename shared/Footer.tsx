@@ -10,7 +10,7 @@ import { useLanguage } from "@/lib/i18n";
 const Footer = () => {
   const pathname = usePathname();
   const { t, locale } = useLanguage();
-    if (pathname.startsWith("/auth")) {
+  if (pathname.startsWith("/auth") || pathname.startsWith("/dashboard")) {
     return null;
   }
   return (

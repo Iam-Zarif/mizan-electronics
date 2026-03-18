@@ -14,7 +14,10 @@ import {
 import { useLanguage } from "@/lib/i18n";
 import { useProvider } from "@/Providers/AuthProviders";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
-import { staticProfileServices } from "@/lib/profile-static";
+import { ApiErrorState, ApiEmptyState, ApiSkeletonBlock } from "@/components/shared/ApiState";
+import { getProfileServices, type ProfileService } from "@/lib/dashboard-api";
+import { useApiQuery } from "@/hooks/use-api-query";
+import type { ProfileServiceHistory } from "@/lib/profile-static";
 
 const statusClasses = {
   completed: "bg-green-100 text-green-700",
@@ -28,20 +31,53 @@ const paymentClasses = {
   unpaid: "bg-rose-100 text-rose-700",
 };
 
+const toHistoryShape = (service: ProfileService): ProfileServiceHistory => ({
+  id: service._id,
+  titleBn: service.serviceTitleBn,
+  titleEn: service.serviceTitleEn,
+  status: service.status,
+  dateBn: new Date(service.completedAt).toLocaleDateString("bn-BD"),
+  dateEn: new Date(service.completedAt).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }),
+  invoice: service.invoiceNo || "—",
+  noteBn: service.noteBn,
+  noteEn: service.noteEn,
+  paymentStatus: service.paymentStatus,
+  amountPaid: service.amountPaid,
+  subtotal: service.subtotal,
+  due: service.due,
+  addressBn: service.addressBn,
+  addressEn: service.addressEn,
+  dueDateBn: service.dueDate ? new Date(service.dueDate).toLocaleDateString("bn-BD") : "—",
+  dueDateEn: service.dueDate
+    ? new Date(service.dueDate).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—",
+  items: service.items,
+});
+
 export function ProfileServicesTab() {
   const { locale, t } = useLanguage();
   const { user } = useProvider();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const { data, isLoading, error, refresh } = useApiQuery(
+    getProfileServices,
+    [],
+    Boolean(user),
+  );
 
-  const handleDownload = async (serviceId: string) => {
-    if (!user) return;
-
-    const service = staticProfileServices.find((item) => item.id === serviceId);
-    if (!service || service.invoice === "—") return;
+  const handleDownload = async (service: ProfileService) => {
+    if (!user || !service.invoiceNo) return;
 
     try {
-      setDownloadingId(serviceId);
-      await downloadInvoicePdf(service, user, locale);
+      setDownloadingId(service._id);
+      await downloadInvoicePdf(toHistoryShape(service), user, locale);
     } finally {
       setDownloadingId(null);
     }
@@ -57,23 +93,27 @@ export function ProfileServicesTab() {
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
           {t("profile.servicesTitle")}
         </h2>
-        <p className="mt-1 text-sm text-neutral-500">
-          {t("profile.servicesSubtitle")}
-        </p>
+        <p className="mt-1 text-sm text-neutral-500">{t("profile.servicesSubtitle")}</p>
       </div>
 
-      {staticProfileServices.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-neutral-300 px-4 py-8 text-center dark:border-neutral-700">
-          <p className="text-base font-semibold text-neutral-900 dark:text-white">
-            {t("profile.noServicesTitle")}
-          </p>
-          <p className="mt-2 text-sm text-neutral-500">
-            {t("profile.noServicesDescription")}
-          </p>
-        </div>
-      ) : (
+      {isLoading ? <ApiSkeletonBlock rows={3} /> : null}
+      {!isLoading && error ? (
+        <ApiErrorState
+          title={locale === "en" ? "Services failed to load" : "সার্ভিস হিস্ট্রি লোড হয়নি"}
+          description={error}
+          onRetry={() => void refresh()}
+        />
+      ) : null}
+      {!isLoading && !error && data && data.rows.length === 0 ? (
+        <ApiEmptyState
+          title={t("profile.noServicesTitle")}
+          description={t("profile.noServicesDescription")}
+        />
+      ) : null}
+
+      {!isLoading && !error && data && data.rows.length > 0 ? (
         <div className="grid gap-4 lg:grid-cols-2">
-          {staticProfileServices.map((service) => {
+          {data.rows.map((service) => {
             const statusText =
               service.status === "completed"
                 ? t("profile.serviceStatusCompleted")
@@ -89,14 +129,14 @@ export function ProfileServicesTab() {
 
             return (
               <div
-                key={service.id}
+                key={service._id}
                 className="rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
                       <Wrench size={14} />
-                      {locale === "en" ? service.titleEn : service.titleBn}
+                      {locale === "en" ? service.serviceTitleEn : service.serviceTitleBn}
                     </div>
                   </div>
                   <span
@@ -113,14 +153,19 @@ export function ProfileServicesTab() {
                     <span className="font-medium text-neutral-900 dark:text-white">
                       {t("profile.serviceDate")}:
                     </span>
-                    <span>{locale === "en" ? service.dateEn : service.dateBn}</span>
+                    <span>
+                      {new Date(service.completedAt).toLocaleDateString(
+                        locale === "en" ? "en-GB" : "bn-BD",
+                        { day: "2-digit", month: "short", year: "numeric" },
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText size={15} />
                     <span className="font-medium text-neutral-900 dark:text-white">
                       {t("profile.serviceInvoice")}:
                     </span>
-                    <span>{service.invoice}</span>
+                    <span>{service.invoiceNo || "—"}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Wallet size={15} />
@@ -155,16 +200,16 @@ export function ProfileServicesTab() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => void handleDownload(service.id)}
-                    disabled={service.invoice === "—" || downloadingId === service.id}
+                    onClick={() => void handleDownload(service)}
+                    disabled={!service.invoiceNo || downloadingId === service._id}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 px-4 py-3 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {downloadingId === service.id ? (
+                    {downloadingId === service._id ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : (
                       <Download size={16} />
                     )}
-                    {downloadingId === service.id
+                    {downloadingId === service._id
                       ? t("profile.invoiceDownloading")
                       : t("profile.downloadPdf")}
                   </button>
@@ -173,7 +218,7 @@ export function ProfileServicesTab() {
             );
           })}
         </div>
-      )}
+      ) : null}
     </motion.div>
   );
 }

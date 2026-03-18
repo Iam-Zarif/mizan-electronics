@@ -1,4 +1,5 @@
 import Hero from "./Hero";
+import { ServiceCatalogProvider } from "./ServiceCatalogProvider";
 import ServiceCategoriesSection from "./ServiceCategoriesSection";
 import TopServicesSection from "./TopServicesSection";
 import AllServicesSection from "./AllServicesSection";
@@ -9,10 +10,12 @@ const HomeComponent = () => {
   return (
     <>
       <Hero />
-      <ServiceCategoriesSection />
-      <TopServicesSection />
-      <PackagesSection />
-      <AllServicesSection />
+      <ServiceCatalogProvider>
+        <ServiceCategoriesSection />
+        <TopServicesSection />
+        <PackagesSection />
+        <AllServicesSection />
+      </ServiceCatalogProvider>
       <TestimonialsClients />
     </>
   );

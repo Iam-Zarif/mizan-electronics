@@ -22,6 +22,8 @@ type AuthContextType = {
   user: AuthUser | null;
   isAuthLoading: boolean;
   isAuthenticated: boolean;
+  themePreference: "light" | "dark";
+  setThemePreference: (themePreference: "light" | "dark") => Promise<void>;
   register: (
     f_name: string,
     phone: string,
@@ -54,12 +56,28 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [themePreferenceState, setThemePreferenceState] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setThemePreferenceState(
+      window.localStorage.getItem("mizan-theme") === "dark" ? "dark" : "light",
+    );
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", themePreferenceState === "dark");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("mizan-theme", themePreferenceState);
+    }
+  }, [themePreferenceState]);
 
   const refreshProfile = async () => {
     try {
       const { data } = await api.get("/profile/me");
       const normalized = normalizeUser(data as Record<string, unknown>);
       setUser(normalized);
+      setThemePreferenceState(normalized.themePreference ?? "light");
       return normalized;
     } catch {
       setUser(null);
@@ -149,6 +167,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await api.post("/auth/logout");
     } finally {
       setUser(null);
+    }
+  };
+
+  const setThemePreference = async (themePreference: "light" | "dark") => {
+    setThemePreferenceState(themePreference);
+
+    if (!user) return;
+
+    try {
+      const { data } = await api.put("/profile/theme", { themePreference });
+      const nextThemePreference = data.themePreference === "dark" ? "dark" : "light";
+      setThemePreferenceState(nextThemePreference);
+      setUser((current) =>
+        current ? { ...current, themePreference: nextThemePreference } : current,
+      );
+    } catch (error) {
+      setThemePreferenceState(user.themePreference === "dark" ? "dark" : "light");
+      throw new Error(getErrorMessage(error));
     }
   };
 
@@ -276,6 +312,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         isAuthLoading,
         isAuthenticated: Boolean(user),
+        themePreference: themePreferenceState,
+        setThemePreference,
         register,
         login,
         loginWithGoogle,

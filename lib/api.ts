@@ -12,6 +12,8 @@ export const API_BASE_URL = normalizeApiBaseUrl(
   process.env.NEXT_PUBLIC_API_URL,
 );
 
+export const WS_BASE_URL = API_BASE_URL.replace(/\/api$/, "").replace(/^http/, "ws");
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,

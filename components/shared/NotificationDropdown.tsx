@@ -1,29 +1,112 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Bell, BellRing, FileCheck, ShieldAlert, Wrench } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Bell, BellRing, CheckCheck, FileCheck, ShieldAlert, Trash2, Wrench } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
-import { getProfileNotifications } from "@/lib/profile-static";
+import {
+  deleteProfileNotification,
+  getProfileNotifications,
+  markAllProfileNotificationsRead,
+  markProfileNotificationRead,
+  type ProfileNotification,
+} from "@/lib/dashboard-api";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { useNotificationSocket } from "@/lib/realtime/notification-socket";
 
 const notificationIconMap = {
   service: Wrench,
   billing: FileCheck,
   verification: ShieldAlert,
+  invoice: FileCheck,
+  security: ShieldAlert,
+  booking: Wrench,
+  message: Bell,
+  system: Bell,
 };
 
 export function NotificationDropdown() {
   const { user } = useProvider();
   const { locale, t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { data, setData } = useApiQuery(getProfileNotifications, [], Boolean(user));
 
-  const notifications = useMemo(() => getProfileNotifications(user), [user]);
-  const unreadCount = notifications.filter((item) => item.unread).length;
+  const notifications = data?.rows ?? [];
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => item.unread).length,
+    [notifications],
+  );
+
+  useNotificationSocket<ProfileNotification>({
+    enabled: Boolean(user),
+    onCreatedOrUpdated: (notification) => {
+      setData((current) => {
+        if (!current) return current;
+        const nextRows = current.rows.some((item) => item._id === notification._id)
+          ? current.rows.map((item) => (item._id === notification._id ? notification : item))
+          : [notification, ...current.rows];
+        return { rows: nextRows };
+      });
+    },
+    onDeleted: (notificationId) => {
+      setData((current) =>
+        current
+          ? { rows: current.rows.filter((item) => item._id !== notificationId) }
+          : current,
+      );
+    },
+  });
 
   if (!user) {
     return null;
   }
+
+  const markAllRead = async () => {
+    await markAllProfileNotificationsRead();
+    setData((current) =>
+      current
+        ? {
+            rows: current.rows.map((item) =>
+              item._id === "verify-warning" ? item : { ...item, unread: false },
+            ),
+          }
+        : current,
+    );
+  };
+
+  useEffect(() => {
+    if (!open || unreadCount === 0) return;
+    void markAllRead();
+  }, [open, unreadCount]);
+
+  const markOneRead = async (notificationId: string) => {
+    if (notificationId === "verify-warning") return;
+    const { data: updated } = await markProfileNotificationRead(notificationId);
+    setData((current) =>
+      current
+        ? {
+            rows: current.rows.map((item) => (item._id === notificationId ? updated : item)),
+          }
+        : current,
+    );
+  };
+
+  const deleteOne = async (notificationId: string) => {
+    if (notificationId === "verify-warning") return;
+    setIsDeleting(true);
+    try {
+      await deleteProfileNotification(notificationId);
+      setData((current) =>
+        current
+          ? { rows: current.rows.filter((item) => item._id !== notificationId) }
+          : current,
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="relative">
@@ -44,9 +127,21 @@ export function NotificationDropdown() {
       {open ? (
         <div className="absolute right-0 mt-2 w-[22rem] rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-white/10 dark:bg-neutral-900">
           <div className="px-3 pb-2 pt-1">
-            <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-              {t("nav.notifications")}
-            </p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                {t("nav.notifications")}
+              </p>
+              {notifications.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => void markAllRead()}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300"
+                >
+                  <CheckCheck size={14} />
+                  {locale === "en" ? "Mark all" : "সব রিড"}
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="max-h-[26rem] space-y-1 overflow-y-auto">
@@ -56,12 +151,13 @@ export function NotificationDropdown() {
               </div>
             ) : (
               notifications.map((notification) => {
-                const Icon = notificationIconMap[notification.type];
+                const Icon =
+                  notificationIconMap[
+                    notification.type as keyof typeof notificationIconMap
+                  ] ?? Bell;
                 return (
-                  <Link
-                    key={notification.id}
-                    href={notification.href ?? "/profile"}
-                    onClick={() => setOpen(false)}
+                  <div
+                    key={notification._id}
                     className="flex gap-3 rounded-xl px-3 py-3 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
                   >
                     <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
@@ -70,28 +166,48 @@ export function NotificationDropdown() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                          {locale === "en"
-                            ? notification.titleEn
-                            : notification.titleBn}
+                          {locale === "en" ? notification.titleEn : notification.titleBn}
                         </p>
                         <span className="shrink-0 text-[11px] text-neutral-400">
-                          {locale === "en"
-                            ? notification.timeEn
-                            : notification.timeBn}
+                          {notification.createdAtLabel}
                         </span>
                       </div>
                       <p className="mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-300">
-                        {locale === "en"
-                          ? notification.messageEn
-                          : notification.messageBn}
+                        {locale === "en" ? notification.bodyEn : notification.bodyBn}
                       </p>
-                      {notification.href ? (
-                        <span className="mt-2 inline-flex text-xs font-semibold text-indigo-600 dark:text-indigo-300">
-                          {t("nav.viewDetails")}
-                        </span>
-                      ) : null}
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        {notification.actionHref ? (
+                          <Link
+                            href={notification.actionHref || "/profile"}
+                            onClick={() => {
+                              setOpen(false);
+                              if (notification.unread && notification._id !== "verify-warning") {
+                                void markOneRead(notification._id);
+                              }
+                            }}
+                            className="inline-flex text-xs font-semibold text-indigo-600 dark:text-indigo-300"
+                          >
+                            {t("nav.viewDetails")}
+                          </Link>
+                        ) : <span />}
+                        {notification._id !== "verify-warning" ? (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              void deleteOne(notification._id);
+                            }}
+                            disabled={isDeleting}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-300"
+                          >
+                            <Trash2 size={13} />
+                            {locale === "en" ? "Delete" : "ডিলিট"}
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 );
               })
             )}
