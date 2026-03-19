@@ -216,6 +216,33 @@ export type AdminAlertsResponse = {
   pagination: PaginationMeta;
 };
 
+export type AdminContactClickRow = {
+  _id: string;
+  source: "floating";
+  channel: "phone" | "whatsapp" | "messenger";
+  targetValue: string;
+  pagePath: string;
+  referrer: string;
+  actorName: string;
+  actorEmail: string;
+  actorPhone: string;
+  actorAddressLabel: string;
+  actorAddress: string;
+  actorArea: string;
+  actorDistrict: string;
+  actorDivision: string;
+  latitude: number | null;
+  longitude: number | null;
+  ipAddress: string;
+  userAgent: string;
+  clickedAt: string;
+};
+
+export type AdminContactClicksResponse = {
+  rows: AdminContactClickRow[];
+  pagination: PaginationMeta;
+};
+
 export type ProfileService = {
   _id: string;
   invoiceNo: string;
@@ -480,6 +507,8 @@ export const updateAdminBookingStatus = async (
 };
 
 export const getAdminInvoices = (params?: {
+  search?: string;
+  paymentStatus?: "all" | "paid" | "partial" | "unpaid";
   sort?: string;
   page?: number;
   limit?: number;
@@ -505,6 +534,14 @@ export const getAdminNotifications = (params: {
   page?: number;
   limit?: number;
 }) => unwrap<AdminNotificationsResponse>(api.get("/admin/notifications", { params }));
+
+export const getAdminContactClicks = (params?: {
+  search?: string;
+  channel?: "all" | "phone" | "whatsapp" | "messenger";
+  sort?: "latest" | "oldest";
+  page?: number;
+  limit?: number;
+}) => unwrap<AdminContactClicksResponse>(api.get("/admin/contact-clicks", { params }));
 
 export const markAdminNotificationRead = async (notificationId: string) => {
   const { data } = await api.patch(`/admin/notifications/${notificationId}/read`);

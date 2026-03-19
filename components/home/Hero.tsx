@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n";
-import Link from "next/link";
 
 const slidesDesktop = [
   {

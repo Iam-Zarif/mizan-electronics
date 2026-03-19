@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { Languages, Sun, Moon, ChevronDown, UserRound, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard } from "lucide-react";
+import { Sun, Moon, ChevronDown, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard } from "lucide-react";
 import { GoArrowUpRight } from "react-icons/go";
 import { HiMenu, HiX } from "react-icons/hi";
 import { HiOutlineHome, HiHome } from "react-icons/hi";
-import { MdHomeRepairService, MdOutlineHomeRepairService } from "react-icons/md";
-import logo from "@/public/mizan.png";
+import { MdOutlineHomeRepairService } from "react-icons/md";
 import { useLanguage } from "@/lib/i18n";
 import { useProvider } from "@/Providers/AuthProviders";
 import { isAdminUser } from "@/lib/auth";
 import { NotificationDropdown } from "@/components/shared/NotificationDropdown";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 const serviceLinks = [
   { href: "/services", bn: "সব সার্ভিস", en: "All Services", icon: MdOutlineHomeRepairService },
@@ -33,16 +32,11 @@ const Navbar = () => {
   const [openMobile, setOpenMobile] = useState(false);
   const { locale, setLocale, t } = useLanguage();
   const { user, isAuthLoading, themePreference, setThemePreference } = useProvider();
-  const [mounted, setMounted] = useState(false);
   const accountHref = user ? "/profile" : "/auth/login";
   const accountLabel = user ? t("nav.account") : t("nav.login");
   const showDashboard = isAdminUser(user);
   const showUserNotifications = Boolean(user) && !showDashboard;
   const isDark = themePreference === "dark";
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (pathname.startsWith("/auth")) {
     return null;
@@ -58,7 +52,7 @@ const Navbar = () => {
             className="flex items-center justify-between rounded-full  border border-neutral-100 dark:border-white/10 lg:py-2.5 pt-3 pb-2 bg-white/60 px-4 backdrop-blur-xl shadow-lg dark:bg-black/50"
           >
             <Link href="/" className="flex items-center gap-2 cursor-pointer">
-              <Image src={logo} alt="Mizan AC Servicing" width={48} height={48} className="h-auto w-auto" />
+              <BrandLogo size={48} />
               <span className="hidden sm:block font-extrabold tracking-wide bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] bg-clip-text text-transparent">
                 Mizan AC Servicing
               </span>
@@ -167,14 +161,10 @@ const Navbar = () => {
                 onClick={() => void setThemePreference(isDark ? "light" : "dark")}
                 className="rounded-full bg-white/60 p-2 backdrop-blur transition hover:bg-white/80 dark:bg-white/10"
               >
-                {mounted ? (
-                  isDark ? (
-                    <Sun size={20} className="cursor-pointer" />
-                  ) : (
-                    <Moon size={20} className="cursor-pointer" />
-                  )
+                {isDark ? (
+                  <Sun size={20} className="cursor-pointer" />
                 ) : (
-                  <span className="block h-5 w-5" aria-hidden="true" />
+                  <Moon size={20} className="cursor-pointer" />
                 )}
               </button>
             </div>
@@ -263,7 +253,7 @@ const Navbar = () => {
                 }}
                 className="flex items-center gap-2 w-full rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               >
-                {mounted ? (isDark ? <Sun size={18} /> : <Moon size={18} />) : <span className="block h-[18px] w-[18px]" aria-hidden="true" />}
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
                 <span>{isDark ? (locale === "en" ? "Light mode" : "লাইট মোড") : (locale === "en" ? "Dark mode" : "ডার্ক মোড")}</span>
               </button>
             </div>

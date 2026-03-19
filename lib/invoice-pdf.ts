@@ -6,7 +6,6 @@ import type { ProfileServiceHistory } from "@/lib/profile-static";
 
 const LOGO_URL = "/mizan.png";
 const PAGE_WIDTH = 210;
-const PAGE_HEIGHT = 297;
 const PAGE_PADDING = 12;
 const CONTENT_LEFT = PAGE_PADDING;
 const CONTENT_RIGHT = PAGE_WIDTH - PAGE_PADDING;
@@ -35,7 +34,6 @@ const getAmountWords = (service: ProfileServiceHistory) => {
 export const downloadInvoicePdf = async (
   service: ProfileServiceHistory,
   user: AuthUser,
-  _locale: "bn" | "en",
 ) => {
   const doc = new jsPDF({
     orientation: "portrait",

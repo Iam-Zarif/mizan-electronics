@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { ProfileDetails } from "@/components/profile/ProfileDetails";
@@ -9,16 +9,21 @@ import { ProfileServicesTab } from "@/components/profile/ProfileServicesTab";
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
 
+type BookingRequirement = "phone" | "verification" | null;
+
 export default function ProfilePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthLoading } = useProvider();
   const { t } = useLanguage();
-  const hasShownBookingRequirement = useRef(false);
+  const requiredParam = searchParams.get("required");
+  const initialRequirement: BookingRequirement =
+    requiredParam === "phone" || requiredParam === "verification"
+      ? requiredParam
+      : null;
   const [activeTab, setActiveTab] = useState<"profile" | "services">("profile");
-  const [showPhoneRequiredModal, setShowPhoneRequiredModal] = useState(false);
-  const [showVerificationRequiredModal, setShowVerificationRequiredModal] =
-    useState(false);
+  const [bookingRequirement, setBookingRequirement] =
+    useState<BookingRequirement>(initialRequirement);
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -31,20 +36,13 @@ export default function ProfilePage() {
     if (
       isAuthLoading ||
       !user ||
-      (required !== "phone" && required !== "verification") ||
-      hasShownBookingRequirement.current
+      (required !== "phone" && required !== "verification")
     ) {
       return;
     }
 
-    hasShownBookingRequirement.current = true;
-    if (required === "phone") {
-      setShowPhoneRequiredModal(true);
-    } else {
-      setShowVerificationRequiredModal(true);
-    }
     router.replace("/profile");
-  }, [isAuthLoading, router, searchParams, t, user]);
+  }, [isAuthLoading, router, searchParams, user]);
 
   return (
     <>
@@ -92,12 +90,12 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {showPhoneRequiredModal ? (
+      {bookingRequirement === "phone" ? (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
             <button
               type="button"
-              onClick={() => setShowPhoneRequiredModal(false)}
+              onClick={() => setBookingRequirement(null)}
               className="absolute right-4 top-4 rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
               aria-label="Close"
             >
@@ -115,7 +113,7 @@ export default function ProfilePage() {
 
             <button
               type="button"
-              onClick={() => setShowPhoneRequiredModal(false)}
+              onClick={() => setBookingRequirement(null)}
               className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-3 text-sm font-semibold text-white shadow"
             >
               {t("profile.editProfile")}
@@ -124,12 +122,12 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
-      {showVerificationRequiredModal ? (
+      {bookingRequirement === "verification" ? (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
             <button
               type="button"
-              onClick={() => setShowVerificationRequiredModal(false)}
+              onClick={() => setBookingRequirement(null)}
               className="absolute right-4 top-4 rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
               aria-label="Close"
             >
@@ -147,7 +145,7 @@ export default function ProfilePage() {
 
             <button
               type="button"
-              onClick={() => setShowVerificationRequiredModal(false)}
+              onClick={() => setBookingRequirement(null)}
               className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-3 text-sm font-semibold text-white shadow"
             >
               {t("profile.verifyNow")}

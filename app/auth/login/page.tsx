@@ -4,12 +4,11 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { FaGoogle, FaFacebookF } from "react-icons/fa";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, LockOpen } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { emailSchema, getFieldError, loginSchema } from "@/lib/auth-validation";
-import logo from "@/public/mizan.png";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -97,13 +96,9 @@ export default function LoginPage() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-lg rounded-3xl border border-black/5 p-4 backdrop-blur-xl lg:max-w-md lg:bg-white/70 lg:p-8 lg:shadow-[0_30px_80px_-35px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-black/60"
     >
-        <Image
-          src={logo}
-          alt="Mizan AC Servicing"
-          width={48}
-          height={48}
-          className="mx-auto"
-        />
+        <div className="flex justify-center">
+          <BrandLogo size={48} />
+        </div>
         <h1 className="mt-3 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-center text-3xl font-extrabold text-transparent">
           Welcome Back
         </h1>

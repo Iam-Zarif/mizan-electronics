@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "motion/react";
 import { FaFacebookF, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 const Footer = () => {
   const pathname = usePathname();
@@ -37,15 +37,9 @@ const Footer = () => {
         >
           <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between text-center md:text-left">
             <div className="flex flex-col items-center md:items-start">
-              <div className="flex items-center gap-4">
-                <Image
-                  src="/mizan.png"
-                  alt="Mizan AC Servicing"
-                  width={52}
-                  height={52}
-                  className="h-auto w-auto"
-                />
-                <span className="text-2xl font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-4">
+                <BrandLogo size={52} />
+                <span className="text-center text-2xl font-extrabold tracking-wide bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent md:text-left">
                   Mizan AC Servicing
                 </span>
               </div>

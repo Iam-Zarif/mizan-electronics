@@ -1,30 +1,11 @@
 import type { MetadataRoute } from "next";
-import { API_BASE_URL } from "@/lib/api";
+import { getServerPublicServiceCatalog } from "@/lib/server/public-content";
 
 const BASE_URL = "https://mizan-ac-servicing.vercel.app";
 
-type CatalogResponse = {
-  categories: Array<{ id: string }>;
-  services: Array<{ slug: string; id: string }>;
-};
-
-const getCatalog = async (): Promise<CatalogResponse | null> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/services/catalog`, {
-      next: { revalidate: 3600 },
-    });
-
-    if (!response.ok) return null;
-    const payload = (await response.json()) as { data?: CatalogResponse };
-    return payload.data ?? null;
-  } catch {
-    return null;
-  }
-};
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const catalog = await getCatalog();
+  const catalog = await getServerPublicServiceCatalog();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {

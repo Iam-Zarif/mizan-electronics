@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   Ban,
@@ -85,10 +85,6 @@ export default function DashboardAlertsPage() {
   const [sort, setSort] = useState("latest");
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    setPage(1);
-  }, [status, sort]);
-
   const { data, isLoading, error, refresh } = useApiQuery(
     () => getAdminAlerts({ status, sort, page, limit: 12 }),
     [status, sort, page],
@@ -151,7 +147,10 @@ export default function DashboardAlertsPage() {
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <select
                   value={status}
-                  onChange={(event) => setStatus(event.target.value)}
+                  onChange={(event) => {
+                    setStatus(event.target.value);
+                    setPage(1);
+                  }}
                   className="rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-4 py-3 text-sm font-medium text-[#33415c] outline-none dark:border-white/10 dark:bg-[#11192c] dark:text-[#d8e1f1]"
                 >
                   <option value="active">{locale === "en" ? "Active only" : "শুধু অ্যাকটিভ"}</option>
@@ -160,7 +159,10 @@ export default function DashboardAlertsPage() {
                 </select>
                 <select
                   value={sort}
-                  onChange={(event) => setSort(event.target.value)}
+                  onChange={(event) => {
+                    setSort(event.target.value);
+                    setPage(1);
+                  }}
                   className="rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-4 py-3 text-sm font-medium text-[#33415c] outline-none dark:border-white/10 dark:bg-[#11192c] dark:text-[#d8e1f1]"
                 >
                   <option value="latest">{locale === "en" ? "Latest first" : "নতুন আগে"}</option>

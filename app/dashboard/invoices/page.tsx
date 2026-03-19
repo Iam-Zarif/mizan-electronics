@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Download, FileText, Receipt, Wallet } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowUpDown, Download, FileText, Receipt, Search, Wallet } from "lucide-react";
 import { AdminSurface } from "@/components/admin/AdminSections";
 import { ApiEmptyState, ApiErrorState, ApiSkeletonBlock } from "@/components/shared/ApiState";
 import { PaginationControls } from "@/components/shared/PaginationControls";
@@ -21,16 +21,14 @@ const paymentStatusTone = {
 
 export default function DashboardInvoicesPage() {
   const { locale } = useLanguage();
+  const [query, setQuery] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState<"all" | "paid" | "partial" | "unpaid">("all");
   const [sort, setSort] = useState("latest");
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    setPage(1);
-  }, [sort]);
-
   const { data, isLoading, error, refresh } = useApiQuery(
-    () => getAdminInvoices({ sort, page, limit: 12 }),
-    [sort, page],
+    () => getAdminInvoices({ search: query, paymentStatus, sort, page, limit: 12 }),
+    [query, paymentStatus, sort, page],
   );
 
   const invoiceStats = useMemo(
@@ -90,24 +88,76 @@ export default function DashboardInvoicesPage() {
   return (
     <AdminSurface>
       <div className="space-y-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#1f2638] dark:text-white">
-            {locale === "en" ? "Invoices" : "ইনভয়েস"}
-          </h1>
-          <select
-            value={sort}
-            onChange={(event) => setSort(event.target.value)}
-            className="h-11 min-w-[190px] rounded-2xl border border-[#dbe4f4] bg-white px-4 text-sm font-medium text-[#1f2638] outline-hidden transition focus:border-[#2160ba] dark:border-white/10 dark:bg-[#161f36] dark:text-white"
-          >
-            <option value="latest">{locale === "en" ? "Newest first" : "নতুন আগে"}</option>
-            <option value="oldest">{locale === "en" ? "Oldest first" : "পুরোনো আগে"}</option>
-            <option value="amount_high">
-              {locale === "en" ? "Amount high to low" : "বেশি এমাউন্ট আগে"}
-            </option>
-            <option value="amount_low">
-              {locale === "en" ? "Amount low to high" : "কম এমাউন্ট আগে"}
-            </option>
-          </select>
+        <div className="rounded-[24px] border border-[#e8edf7] bg-white p-5 shadow-[0_18px_35px_-28px_rgba(63,94,160,0.35)] dark:border-white/10 dark:bg-[#161f36]">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-[#1f2638] dark:text-white">
+                {locale === "en" ? "Invoices" : "ইনভয়েস"}
+              </h1>
+              <p className="mt-1 text-sm text-[#7f8ba3]">
+                {locale === "en"
+                  ? "Search invoice records, review collections and sort billing quickly."
+                  : "ইনভয়েস সার্চ করুন, কালেকশন দেখুন এবং বিলিং দ্রুত সাজান।"}
+              </p>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr] xl:min-w-[760px]">
+              <label className="flex items-center gap-2 rounded-2xl border border-[#dbe4f4] bg-[#f8fbff] px-4 py-3 text-sm text-[#6f7c98] dark:border-white/10 dark:bg-[#11192c] dark:text-[#a7b3c9]">
+                <Search size={16} />
+                <input
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setPage(1);
+                  }}
+                  placeholder={
+                    locale === "en"
+                      ? "Search by invoice, customer or service"
+                      : "ইনভয়েস, কাস্টমার বা সার্ভিস দিয়ে সার্চ করুন"
+                  }
+                  className="w-full bg-transparent outline-none placeholder:text-[#8a96ad] dark:placeholder:text-[#70809c]"
+                />
+              </label>
+
+              <label className="flex items-center gap-2 rounded-2xl border border-[#dbe4f4] bg-[#f8fbff] px-4 py-3 text-sm text-[#6f7c98] dark:border-white/10 dark:bg-[#11192c] dark:text-[#a7b3c9]">
+                <Receipt size={16} />
+                <select
+                  value={paymentStatus}
+                  onChange={(event) => {
+                    setPaymentStatus(event.target.value as "all" | "paid" | "partial" | "unpaid");
+                    setPage(1);
+                  }}
+                  className="w-full bg-transparent outline-none"
+                >
+                  <option value="all">{locale === "en" ? "All payment states" : "সব পেমেন্ট স্টেট"}</option>
+                  <option value="paid">{locale === "en" ? "Paid" : "পেইড"}</option>
+                  <option value="partial">{locale === "en" ? "Partial" : "পার্শিয়াল"}</option>
+                  <option value="unpaid">{locale === "en" ? "Unpaid" : "ডিউ"}</option>
+                </select>
+              </label>
+
+              <label className="flex items-center gap-2 rounded-2xl border border-[#dbe4f4] bg-[#f8fbff] px-4 py-3 text-sm text-[#6f7c98] dark:border-white/10 dark:bg-[#11192c] dark:text-[#a7b3c9]">
+                <ArrowUpDown size={16} />
+                <select
+                  value={sort}
+                  onChange={(event) => {
+                    setSort(event.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-transparent outline-none"
+                >
+                  <option value="latest">{locale === "en" ? "Newest first" : "নতুন আগে"}</option>
+                  <option value="oldest">{locale === "en" ? "Oldest first" : "পুরোনো আগে"}</option>
+                  <option value="amount_high">
+                    {locale === "en" ? "Amount high to low" : "বেশি এমাউন্ট আগে"}
+                  </option>
+                  <option value="amount_low">
+                    {locale === "en" ? "Amount low to high" : "কম এমাউন্ট আগে"}
+                  </option>
+                </select>
+              </label>
+            </div>
+          </div>
         </div>
 
         {isLoading ? (

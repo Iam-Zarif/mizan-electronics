@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, PhoneCall } from "lucide-react";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { useProvider } from "@/Providers/AuthProviders";
 import { ADMIN_SIDEBAR_REFRESH_EVENT } from "@/lib/admin-sidebar-events";
 import { isAdminUser } from "@/lib/auth";
@@ -13,6 +13,7 @@ import { useLanguage } from "@/lib/i18n";
 import { adminLabels, sidebarSections } from "@/lib/admin-dashboard";
 import {
   getAdminBookings,
+  getAdminContactClicks,
   getAdminCustomers,
   getAdminNotifications,
   getAdminPackages,
@@ -70,6 +71,11 @@ export default function DashboardLayout({
     [],
     Boolean(user && isAdminUser(user)),
   );
+  const { data: contactClicksData, refresh: refreshContactClicks } = useApiQuery(
+    () => getAdminContactClicks({ search: "", channel: "all", sort: "latest" }),
+    [],
+    Boolean(user && isAdminUser(user)),
+  );
 
   useEffect(() => {
     if (!user || !isAdminUser(user)) return;
@@ -81,6 +87,7 @@ export default function DashboardLayout({
       void refreshNotifications();
       void refreshServices();
       void refreshPackages();
+      void refreshContactClicks();
     };
 
     window.addEventListener(ADMIN_SIDEBAR_REFRESH_EVENT, handleSidebarRefresh);
@@ -95,6 +102,7 @@ export default function DashboardLayout({
     refreshNotifications,
     refreshServices,
     refreshPackages,
+    refreshContactClicks,
   ]);
 
   useNotificationSocket<AdminNotificationRow>({
@@ -163,7 +171,35 @@ export default function DashboardLayout({
     "/dashboard/services": servicesData?.counts.totalServices,
     "/dashboard/packages": packagesData?.counts.totalPackages,
     "/dashboard/notifications": notificationsData?.counts.unread,
+    "/dashboard/contact-clicks": contactClicksData?.pagination.totalItems,
   };
+
+  const renderedSidebarSections = sidebarSections.map((section) => {
+    if (section.titleEn !== "Manage") {
+      return section;
+    }
+
+    const hasContactClicks = section.items.some(
+      (item) => item.href === "/dashboard/contact-clicks",
+    );
+
+    if (hasContactClicks) {
+      return section;
+    }
+
+    return {
+      ...section,
+      items: [
+        ...section.items,
+        {
+          href: "/dashboard/contact-clicks",
+          labelBn: "কল হিস্টোরি",
+          labelEn: "Call History",
+          icon: PhoneCall,
+        },
+      ],
+    };
+  });
 
   return (
     <section className="min-h-screen bg-[#eef3fb] pt-24 pb-10 dark:bg-[#0b1020]">
@@ -178,7 +214,7 @@ export default function DashboardLayout({
           </div>
 
           <div className="space-y-6">
-            {sidebarSections.map((section) => (
+            {renderedSidebarSections.map((section) => (
               <div key={section.titleEn}>
                 <div className="mb-3 h-px bg-[#e8edf7] dark:bg-white/10" />
                 <div className="space-y-1.5">
@@ -232,13 +268,7 @@ export default function DashboardLayout({
 
             <div className="rounded-xl border border-[#e8edf7] bg-[#f8fbff] p-2 dark:border-white/10 dark:bg-white/5">
               <div className="flex items-center gap-3">
-                <Image
-                  src="/mizan.png"
-                  alt="Mizan AC Servicing"
-                  width={44}
-                  height={44}
-                  className="h-11 w-11 object-contain"
-                />
+                <BrandLogo size={44} className="object-contain" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[#1f2638] dark:text-white">
                     {adminUser.f_name}

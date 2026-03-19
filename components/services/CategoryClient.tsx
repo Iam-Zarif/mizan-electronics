@@ -34,12 +34,13 @@ export default function CategoryClient({ category, items }: Props) {
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 45vw"
+              priority
             />
           </div>
         </div>
 
         <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {items.map((service) => {
+          {items.map((service, index) => {
             const title = locale === "en" ? service.titleEn : service.title;
             const summary = locale === "en" ? service.summaryEn : service.summary;
             return (
@@ -51,6 +52,7 @@ export default function CategoryClient({ category, items }: Props) {
                 categoryName={categoryTitle}
                 imageHeightClass="h-48"
                 className="bg-white/85 backdrop-blur dark:bg-neutral-900/70"
+                imagePriority={index < 4}
               />
             );
           })}

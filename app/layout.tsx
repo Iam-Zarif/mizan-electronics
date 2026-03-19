@@ -83,6 +83,9 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  other: {
+    google: "notranslate",
+  },
 };
 
 const organizationStructuredData = {
@@ -121,10 +124,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="bn">
+    <html lang="bn" translate="no" className="notranslate">
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} bg-neutral-100 dark:bg-neutral-900 antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} notranslate bg-neutral-100 dark:bg-neutral-900 antialiased`}
       >
         <AuthProvider>
           <LanguageProvider>

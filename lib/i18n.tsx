@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useProvider } from "@/Providers/AuthProviders";
 
 type Locale = "bn" | "en";
@@ -330,39 +338,28 @@ function getNested(path: string, dict: TranslationDict): string {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { user, languagePreference, setLanguagePreference } = useProvider();
-  const [locale, setLocale] = useState<Locale>("bn");
-  const [hydrated, setHydrated] = useState(false);
+  const [guestLocale, setGuestLocale] = useState<Locale>(() => {
+    if (typeof window === "undefined") {
+      return "bn";
+    }
+
+    return window.localStorage.getItem("mizan-lang") === "en" ? "en" : "bn";
+  });
+  const locale = user ? (languagePreference === "en" ? "en" : "bn") : guestLocale;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = localStorage.getItem("mizan-lang");
-    if (stored === "bn" || stored === "en") {
-      setTimeout(() => setLocale(stored as Locale), 0);
-    }
-    setTimeout(() => setHydrated(true), 0);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    if (user) {
-      setLocale(languagePreference === "en" ? "en" : "bn");
-    }
-  }, [hydrated, user, languagePreference]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!hydrated) return;
     localStorage.setItem("mizan-lang", locale);
     document.documentElement.lang = locale;
-  }, [locale, hydrated]);
+  }, [locale]);
 
-  const handleSetLocale = async (nextLocale: Locale) => {
-    setLocale(nextLocale);
+  const handleSetLocale = useCallback(async (nextLocale: Locale) => {
+    setGuestLocale(nextLocale);
 
     if (user) {
       await setLanguagePreference(nextLocale);
     }
-  };
+  }, [setLanguagePreference, user]);
 
   const value = useMemo(
     () => ({
@@ -370,7 +367,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLocale: handleSetLocale,
       t: (path: string) => getNested(path, translations[locale]),
     }),
-    [locale, user, languagePreference]
+    [handleSetLocale, locale],
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

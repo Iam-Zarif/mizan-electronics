@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GoArrowUpRight } from "react-icons/go";
 import { useProvider } from "@/Providers/AuthProviders";
@@ -36,7 +36,7 @@ export default function ServiceBookingActions({
   const userPhone = user?.phone?.trim() || "N/A";
   const message = `${categoryLink}\nক্যাটাগরি: ${categoryName}\nসার্ভিস: ${serviceTitle}\nইউজারের নাম: ${userName}\nফোন: ${userPhone}`;
 
-  const getBookingRedirect = () => {
+  const getBookingRedirect = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("book", "whatsapp");
     params.set("bookCategory", categoryId);
@@ -46,17 +46,17 @@ export default function ServiceBookingActions({
     }
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
-  };
+  }, [categoryId, pathname, searchParams, serviceSlug, serviceTitle]);
 
-  const openWhatsapp = () => {
+  const openWhatsapp = useCallback(() => {
     window.open(
       `${whatsappBase}${encodeURIComponent(message)}`,
       "_blank",
       "noopener,noreferrer",
     );
-  };
+  }, [message]);
 
-  const submitAndOpen = async () => {
+  const submitAndOpen = useCallback(async () => {
     if (serviceSlug) {
       try {
         await createProfileBooking({
@@ -69,7 +69,7 @@ export default function ServiceBookingActions({
     }
 
     openWhatsapp();
-  };
+  }, [openWhatsapp, serviceSlug]);
 
   const guardAndOpen = () => {
     if (isAuthLoading) return;
@@ -139,6 +139,7 @@ export default function ServiceBookingActions({
     searchParams,
     serviceSlug,
     serviceTitle,
+    submitAndOpen,
     user,
   ]);
 

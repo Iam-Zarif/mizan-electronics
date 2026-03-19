@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Eye,
   ListFilter,
@@ -41,10 +41,6 @@ export default function DashboardUsersPage() {
   const [sortBy, setSortBy] = useState<SortKey>("newest");
   const [page, setPage] = useState(1);
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPage(1);
-  }, [query, verification, sortBy]);
 
   const {
     data: usersData,
@@ -120,7 +116,10 @@ export default function DashboardUsersPage() {
                   <Search size={16} />
                   <input
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setPage(1);
+                    }}
                     placeholder={
                       locale === "en"
                         ? "Search by name, email or phone"
@@ -136,9 +135,10 @@ export default function DashboardUsersPage() {
                   <ListFilter size={16} />
                   <select
                     value={verification}
-                    onChange={(e) =>
-                      setVerification(e.target.value as VerificationFilter)
-                    }
+                    onChange={(e) => {
+                      setVerification(e.target.value as VerificationFilter);
+                      setPage(1);
+                    }}
                     className="w-full bg-transparent outline-none"
                   >
                     <option value="all">
@@ -157,7 +157,10 @@ export default function DashboardUsersPage() {
                   <ListFilter size={16} />
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortKey)}
+                    onChange={(e) => {
+                      setSortBy(e.target.value as SortKey);
+                      setPage(1);
+                    }}
                     className="w-full bg-transparent outline-none"
                   >
                     <option value="newest">

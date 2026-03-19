@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bell, BellRing, CheckCheck, FileCheck, ShieldAlert, Trash2, Wrench } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
@@ -34,7 +34,7 @@ export function NotificationDropdown() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const { data, setData } = useApiQuery(getProfileNotifications, [], Boolean(user));
 
-  const notifications = data?.rows ?? [];
+  const notifications = useMemo(() => data?.rows ?? [], [data]);
   const unreadCount = useMemo(
     () => notifications.filter((item) => item.unread).length,
     [notifications],
@@ -60,11 +60,7 @@ export function NotificationDropdown() {
     },
   });
 
-  if (!user) {
-    return null;
-  }
-
-  const markAllRead = async () => {
+  const markAllRead = useCallback(async () => {
     await markAllProfileNotificationsRead();
     setData((current) =>
       current
@@ -75,18 +71,22 @@ export function NotificationDropdown() {
           }
         : current,
     );
-  };
+  }, [setData]);
 
   useEffect(() => {
     if (!open || unreadCount === 0) return;
     void markAllRead();
-  }, [open, unreadCount]);
+  }, [markAllRead, open, unreadCount]);
 
   useEffect(() => {
     if (!actionSuccess) return;
     const timer = window.setTimeout(() => setActionSuccess(null), 2200);
     return () => window.clearTimeout(timer);
   }, [actionSuccess]);
+
+  if (!user) {
+    return null;
+  }
 
   const markOneRead = async (notificationId: string) => {
     if (notificationId === "verify-warning") return;
@@ -175,7 +175,11 @@ export function NotificationDropdown() {
                 return (
                   <div
                     key={notification._id}
-                    className="flex gap-3 rounded-xl px-3 py-3 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    className={`flex gap-3 rounded-xl border px-3 py-3 transition ${
+                      notification.unread
+                        ? "border-indigo-200 bg-indigo-50/80 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/12 dark:hover:bg-indigo-500/18"
+                        : "border-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    }`}
                   >
                     <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
                       <Icon size={16} />

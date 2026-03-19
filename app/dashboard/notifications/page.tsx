@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BellDot, CheckCheck, ChevronRight, Trash2 } from "lucide-react";
+import { BellDot, CheckCheck, ChevronRight, Loader2, Trash2 } from "lucide-react";
 import { AdminSurface } from "@/components/admin/AdminSections";
 import {
   ApiEmptyState,
@@ -53,7 +53,7 @@ export default function DashboardNotificationsPage() {
   const [viewFilter, setViewFilter] = useState<"all" | "unread">("all");
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [page, setPage] = useState(1);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function DashboardNotificationsPage() {
   };
 
   const deleteOne = async (notificationId: string) => {
-    setIsDeleting(true);
+    setDeletingId(notificationId);
     try {
       await deleteAdminNotification(notificationId);
       setData((current) => {
@@ -144,7 +144,7 @@ export default function DashboardNotificationsPage() {
       );
       dispatchAdminSidebarRefresh();
     } finally {
-      setIsDeleting(false);
+      setDeletingId(null);
     }
   };
 
@@ -290,11 +290,20 @@ export default function DashboardNotificationsPage() {
                             <button
                               type="button"
                               onClick={() => void deleteOne(item._id)}
-                              disabled={isDeleting}
+                              disabled={deletingId === item._id}
                               className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200"
                             >
-                              <Trash2 size={16} />
-                              {locale === "en" ? "Delete" : "ডিলিট"}
+                              {deletingId === item._id ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin" />
+                                  {locale === "en" ? "Deleting..." : "ডিলিট হচ্ছে..."}
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 size={16} />
+                                  {locale === "en" ? "Delete" : "ডিলিট"}
+                                </>
+                              )}
                             </button>
                           </div>
                         </div>

@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "motion/react";
-import logo from "@/public/mizan.png";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 export default function Loading() {
   return (
@@ -20,14 +19,7 @@ export default function Loading() {
             transition={{ repeat: Infinity, duration: 2.2, ease: "linear" }}
           />
           <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white dark:bg-black shadow-xl">
-            <Image
-              src={logo}
-              alt="Mizan AC Servicing"
-              width={48}
-              height={48}
-              priority
-              className="h-auto w-auto"
-            />
+            <BrandLogo size={48} />
           </div>
         </motion.div>
 

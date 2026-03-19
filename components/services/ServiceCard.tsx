@@ -25,6 +25,7 @@ type Props = {
   showProcess?: boolean;
   summaryHiddenOnMobile?: boolean;
   className?: string;
+  imagePriority?: boolean;
 };
 
 export default function ServiceCard({
@@ -36,6 +37,7 @@ export default function ServiceCard({
   showProcess = false,
   summaryHiddenOnMobile = true,
   className = "",
+  imagePriority = false,
 }: Props) {
   return (
     <motion.div
@@ -49,6 +51,7 @@ export default function ServiceCard({
           fill
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+          priority={imagePriority}
         />
         <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-[#2160ba] shadow">
           {service.price}

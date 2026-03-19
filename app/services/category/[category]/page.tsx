@@ -1,38 +1,59 @@
-"use client";
-
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import CategoryClient from "@/components/services/CategoryClient";
-import { ApiErrorState, ApiSkeletonBlock } from "@/components/shared/ApiState";
-import { getPublicServiceCatalog } from "@/lib/dashboard-api";
-import { useApiQuery } from "@/hooks/use-api-query";
-import { useLanguage } from "@/lib/i18n";
+import CategoryPageClient from "@/components/services/CategoryPageClient";
+import { getSiteUrl, getServerPublicServiceCatalog } from "@/lib/server/public-content";
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
-  const { locale } = useLanguage();
-  const { data, isLoading, error, refresh } = useApiQuery(getPublicServiceCatalog, []);
+type Props = {
+  params: Promise<{ category: string }>;
+};
 
-  const category = data?.categories.find((item) => item.id === params.category);
-  const items = data?.services.filter((item) => item.categoryId === params.category) ?? [];
+export async function generateStaticParams() {
+  const catalog = await getServerPublicServiceCatalog();
+  return (catalog?.categories ?? []).map((category) => ({ category: category.id }));
+}
 
-  if (!isLoading && !error && data && !category) {
-    return notFound();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { category: categoryId } = await params;
+  const catalog = await getServerPublicServiceCatalog();
+  const category = catalog?.categories.find((item) => item.id === categoryId);
+
+  if (!category) {
+    return {
+      title: "Category Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
   }
 
-  return (
-    <>
-      {isLoading ? <ApiSkeletonBlock rows={4} /> : null}
-      {!isLoading && error ? (
-        <section className="relative pt-24 pb-14">
-          <div className="mx-auto max-w-7xl px-4">
-            <ApiErrorState
-              title={locale === "en" ? "Category failed to load" : "ক্যাটাগরি লোড হয়নি"}
-              description={error}
-              onRetry={() => void refresh()}
-            />
-          </div>
-        </section>
-      ) : null}
-      {!isLoading && !error && category ? <CategoryClient category={category} items={items} /> : null}
-    </>
-  );
+  const title = `${category.nameEn} in Dhaka`;
+  const description = `${category.description} Browse ${category.nameEn.toLowerCase()} from Mizan AC Servicing in Dhaka.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${getSiteUrl()}/services/category/${category.id}`,
+    },
+    openGraph: {
+      title: `${title} | Mizan AC Servicing`,
+      description,
+      url: `${getSiteUrl()}/services/category/${category.id}`,
+      type: "website",
+      images: category.image ? [{ url: category.image, alt: category.nameEn }] : undefined,
+    },
+    keywords: [category.nameEn, "AC service Dhaka", "Mizan AC Servicing"],
+  };
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const { category: categoryId } = await params;
+  const catalog = await getServerPublicServiceCatalog();
+
+  if (catalog && !catalog.categories.some((item) => item.id === categoryId)) {
+    notFound();
+  }
+
+  return <CategoryPageClient categoryId={categoryId} initialData={catalog} />;
 }

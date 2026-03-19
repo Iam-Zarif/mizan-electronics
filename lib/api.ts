@@ -8,9 +8,35 @@ const normalizeApiBaseUrl = (value?: string) => {
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
-export const API_BASE_URL = normalizeApiBaseUrl(
-  process.env.NEXT_PUBLIC_API_URL,
-);
+const getRuntimeApiBaseUrl = () => {
+  const normalized = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
+
+  if (typeof window === "undefined") {
+    return normalized;
+  }
+
+  try {
+    const apiUrl = new URL(normalized);
+    const currentHost = window.location.hostname;
+    const isLocalApiHost =
+      apiUrl.hostname === "localhost" || apiUrl.hostname === "127.0.0.1";
+    const isDifferentClientHost =
+      currentHost !== "localhost" &&
+      currentHost !== "127.0.0.1" &&
+      currentHost !== apiUrl.hostname;
+
+    if (isLocalApiHost && isDifferentClientHost) {
+      apiUrl.hostname = currentHost;
+      return apiUrl.toString().replace(/\/+$/, "");
+    }
+  } catch {
+    return normalized;
+  }
+
+  return normalized;
+};
+
+export const API_BASE_URL = getRuntimeApiBaseUrl();
 
 export const WS_BASE_URL = API_BASE_URL.replace(/\/api$/, "").replace(/^http/, "ws");
 

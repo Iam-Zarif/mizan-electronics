@@ -1,3 +1,8 @@
+import type {
+  PublicPackagesResponse,
+  PublicReviewsResponse,
+  PublicServiceCatalogResponse,
+} from "@/lib/dashboard-api";
 import Hero from "./Hero";
 import { ServiceCatalogProvider } from "./ServiceCatalogProvider";
 import ServiceCategoriesSection from "./ServiceCategoriesSection";
@@ -6,17 +11,25 @@ import AllServicesSection from "./AllServicesSection";
 import TestimonialsClients from "./TestimonialsClients";
 import PackagesSection from "./PackagesSection";
 
-const HomeComponent = () => {
+const HomeComponent = ({
+  catalog,
+  packages,
+  reviews,
+}: {
+  catalog: PublicServiceCatalogResponse | null;
+  packages: PublicPackagesResponse | null;
+  reviews: PublicReviewsResponse | null;
+}) => {
   return (
     <>
       <Hero />
-      <ServiceCatalogProvider>
+      <ServiceCatalogProvider initialData={catalog}>
         <ServiceCategoriesSection />
         <TopServicesSection />
-        <PackagesSection />
+        <PackagesSection initialData={packages} />
         <AllServicesSection />
       </ServiceCatalogProvider>
-      <TestimonialsClients />
+      <TestimonialsClients initialData={reviews} />
     </>
   );
 };

@@ -80,7 +80,7 @@ export function ProfileServicesTab() {
 
     try {
       setDownloadingId(service._id);
-      await downloadInvoicePdf(toHistoryShape(service), user, locale);
+      await downloadInvoicePdf(toHistoryShape(service), user);
     } finally {
       setDownloadingId(null);
     }

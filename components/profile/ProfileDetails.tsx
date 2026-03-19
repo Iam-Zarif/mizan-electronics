@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "motion/react";
 import {
@@ -23,7 +22,6 @@ import { isAdminUser } from "@/lib/auth";
 import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
 
 export function ProfileDetails() {
-  const router = useRouter();
   const { t, locale } = useLanguage();
   const {
     user,
@@ -45,8 +43,6 @@ export function ProfileDetails() {
   const [verificationNow, setVerificationNow] = useState(Date.now());
   const [isSendingVerificationOtp, setIsSendingVerificationOtp] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [verificationError, setVerificationError] = useState("");
-  const [verificationSuccess, setVerificationSuccess] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -170,8 +166,8 @@ export function ProfileDetails() {
   };
 
   const handleOpenVerificationModal = async () => {
-    setVerificationError("");
-    setVerificationSuccess("");
+    setError("");
+    setSuccess("");
     setVerificationOtp("");
     const initialExpiry = Date.now() + 5 * 60 * 1000;
     setVerificationNow(Date.now());
@@ -184,9 +180,9 @@ export function ProfileDetails() {
       setVerificationExpiresAt(
         expiresAt ? new Date(expiresAt).getTime() : initialExpiry,
       );
-      setVerificationSuccess(t("profile.verificationSent"));
+      setSuccess(t("profile.verificationSent"));
     } catch (sendError) {
-      setVerificationError(
+      setError(
         sendError instanceof Error
           ? sendError.message
           : t("profile.sendVerificationFailed"),
@@ -197,8 +193,8 @@ export function ProfileDetails() {
   };
 
   const handleResendVerificationOtp = async () => {
-    setVerificationError("");
-    setVerificationSuccess("");
+    setError("");
+    setSuccess("");
     setVerificationOtp("");
     const initialExpiry = Date.now() + 5 * 60 * 1000;
     setVerificationNow(Date.now());
@@ -210,9 +206,9 @@ export function ProfileDetails() {
       setVerificationExpiresAt(
         expiresAt ? new Date(expiresAt).getTime() : initialExpiry,
       );
-      setVerificationSuccess(t("profile.verificationResent"));
+      setSuccess(t("profile.verificationResent"));
     } catch (sendError) {
-      setVerificationError(
+      setError(
         sendError instanceof Error
           ? sendError.message
           : t("profile.sendVerificationFailed"),
@@ -223,18 +219,18 @@ export function ProfileDetails() {
   };
 
   const handleVerifyEmail = async () => {
-    setVerificationError("");
-    setVerificationSuccess("");
+    setError("");
+    setSuccess("");
 
     try {
       setIsVerifyingEmail(true);
       await verifyEmail(verificationOtp.trim());
-      setVerificationSuccess(t("profile.verificationSuccess"));
+      setSuccess(t("profile.verificationSuccess"));
       setIsVerificationModalOpen(false);
       setVerificationOtp("");
       setVerificationExpiresAt(null);
     } catch (verificationError) {
-      setVerificationError(
+      setError(
         verificationError instanceof Error
           ? verificationError.message
           : t("profile.verificationFailed"),

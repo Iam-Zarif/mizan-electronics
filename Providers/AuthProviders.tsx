@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useCallback,
   useEffect,
   useState,
   type ReactNode,
@@ -84,25 +85,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [languagePreferenceState]);
 
+  const applyProfile = (profile: AuthUser | null) => {
+    setUser(profile);
+    if (!profile) {
+      return null;
+    }
+
+    setThemePreferenceState(profile.themePreference ?? "light");
+    setLanguagePreferenceState(profile.languagePreference ?? "bn");
+    return profile;
+  };
+
   const refreshProfile = async () => {
     try {
       const { data } = await api.get("/profile/me");
       const normalized = normalizeUser(data as Record<string, unknown>);
-      setUser(normalized);
-      setThemePreferenceState(normalized.themePreference ?? "light");
-      setLanguagePreferenceState(normalized.languagePreference ?? "bn");
-      return normalized;
+      return applyProfile(normalized);
     } catch {
-      setUser(null);
-      return null;
+      return applyProfile(null);
     } finally {
       setIsAuthLoading(false);
     }
   };
 
-  useEffect(() => {
-    void refreshProfile();
+  const initializeAuth = useCallback(async () => {
+    try {
+      const { data } = await api.get("/auth/session");
+      const session = data as {
+        authenticated?: boolean;
+        user?: Record<string, unknown> | null;
+      };
+
+      if (!session.authenticated || !session.user) {
+        applyProfile(null);
+        return null;
+      }
+
+      const normalized = normalizeUser(session.user);
+      return applyProfile(normalized);
+    } catch {
+      return applyProfile(null);
+    } finally {
+      setIsAuthLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void initializeAuth();
+  }, [initializeAuth]);
 
   const register = async (
     f_name: string,

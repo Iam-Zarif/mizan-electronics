@@ -3,10 +3,10 @@
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { Star, Quote } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useLanguage } from "@/lib/i18n";
 import { useApiQuery } from "@/hooks/use-api-query";
-import { getPublicReviews } from "@/lib/dashboard-api";
+import { getPublicReviews, type PublicReviewsResponse } from "@/lib/dashboard-api";
 
 const clients = [
   "/brands/walton.png",
@@ -16,23 +16,30 @@ const clients = [
   "/brands/haier.png",
 ];
 
-export default function TestimonialsClients() {
+export default function TestimonialsClients({
+  initialData = null,
+}: {
+  initialData?: PublicReviewsResponse | null;
+}) {
   const { t, locale } = useLanguage();
   const [index, setIndex] = useState(0);
-  const [perView, setPerView] = useState(3);
-  const { data } = useApiQuery(getPublicReviews, [], true);
+  const { data } = useApiQuery(getPublicReviews, [], initialData === null, initialData);
   const testimonialData = data?.rows ?? [];
+  const viewportWidth = useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") {
+        return () => undefined;
+      }
 
-  useEffect(() => {
-    const updatePerView = () => {
-      if (window.innerWidth < 640) setPerView(1);
-      else if (window.innerWidth < 1024) setPerView(2);
-      else setPerView(3);
-    };
-    updatePerView();
-    window.addEventListener("resize", updatePerView);
-    return () => window.removeEventListener("resize", updatePerView);
-  }, []);
+      window.addEventListener("resize", onStoreChange);
+      return () => window.removeEventListener("resize", onStoreChange);
+    },
+    () => (typeof window === "undefined" ? 1280 : window.innerWidth),
+    () => 1280,
+  );
+  const perView = viewportWidth < 640 ? 1 : viewportWidth < 1024 ? 2 : 3;
+  const safeIndex =
+    testimonialData.length > 0 ? index % testimonialData.length : 0;
 
   useEffect(() => {
     if (!testimonialData.length) return;
@@ -42,22 +49,16 @@ export default function TestimonialsClients() {
     return () => clearInterval(t);
   }, [perView, testimonialData.length]);
 
-  useEffect(() => {
-    if (testimonialData.length === 0) {
-      setIndex(0);
-      return;
-    }
-    setIndex((current) => current % testimonialData.length);
-  }, [testimonialData.length]);
-
   if (testimonialData.length === 0) {
     return null;
   }
 
-  const visible = Array.from({ length: perView }).map((_, i) => testimonialData[(index + i) % testimonialData.length]);
+  const visible = Array.from({ length: perView }).map(
+    (_, i) => testimonialData[(safeIndex + i) % testimonialData.length],
+  );
 
   const totalTabs = Math.ceil(testimonialData.length / perView);
-  const activeTab = Math.floor(index / perView);
+  const activeTab = Math.floor(safeIndex / perView);
 
   return (
     <section className="relative py-14 overflow-hidden">
@@ -86,7 +87,7 @@ export default function TestimonialsClients() {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={index}
+            key={safeIndex}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -40 }}

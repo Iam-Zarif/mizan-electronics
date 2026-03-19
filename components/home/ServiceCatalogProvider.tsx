@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useApiQuery } from "@/hooks/use-api-query";
 import {
   getPublicServiceCatalog,
@@ -11,11 +11,35 @@ type ServiceCatalogContextValue = ReturnType<typeof useApiQuery<PublicServiceCat
 
 const ServiceCatalogContext = createContext<ServiceCatalogContextValue | null>(null);
 
-export function ServiceCatalogProvider({ children }: { children: ReactNode }) {
-  const query = useApiQuery(getPublicServiceCatalog, []);
+export function ServiceCatalogProvider({
+  children,
+  initialData = null,
+}: {
+  children: ReactNode;
+  initialData?: PublicServiceCatalogResponse | null;
+}) {
+  const [seededData, setSeededData] = useState<PublicServiceCatalogResponse | null>(initialData);
+  const query = useApiQuery(getPublicServiceCatalog, [], initialData === null);
+
+  const value = useMemo<ServiceCatalogContextValue>(() => {
+    if (initialData === null) {
+      return query;
+    }
+
+    return {
+      data: seededData,
+      isLoading: false,
+      error: null,
+      refresh: async () => {
+        const nextData = await getPublicServiceCatalog();
+        setSeededData(nextData);
+      },
+      setData: setSeededData,
+    };
+  }, [initialData, query, seededData]);
 
   return (
-    <ServiceCatalogContext.Provider value={query}>
+    <ServiceCatalogContext.Provider value={value}>
       {children}
     </ServiceCatalogContext.Provider>
   );

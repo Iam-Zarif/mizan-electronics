@@ -3,13 +3,22 @@
 import { motion } from "motion/react";
 import { ApiEmptyState, ApiSkeletonBlock } from "@/components/shared/ApiState";
 import { useApiQuery } from "@/hooks/use-api-query";
-import { getLandingPackages } from "@/lib/dashboard-api";
+import { getLandingPackages, type PublicPackagesResponse } from "@/lib/dashboard-api";
 import { useLanguage } from "@/lib/i18n";
 import PackageBookingActions from "@/components/home/PackageBookingActions";
 
-export default function PackagesSection() {
+export default function PackagesSection({
+  initialData = null,
+}: {
+  initialData?: PublicPackagesResponse | null;
+}) {
   const { locale } = useLanguage();
-  const { data, isLoading, error } = useApiQuery(getLandingPackages, []);
+  const { data, isLoading, error } = useApiQuery(
+    getLandingPackages,
+    [],
+    initialData === null,
+    initialData,
+  );
   const shouldShowSkeleton = isLoading || Boolean(error);
 
   return (
