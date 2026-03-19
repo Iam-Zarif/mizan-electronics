@@ -1,6 +1,5 @@
 "use client";
 
-import { jsPDF } from "jspdf";
 import type { AuthUser } from "@/lib/auth";
 import type { ProfileServiceHistory } from "@/lib/profile-static";
 
@@ -35,6 +34,7 @@ export const downloadInvoicePdf = async (
   service: ProfileServiceHistory,
   user: AuthUser,
 ) => {
+  const { jsPDF } = await import("jspdf/dist/jspdf.es.min.js");
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",

@@ -31,8 +31,10 @@ import {
   deleteAdminCategory,
   deleteAdminService,
   getAdminServices,
+  updateAdminCategory,
   updateAdminService,
   type AdminServiceCategoryCreateInput,
+  type AdminServiceCategoryUpdateInput,
   type AdminServiceCategoryRow,
   type AdminServiceRow,
   type AdminServiceUpdateInput,
@@ -82,6 +84,7 @@ export default function DashboardServicesPage() {
   const [page, setPage] = useState(1);
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<AdminServiceCategoryRow | null>(null);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
   const [categoryState, setCategoryState] = useState<CategoryFormState>({
     name: "",
@@ -227,11 +230,32 @@ export default function DashboardServicesPage() {
   const closeCategoryModal = () => {
     if (isCategorySaving || isUploadingCategoryImage) return;
     setIsCategoryModalOpen(false);
+    setEditingCategory(null);
     setCategoryState({
       name: "",
       description: "",
       image: "",
     });
+  };
+
+  const openCategoryModal = (category?: AdminServiceCategoryRow) => {
+    setActionError(null);
+    setActionSuccess(null);
+    setEditingCategory(category ?? null);
+    setCategoryState(
+      category
+        ? {
+            name: category.name,
+            description: category.description,
+            image: category.image,
+          }
+        : {
+            name: "",
+            description: "",
+            image: "",
+          },
+    );
+    setIsCategoryModalOpen(true);
   };
 
   const handleSave = async () => {
@@ -356,8 +380,8 @@ export default function DashboardServicesPage() {
     );
   };
 
-  const handleCreateCategory = async () => {
-    const payload: AdminServiceCategoryCreateInput = {
+  const handleSaveCategory = async () => {
+    const payload: AdminServiceCategoryCreateInput | AdminServiceCategoryUpdateInput = {
       name: categoryState.name.trim(),
       description: categoryState.description.trim(),
       image: categoryState.image.trim(),
@@ -368,27 +392,50 @@ export default function DashboardServicesPage() {
     setActionSuccess(null);
 
     try {
-      const response = await createAdminCategory(payload);
-      const createdCategory = response.data as AdminServiceCategoryRow;
+      if (editingCategory) {
+        const response = await updateAdminCategory(editingCategory.id, payload);
+        const updatedCategory = response.data as AdminServiceCategoryRow;
 
-      setData((current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          rows: [...current.rows, createdCategory],
-          counts: {
-            ...current.counts,
-            totalCategories: current.counts.totalCategories + 1,
-          },
-          pagination: current.pagination,
-        };
-      });
-      setOpenCategories([createdCategory.id]);
+        setData((current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            rows: current.rows.map((category) =>
+              category.id === editingCategory.id
+                ? { ...category, ...updatedCategory, services: category.services }
+                : category,
+            ),
+            pagination: current.pagination,
+          };
+        });
+        setOpenCategories([editingCategory.id]);
+      } else {
+        const response = await createAdminCategory(payload);
+        const createdCategory = response.data as AdminServiceCategoryRow;
+
+        setData((current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            rows: [...current.rows, createdCategory],
+            counts: {
+              ...current.counts,
+              totalCategories: current.counts.totalCategories + 1,
+            },
+            pagination: current.pagination,
+          };
+        });
+        setOpenCategories([createdCategory.id]);
+      }
       closeCategoryModal();
       setActionSuccess(
-        locale === "en"
-          ? "Category created successfully."
-          : "ক্যাটাগরি সফলভাবে তৈরি হয়েছে।",
+        editingCategory
+          ? locale === "en"
+            ? "Category updated successfully."
+            : "ক্যাটাগরি সফলভাবে আপডেট হয়েছে।"
+          : locale === "en"
+            ? "Category created successfully."
+            : "ক্যাটাগরি সফলভাবে তৈরি হয়েছে।",
       );
       dispatchAdminSidebarRefresh();
     } catch (nextError) {
@@ -538,7 +585,7 @@ export default function DashboardServicesPage() {
                   onClick={() => {
                     setActionError(null);
                     setActionSuccess(null);
-                    setIsCategoryModalOpen(true);
+                    openCategoryModal();
                   }}
                   className="inline-flex items-center gap-2 rounded-2xl bg-[#2160ba] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
                 >
@@ -626,6 +673,13 @@ export default function DashboardServicesPage() {
                           {category.services.length} {locale === "en" ? "services" : "সার্ভিস"}
                         </p>
                         <div className="mt-2 flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openCategoryModal(category)}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f3f6fd] text-[#2160ba] dark:bg-white/8 dark:text-[#aab5ff]"
+                          >
+                            <Pencil size={16} />
+                          </button>
                           <button
                             type="button"
                             onClick={() => setCategoryDeleteTarget(category)}
@@ -724,7 +778,7 @@ export default function DashboardServicesPage() {
                                     <span>{locale === "en" ? "Process" : "প্রসেস"}</span>
                                   </div>
                                   <div className="mt-2 flex flex-wrap gap-2">
-                                    {service.process.slice(0, 4).map((step) => (
+                                    {service.process.map((step) => (
                                       <span
                                         key={step}
                                         className="inline-flex items-center gap-1.5 rounded-full bg-[#f3f6fd] px-3 py-1 text-xs font-medium text-[#60708d] dark:bg-white/8 dark:text-[#a7b3c9]"
@@ -970,7 +1024,13 @@ export default function DashboardServicesPage() {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-2xl font-bold text-[#1f2638] dark:text-white">
-                  {locale === "en" ? "Add Category" : "ক্যাটাগরি যোগ করুন"}
+                  {editingCategory
+                    ? locale === "en"
+                      ? "Edit Category"
+                      : "ক্যাটাগরি এডিট করুন"
+                    : locale === "en"
+                      ? "Add Category"
+                      : "ক্যাটাগরি যোগ করুন"}
                 </h3>
                 <p className="mt-1 text-sm text-[#60708d] dark:text-[#a7b3c9]">
                   {locale === "en"
@@ -1098,7 +1158,7 @@ export default function DashboardServicesPage() {
               </button>
               <button
                 type="button"
-                onClick={() => void handleCreateCategory()}
+                onClick={() => void handleSaveCategory()}
                 disabled={isCategorySaving || isUploadingCategoryImage}
                 className="rounded-2xl bg-[#2160ba] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
               >
@@ -1106,9 +1166,13 @@ export default function DashboardServicesPage() {
                   ? locale === "en"
                     ? "Saving..."
                     : "সেভ হচ্ছে..."
-                  : locale === "en"
-                    ? "Create Category"
-                    : "ক্যাটাগরি তৈরি করুন"}
+                  : editingCategory
+                    ? locale === "en"
+                      ? "Save Category"
+                      : "ক্যাটাগরি সেভ করুন"
+                    : locale === "en"
+                      ? "Create Category"
+                      : "ক্যাটাগরি তৈরি করুন"}
               </button>
             </div>
           </div>

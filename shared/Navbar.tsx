@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { Sun, Moon, ChevronDown, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard } from "lucide-react";
+import { Sun, Moon, ChevronDown, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard, BellRing } from "lucide-react";
 import { GoArrowUpRight } from "react-icons/go";
 import { HiMenu, HiX } from "react-icons/hi";
 import { HiOutlineHome, HiHome } from "react-icons/hi";
@@ -38,6 +38,20 @@ const Navbar = () => {
   const showUserNotifications = Boolean(user) && !showDashboard;
   const isDark = themePreference === "dark";
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const { body } = document;
+    const previousOverflow = body.style.overflow;
+
+    if (openMobile) {
+      body.style.overflow = "hidden";
+    }
+
+    return () => {
+      body.style.overflow = previousOverflow;
+    };
+  }, [openMobile]);
+
   if (pathname.startsWith("/auth")) {
     return null;
   }
@@ -52,7 +66,7 @@ const Navbar = () => {
             className="flex items-center justify-between rounded-full  border border-neutral-100 dark:border-white/10 lg:py-2.5 pt-3 pb-2 bg-white/60 px-4 backdrop-blur-xl shadow-lg dark:bg-black/50"
           >
             <Link href="/" className="flex items-center gap-2 cursor-pointer">
-              <BrandLogo size={48} />
+              <BrandLogo />
               <span className="hidden sm:block font-extrabold tracking-wide bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] bg-clip-text text-transparent">
                 Mizan AC Servicing
               </span>
@@ -225,16 +239,14 @@ const Navbar = () => {
                 </Link>
               ) : null}
               {showUserNotifications ? (
-                <div className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-3 dark:border-neutral-800 dark:bg-neutral-800/70">
-                  <p className="mb-2 text-sm font-semibold text-neutral-900 dark:text-white">
-                    {t("nav.notifications")}
-                  </p>
-                  <p className="text-xs leading-5 text-neutral-500 dark:text-neutral-300">
-                    {locale === "en"
-                      ? "Service and invoice alerts will appear here."
-                      : "সার্ভিস ও ইনভয়েস সম্পর্কিত অ্যালার্ট এখানে দেখা যাবে।"}
-                  </p>
-                </div>
+                <Link
+                  href="/notifications"
+                  onClick={() => setOpenMobile(false)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  <BellRing className="text-[18px]" />
+                  {t("nav.notifications")}
+                </Link>
               ) : null}
               {showDashboard ? (
                 <Link

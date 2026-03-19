@@ -380,6 +380,8 @@ export type AdminServiceCategoryCreateInput = {
   image: string;
 };
 
+export type AdminServiceCategoryUpdateInput = AdminServiceCategoryCreateInput;
+
 export type AdminPackageRow = {
   _id: string;
   categoryId: string;
@@ -590,6 +592,14 @@ export const getAdminPackages = (params?: {
 
 export const createAdminCategory = async (payload: AdminServiceCategoryCreateInput) => {
   const { data } = await api.post("/services/categories", payload);
+  return data;
+};
+
+export const updateAdminCategory = async (
+  categoryId: string,
+  payload: AdminServiceCategoryUpdateInput,
+) => {
+  const { data } = await api.patch(`/services/categories/${categoryId}`, payload);
   return data;
 };
 

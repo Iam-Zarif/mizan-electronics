@@ -1,18 +1,19 @@
+import Image from "next/image";
+
 type BrandLogoProps = {
   size?: number;
   className?: string;
 };
 
-export default function BrandLogo({ size = 48, className = "" }: BrandLogoProps) {
+export default function BrandLogo({ size = 36, className = "" }: BrandLogoProps) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src="/mizan.png"
       alt="Mizan AC Servicing"
       width={size}
       height={size}
-      className={className}
-      style={{ width: "auto", height: `${size}px` }}
+      className={`h-auto w-auto ${className}`}
+      priority={size >= 48}
     />
   );
 }

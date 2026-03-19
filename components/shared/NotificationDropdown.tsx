@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Bell, BellRing, CheckCheck, FileCheck, ShieldAlert, Trash2, Wrench } from "lucide-react";
+import { Bell, BellRing, CheckCheck, Trash2 } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -14,17 +14,7 @@ import {
 } from "@/lib/dashboard-api";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { useNotificationSocket } from "@/lib/realtime/notification-socket";
-
-const notificationIconMap = {
-  service: Wrench,
-  billing: FileCheck,
-  verification: ShieldAlert,
-  invoice: FileCheck,
-  security: ShieldAlert,
-  booking: Wrench,
-  message: Bell,
-  system: Bell,
-};
+import { getNotificationIcon } from "@/lib/notification-icons";
 
 export function NotificationDropdown() {
   const { user } = useProvider();
@@ -168,10 +158,7 @@ export function NotificationDropdown() {
               </div>
             ) : (
               notifications.map((notification) => {
-                const Icon =
-                  notificationIconMap[
-                    notification.type as keyof typeof notificationIconMap
-                  ] ?? Bell;
+                const Icon = getNotificationIcon(notification.type);
                 return (
                   <div
                     key={notification._id}
