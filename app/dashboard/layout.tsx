@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
+import { ADMIN_SIDEBAR_REFRESH_EVENT } from "@/lib/admin-sidebar-events";
 import { isAdminUser } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
 import { adminLabels, sidebarSections } from "@/lib/admin-dashboard";
@@ -39,36 +40,62 @@ export default function DashboardLayout({
     }
   }, [isAuthLoading, router, user]);
 
-  const { data: usersData } = useApiQuery(
+  const { data: usersData, refresh: refreshUsers } = useApiQuery(
     () => getAdminUsers({ search: "", verification: "all", sort: "newest" }),
     [],
     Boolean(user && isAdminUser(user)),
   );
-  const { data: bookingsData } = useApiQuery(
+  const { data: bookingsData, refresh: refreshBookings } = useApiQuery(
     () => getAdminBookings({ search: "", status: "all", sort: "latest" }),
     [],
     Boolean(user && isAdminUser(user)),
   );
-  const { data: customersData } = useApiQuery(
+  const { data: customersData, refresh: refreshCustomers } = useApiQuery(
     getAdminCustomers,
     [],
     Boolean(user && isAdminUser(user)),
   );
-  const { data: notificationsData, setData: setNotificationsData } = useApiQuery(
+  const { data: notificationsData, setData: setNotificationsData, refresh: refreshNotifications } = useApiQuery(
     () => getAdminNotifications({ filter: "unread", sort: "latest" }),
     [],
     Boolean(user && isAdminUser(user)),
   );
-  const { data: servicesData } = useApiQuery(
+  const { data: servicesData, refresh: refreshServices } = useApiQuery(
     () => getAdminServices({ search: "" }),
     [],
     Boolean(user && isAdminUser(user)),
   );
-  const { data: packagesData } = useApiQuery(
+  const { data: packagesData, refresh: refreshPackages } = useApiQuery(
     () => getAdminPackages({ search: "" }),
     [],
     Boolean(user && isAdminUser(user)),
   );
+
+  useEffect(() => {
+    if (!user || !isAdminUser(user)) return;
+
+    const handleSidebarRefresh = () => {
+      void refreshUsers();
+      void refreshBookings();
+      void refreshCustomers();
+      void refreshNotifications();
+      void refreshServices();
+      void refreshPackages();
+    };
+
+    window.addEventListener(ADMIN_SIDEBAR_REFRESH_EVENT, handleSidebarRefresh);
+    return () => {
+      window.removeEventListener(ADMIN_SIDEBAR_REFRESH_EVENT, handleSidebarRefresh);
+    };
+  }, [
+    user,
+    refreshUsers,
+    refreshBookings,
+    refreshCustomers,
+    refreshNotifications,
+    refreshServices,
+    refreshPackages,
+  ]);
 
   useNotificationSocket<AdminNotificationRow>({
     enabled: Boolean(user && isAdminUser(user)),
@@ -126,8 +153,7 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     await logout();
-    router.push("/");
-    router.refresh();
+    window.location.replace("/");
   };
 
   const sidebarCounts: Record<string, number | undefined> = {
@@ -206,19 +232,13 @@ export default function DashboardLayout({
 
             <div className="rounded-xl border border-[#e8edf7] bg-[#f8fbff] p-2 dark:border-white/10 dark:bg-white/5">
               <div className="flex items-center gap-3">
-                {adminUser.avatar?.url ? (
-                  <Image
-                    src={adminUser.avatar.url}
-                    alt={adminUser.f_name}
-                    width={44}
-                    height={44}
-                    className="h-11 w-11 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-linear-to-br from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] text-sm font-bold text-white">
-                    {adminUser.f_name.slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+                <Image
+                  src="/mizan.png"
+                  alt="Mizan AC Servicing"
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 object-contain"
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[#1f2638] dark:text-white">
                     {adminUser.f_name}

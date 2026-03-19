@@ -5,6 +5,11 @@ import type { AuthUser } from "@/lib/auth";
 import type { ProfileServiceHistory } from "@/lib/profile-static";
 
 const LOGO_URL = "/mizan.png";
+const PAGE_WIDTH = 210;
+const PAGE_HEIGHT = 297;
+const PAGE_PADDING = 12;
+const CONTENT_LEFT = PAGE_PADDING;
+const CONTENT_RIGHT = PAGE_WIDTH - PAGE_PADDING;
 
 const loadImageAsDataUrl = async (url: string) => {
   const response = await fetch(url);
@@ -16,6 +21,15 @@ const loadImageAsDataUrl = async (url: string) => {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+};
+
+const formatPdfMoney = (value: number) =>
+  `Tk ${new Intl.NumberFormat("en-US").format(Math.round(value || 0))}`;
+
+const getAmountWords = (service: ProfileServiceHistory) => {
+  if (service.due <= 0) return "Paid in full";
+  if (service.amountPaid <= 0) return "Payment pending";
+  return "Partial payment received";
 };
 
 export const downloadInvoicePdf = async (
@@ -30,129 +44,142 @@ export const downloadInvoicePdf = async (
   });
 
   doc.setFillColor(33, 96, 186);
-  doc.triangle(0, 0, 55, 0, 0, 12, "F");
+  doc.triangle(0, 0, 58, 0, 0, 12, "F");
   doc.setFillColor(123, 61, 200);
-  doc.triangle(150, 0, 210, 0, 210, 14, "F");
+  doc.triangle(166, 0, 210, 0, 210, 14, "F");
   doc.setFillColor(236, 170, 129);
-  doc.triangle(120, 0, 175, 0, 150, 6, "F");
+  doc.triangle(118, 0, 166, 0, 150, 7, "F");
 
   try {
     const logo = await loadImageAsDataUrl(LOGO_URL);
-    doc.addImage(logo, "PNG", 12, 12, 34, 24);
+    doc.addImage(logo, "PNG", 16, 12, 28, 20);
   } catch {
     // Keep PDF generation resilient if the image fetch fails.
   }
 
+  doc.setTextColor(14, 18, 29);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.text("MIZAN AC SERVICING", 55, 22);
+  doc.setFontSize(18);
+  doc.text("MIZAN AC SERVICING", 62, 22);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10.5);
-  doc.text("657, Hatimbag, Dakshinkhan, Dhaka-1230", 55, 29);
-  doc.text("(Bkash - 01665146666), 01949397234", 55, 35);
+  doc.setFontSize(9.5);
+  doc.text("657, Hatimbag, Dakshinkhan, Dhaka-1230", 62, 29);
+  doc.text("(Bkash - 01665146666), 01949397234", 62, 35);
 
-  doc.setDrawColor(130, 130, 130);
+  doc.setDrawColor(164, 171, 184);
+  doc.setLineWidth(0.45);
   doc.line(12, 42, 198, 42);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Customer Name:", 12, 53);
-  doc.text(user.f_name || "Customer", 46, 53);
-  doc.text("Address:", 12, 61);
-  doc.text(service.addressEn || service.addressBn, 31, 61);
-
-  doc.text("INVOICE NO:", 145, 53);
-  doc.text(service.invoice === "—" ? "N/A" : service.invoice, 184, 53);
-  doc.text("DATE:", 160, 61);
-  doc.setFont("helvetica", "normal");
-  doc.text(service.dateEn || service.dateBn, 184, 61, {
-    align: "right",
-  });
-  doc.setFont("helvetica", "bold");
-  doc.text("DUE DATE:", 151, 69);
-  doc.setFont("helvetica", "normal");
-  doc.text(service.dueDateEn || service.dueDateBn, 184, 69, {
-    align: "right",
-  });
-
-  const top = 78;
-  const col = {
-    no: 12,
-    description: 24,
-    qty: 118,
-    unitPrice: 138,
-    total: 168,
-    end: 198,
-  };
-
-  doc.rect(col.no, top, col.end - col.no, 118);
-  doc.line(col.description, top, col.description, top + 118);
-  doc.line(col.qty, top, col.qty, top + 118);
-  doc.line(col.unitPrice, top, col.unitPrice, top + 118);
-  doc.line(col.total, top, col.total, top + 118);
-  doc.line(col.no, top + 14, col.end, top + 14);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("NO", 15, top + 9);
-  doc.text("DESCRIPTION", 27, top + 9);
-  doc.text("QTY", 122, top + 9);
-  doc.text("UNIT PRICE", 142, top + 9);
-  doc.text("TOTAL", 176, top + 9);
+  doc.setFontSize(10);
+  doc.text("Customer Name:", 12, 55);
+  doc.text("Address:", 12, 67);
+  doc.text("INVOICE NO:", 136, 55);
+  doc.text("DATE:", 151, 67);
+  doc.text("DUE DATE:", 136, 79);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  let rowY = top + 24;
-  service.items.forEach((item, index) => {
-    doc.text(String(index + 1), 16, rowY);
-    const description = item.descriptionEn || item.descriptionBn;
-    const descriptionLines = doc.splitTextToSize(description, 88);
-    doc.text(descriptionLines, 27, rowY);
-    doc.text(String(item.qty), 125, rowY);
-    doc.text(`৳ ${item.unitPrice}`, 143, rowY);
-    doc.text(`৳ ${item.total}`, 176, rowY);
-    rowY += Math.max(12, descriptionLines.length * 5 + 2);
+  doc.text(user.f_name || "Customer", 49, 55);
+  doc.text(service.addressEn || service.addressBn || "—", 32, 67);
+  doc.text(service.invoice === "—" ? "N/A" : service.invoice, CONTENT_RIGHT, 55, {
+    align: "right",
+  });
+  doc.text(service.dateEn || service.dateBn || "—", CONTENT_RIGHT, 67, {
+    align: "right",
+  });
+  doc.text(service.dueDateEn || service.dueDateBn || "—", CONTENT_RIGHT, 79, {
+    align: "right",
   });
 
-  doc.setFont("helvetica", "bold");
-  doc.rect(12, 196, 116, 32);
-  doc.rect(128, 196, 70, 10);
-  doc.rect(128, 206, 70, 10);
-  doc.rect(128, 216, 70, 12);
-  doc.text("PAY TO", 70, 201, { align: "center" });
-  doc.text("SUBTOTAL", 150, 202);
-  doc.text("ADVANCE", 151, 212);
-  doc.text("DUE", 158, 223);
+  const tableTop = 88;
+  const tableBottom = 222;
+  const tableX = CONTENT_LEFT;
+  const tableW = CONTENT_RIGHT - CONTENT_LEFT;
+  const headerHeight = 14;
+  const descriptionX = tableX + 14;
+  const qtyX = tableX + 112;
+  const unitPriceX = tableX + 132;
+  const totalX = tableX + 162;
 
+  doc.setDrawColor(166, 174, 188);
+  doc.rect(tableX, tableTop, tableW, tableBottom - tableTop);
+  doc.line(descriptionX, tableTop, descriptionX, tableBottom);
+  doc.line(qtyX, tableTop, qtyX, tableBottom);
+  doc.line(unitPriceX, tableTop, unitPriceX, tableBottom);
+  doc.line(totalX, tableTop, totalX, tableBottom);
+  doc.line(tableX, tableTop + headerHeight, CONTENT_RIGHT, tableTop + headerHeight);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("NO", tableX + 6, tableTop + 9);
+  doc.text("DESCRIPTION", descriptionX + 3, tableTop + 9);
+  doc.text("QTY", qtyX + 4, tableTop + 9);
+  doc.text("UNIT PRICE", unitPriceX + 4, tableTop + 9);
+  doc.text("TOTAL", totalX + 8, tableTop + 9);
+
+  let rowY = tableTop + 24;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10.5);
-  doc.text("Bank Name:", 15, 208);
-  doc.text("Account Name / Cash:", 15, 216);
-  doc.text("Account No:", 15, 224);
-  doc.text("Bkash / Cash", 63, 216);
-  doc.text("01665146666", 48, 224);
 
-  doc.text(`৳ ${service.subtotal}`, 190, 202, { align: "right" });
-  doc.text(`৳ ${service.amountPaid}`, 190, 212, { align: "right" });
-  doc.text(`৳ ${service.due}`, 190, 223, { align: "right" });
+  service.items.forEach((item, index) => {
+    const description = item.descriptionEn || item.descriptionBn || "Service item";
+    const descriptionLines = doc.splitTextToSize(description, 92);
+    const rowHeight = Math.max(10, descriptionLines.length * 4.8);
 
-  doc.rect(12, 228, 186, 12);
+    doc.text(String(index + 1), tableX + 4, rowY);
+    doc.text(descriptionLines, descriptionX + 3, rowY);
+    doc.text(String(item.qty), qtyX + 9, rowY, { align: "center" });
+    doc.text(formatPdfMoney(item.unitPrice), unitPriceX + 27, rowY, { align: "right" });
+    doc.text(formatPdfMoney(item.total), CONTENT_RIGHT - 4, rowY, { align: "right" });
+
+    rowY += rowHeight + 3;
+  });
+
+  const footerTop = 222;
+  const footerBottom = 258;
+  const leftFooterW = 118;
+  const rightFooterX = tableX + leftFooterW;
+  const rightFooterW = tableW - leftFooterW;
+
+  doc.rect(tableX, footerTop, leftFooterW, footerBottom - footerTop);
+  doc.rect(rightFooterX, footerTop, rightFooterW, footerBottom - footerTop);
+  doc.line(rightFooterX, footerTop + 12, CONTENT_RIGHT, footerTop + 12);
+  doc.line(rightFooterX, footerTop + 24, CONTENT_RIGHT, footerTop + 24);
+
   doc.setFont("helvetica", "bold");
-  doc.text("Amount In Words:", 14, 236);
-  doc.setFont("helvetica", "normal");
-  doc.text(
-    service.due === 0
-      ? "Paid in full"
-      : "Partial payment received",
-    53,
-    236,
-  );
+  doc.text("PAY TO", tableX + leftFooterW / 2, footerTop + 7, { align: "center" });
+  doc.text("SUBTOTAL", rightFooterX + 14, footerTop + 8);
+  doc.text("ADVANCE", rightFooterX + 14, footerTop + 20);
+  doc.text("DUE", rightFooterX + 25, footerTop + 32);
 
-  doc.line(70, 270, 110, 270);
-  doc.line(145, 270, 190, 270);
-  doc.text("Customer Signed", 90, 278, { align: "center" });
-  doc.text("Authorized Signed", 168, 278, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.text("Bank Name:", tableX + 3, footerTop + 14);
+  doc.text("Account Name / Cash:", tableX + 3, footerTop + 24);
+  doc.text("Account No:", tableX + 3, footerTop + 34);
+  doc.text("Bkash / Cash", tableX + 50, footerTop + 24);
+  doc.text("01665146666", tableX + 40, footerTop + 34);
+
+  doc.text(formatPdfMoney(service.subtotal), CONTENT_RIGHT - 3, footerTop + 8, { align: "right" });
+  doc.text(formatPdfMoney(service.amountPaid), CONTENT_RIGHT - 3, footerTop + 20, { align: "right" });
+  doc.text(formatPdfMoney(service.due), CONTENT_RIGHT - 3, footerTop + 32, { align: "right" });
+
+  doc.rect(tableX, footerBottom, tableW, 12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Amount In Words:", tableX + 3, footerBottom + 8);
+  doc.setFont("helvetica", "normal");
+  doc.text(getAmountWords(service), tableX + 42, footerBottom + 8);
+
+  const signatureLineY = 279;
+
+  doc.setDrawColor(120, 126, 138);
+  doc.line(34, signatureLineY, 98, signatureLineY);
+  doc.line(118, signatureLineY, 184, signatureLineY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Customer Signed", 66, signatureLineY + 6, { align: "center" });
+  doc.text("Authorized Signed", 151, signatureLineY + 6, { align: "center" });
 
   doc.save(`${service.invoice === "—" ? service.id : service.invoice}.pdf`);
 };

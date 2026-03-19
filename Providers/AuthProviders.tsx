@@ -23,7 +23,9 @@ type AuthContextType = {
   isAuthLoading: boolean;
   isAuthenticated: boolean;
   themePreference: "light" | "dark";
+  languagePreference: "bn" | "en";
   setThemePreference: (themePreference: "light" | "dark") => Promise<void>;
+  setLanguagePreference: (languagePreference: "bn" | "en") => Promise<void>;
   register: (
     f_name: string,
     phone: string,
@@ -57,11 +59,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [themePreferenceState, setThemePreferenceState] = useState<"light" | "dark">("light");
+  const [languagePreferenceState, setLanguagePreferenceState] = useState<"bn" | "en">("bn");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     setThemePreferenceState(
       window.localStorage.getItem("mizan-theme") === "dark" ? "dark" : "light",
+    );
+    setLanguagePreferenceState(
+      window.localStorage.getItem("mizan-lang") === "en" ? "en" : "bn",
     );
   }, []);
 
@@ -72,12 +78,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [themePreferenceState]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("mizan-lang", languagePreferenceState);
+    }
+  }, [languagePreferenceState]);
+
   const refreshProfile = async () => {
     try {
       const { data } = await api.get("/profile/me");
       const normalized = normalizeUser(data as Record<string, unknown>);
       setUser(normalized);
       setThemePreferenceState(normalized.themePreference ?? "light");
+      setLanguagePreferenceState(normalized.languagePreference ?? "bn");
       return normalized;
     } catch {
       setUser(null);
@@ -184,6 +197,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
     } catch (error) {
       setThemePreferenceState(user.themePreference === "dark" ? "dark" : "light");
+      throw new Error(getErrorMessage(error));
+    }
+  };
+
+  const setLanguagePreference = async (languagePreference: "bn" | "en") => {
+    setLanguagePreferenceState(languagePreference);
+
+    if (!user) return;
+
+    try {
+      const { data } = await api.put("/profile/language", { languagePreference });
+      const nextLanguagePreference = data.languagePreference === "en" ? "en" : "bn";
+      setLanguagePreferenceState(nextLanguagePreference);
+      setUser((current) =>
+        current ? { ...current, languagePreference: nextLanguagePreference } : current,
+      );
+    } catch (error) {
+      setLanguagePreferenceState(user.languagePreference === "en" ? "en" : "bn");
       throw new Error(getErrorMessage(error));
     }
   };
@@ -313,7 +344,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthLoading,
         isAuthenticated: Boolean(user),
         themePreference: themePreferenceState,
+        languagePreference: languagePreferenceState,
         setThemePreference,
+        setLanguagePreference,
         register,
         login,
         loginWithGoogle,

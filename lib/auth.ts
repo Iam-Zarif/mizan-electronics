@@ -38,6 +38,7 @@ export type AuthUser = {
   addresses: Address[];
   isVerified?: boolean;
   themePreference?: "light" | "dark";
+  languagePreference?: "bn" | "en";
 };
 
 export type ProfileFormInput = {
@@ -94,4 +95,6 @@ export const normalizeUser = (input: Record<string, unknown>): AuthUser => ({
   isVerified: Boolean(input.isVerified),
   themePreference:
     input.themePreference === "dark" ? "dark" : "light",
+  languagePreference:
+    input.languagePreference === "en" ? "en" : "bn",
 });

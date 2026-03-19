@@ -118,7 +118,7 @@ const Navbar = () => {
                   <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-neutral-100/80 bg-white/95 shadow-xl backdrop-blur dark:border-white/10 dark:bg-neutral-900">
                     <button
                       onClick={() => {
-                        setLocale("bn");
+                        void setLocale("bn");
                         setOpenLang(false);
                       }}
                       className={`flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
@@ -129,7 +129,7 @@ const Navbar = () => {
                     </button>
                     <button
                       onClick={() => {
-                        setLocale("en");
+                        void setLocale("en");
                         setOpenLang(false);
                       }}
                       className={`flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
@@ -271,7 +271,7 @@ const Navbar = () => {
             <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800">
               <button
                 onClick={() => {
-                  setLocale("bn");
+                  void setLocale("bn");
                   setOpenMobile(false);
                 }}
                 className={`w-full text-left rounded-lg px-3 py-2 ${locale === "bn" ? "bg-neutral-100 dark:bg-neutral-800 font-semibold" : ""}`}
@@ -280,7 +280,7 @@ const Navbar = () => {
               </button>
               <button
                 onClick={() => {
-                  setLocale("en");
+                  void setLocale("en");
                   setOpenMobile(false);
                 }}
                 className={`w-full text-left rounded-lg px-3 py-2 ${locale === "en" ? "bg-neutral-100 dark:bg-neutral-800 font-semibold" : ""}`}

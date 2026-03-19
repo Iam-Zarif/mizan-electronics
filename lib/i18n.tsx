@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from "react";
+import { useProvider } from "@/Providers/AuthProviders";
 
 type Locale = "bn" | "en";
 
@@ -314,7 +315,7 @@ const translations: Record<Locale, TranslationDict> = {
 
 interface LanguageContextValue {
   locale: Locale;
-  setLocale: (locale: Locale) => void;
+  setLocale: (locale: Locale) => Promise<void>;
   t: (path: string) => string;
 }
 
@@ -328,6 +329,7 @@ function getNested(path: string, dict: TranslationDict): string {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const { user, languagePreference, setLanguagePreference } = useProvider();
   const [locale, setLocale] = useState<Locale>("bn");
   const [hydrated, setHydrated] = useState(false);
 
@@ -341,19 +343,34 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
+    if (user) {
+      setLocale(languagePreference === "en" ? "en" : "bn");
+    }
+  }, [hydrated, user, languagePreference]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     if (!hydrated) return;
     localStorage.setItem("mizan-lang", locale);
     document.documentElement.lang = locale;
   }, [locale, hydrated]);
 
+  const handleSetLocale = async (nextLocale: Locale) => {
+    setLocale(nextLocale);
+
+    if (user) {
+      await setLanguagePreference(nextLocale);
+    }
+  };
+
   const value = useMemo(
     () => ({
       locale,
-      setLocale,
+      setLocale: handleSetLocale,
       t: (path: string) => getNested(path, translations[locale]),
     }),
-    [locale]
+    [locale, user, languagePreference]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

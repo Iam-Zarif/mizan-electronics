@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useProvider } from "@/Providers/AuthProviders";
+import { SuccessToast } from "@/components/shared/SuccessToast";
 import { useLanguage } from "@/lib/i18n";
 import {
   getDhakaAreas,
@@ -53,6 +54,12 @@ export function ProfileAddressBook() {
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
   const addresses = user?.addresses ?? [];
+
+  useEffect(() => {
+    if (!success) return;
+    const timer = window.setTimeout(() => setSuccess(""), 2400);
+    return () => window.clearTimeout(timer);
+  }, [success]);
 
   useEffect(() => {
     const loadDhakaDistricts = async () => {
@@ -224,6 +231,7 @@ export function ProfileAddressBook() {
 
   return (
     <div className="mt-6">
+      <SuccessToast message={success || null} />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -525,8 +533,6 @@ export function ProfileAddressBook() {
               </label>
 
               {error ? <p className="text-sm text-red-500">{error}</p> : null}
-              {success ? <p className="text-sm text-green-600">{success}</p> : null}
-
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:gap-3">
                 <button
                   type="submit"

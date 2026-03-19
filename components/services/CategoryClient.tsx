@@ -1,18 +1,19 @@
 "use client";
 
-import { categoryEnLabels, serviceEnText, type ServiceCategory, type ServiceItem } from "@/lib/services";
 import { useLanguage } from "@/lib/i18n";
 import Image from "next/image";
 import ServiceCard from "@/components/services/ServiceCard";
+import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
+import type { PublicServiceCategory, PublicServiceItem } from "@/lib/dashboard-api";
 
 type Props = {
-  category: ServiceCategory;
-  items: ServiceItem[];
+  category: PublicServiceCategory;
+  items: PublicServiceItem[];
 };
 
 export default function CategoryClient({ category, items }: Props) {
   const { locale } = useLanguage();
-  const categoryTitle = locale === "en" ? categoryEnLabels[category.id] ?? category.name : category.name;
+  const categoryTitle = locale === "en" ? category.nameEn : category.name;
 
   return (
     <section className="relative pt-24 pb-14">
@@ -27,22 +28,27 @@ export default function CategoryClient({ category, items }: Props) {
           </div>
 
           <div className="relative h-64 w-full overflow-hidden rounded-2xl">
-            <Image src={category.image} alt={category.name} fill className="object-cover" />
+            <Image
+              src={getOptimizedCloudinaryUrl(category.image, { width: 1200, crop: "fill" })}
+              alt={category.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 45vw"
+            />
           </div>
         </div>
 
         <div className="grid gap-2.5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((service) => {
-            const en = serviceEnText[service.slug];
-            const title = locale === "en" && en ? en.title : service.title;
-            const summary = locale === "en" && en ? en.summary : service.summary;
+            const title = locale === "en" ? service.titleEn : service.title;
+            const summary = locale === "en" ? service.summaryEn : service.summary;
             return (
               <ServiceCard
-                key={service.id}
+                key={service._id}
                 service={service}
                 title={title}
                 summary={summary}
-                categoryName={category.name}
+                categoryName={categoryTitle}
                 imageHeightClass="h-48"
                 className="bg-white/85 backdrop-blur dark:bg-neutral-900/70"
               />

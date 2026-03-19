@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { Star, Quote } from "lucide-react";
 import { useEffect, useState } from "react";
-import { testimonials as testimonialData } from "@/lib/testimonials";
 import { useLanguage } from "@/lib/i18n";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { getPublicReviews } from "@/lib/dashboard-api";
 
 const clients = [
   "/brands/walton.png",
@@ -19,6 +20,8 @@ export default function TestimonialsClients() {
   const { t, locale } = useLanguage();
   const [index, setIndex] = useState(0);
   const [perView, setPerView] = useState(3);
+  const { data } = useApiQuery(getPublicReviews, [], true);
+  const testimonialData = data?.rows ?? [];
 
   useEffect(() => {
     const updatePerView = () => {
@@ -32,11 +35,24 @@ export default function TestimonialsClients() {
   }, []);
 
   useEffect(() => {
+    if (!testimonialData.length) return;
     const t = setInterval(() => {
       setIndex((p) => (p + perView) % testimonialData.length);
     }, 4800);
     return () => clearInterval(t);
-  }, [perView]);
+  }, [perView, testimonialData.length]);
+
+  useEffect(() => {
+    if (testimonialData.length === 0) {
+      setIndex(0);
+      return;
+    }
+    setIndex((current) => current % testimonialData.length);
+  }, [testimonialData.length]);
+
+  if (testimonialData.length === 0) {
+    return null;
+  }
 
   const visible = Array.from({ length: perView }).map((_, i) => testimonialData[(index + i) % testimonialData.length]);
 
@@ -78,8 +94,8 @@ export default function TestimonialsClients() {
             className="grid gap-2.5 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center"
           >
             {visible.map((t, i) => {
-              const comment = locale === "en" && t.commentEn ? t.commentEn : t.comment;
-              const location = locale === "en" && t.locationEn ? t.locationEn : t.location;
+              const comment = locale === "en" && t.messageEn ? t.messageEn : t.messageBn;
+              const location = locale === "en" && t.customerLocationEn ? t.customerLocationEn : t.customerLocationBn;
               return (
               <motion.div
                 key={i}
@@ -97,17 +113,23 @@ export default function TestimonialsClients() {
 
                 <div className="mb-5 flex items-center gap-5">
                   <div className="relative h-16 w-16 rounded-full bg-linear-to-br from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] p-0.5 overflow-hidden">
-                    {t.avatar ? (
-                      <Image src={t.avatar} alt={t.name} fill className="object-cover rounded-full" />
+                    {t.avatarUrl ? (
+                      <Image
+                        src={t.avatarUrl}
+                        alt={t.customerName}
+                        fill
+                        className="rounded-full object-cover"
+                        sizes="64px"
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-sm font-bold text-[#2160ba]">
-                        {t.name.slice(0, 2)}
+                        {t.customerName.slice(0, 2)}
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <p className="text-xl font-bold">{t.name}</p>
+                    <p className="text-xl font-bold">{t.customerName}</p>
                     <p className="text-sm text-neutral-500">{location}</p>
                   </div>
                 </div>

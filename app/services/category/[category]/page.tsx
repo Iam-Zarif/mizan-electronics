@@ -1,38 +1,38 @@
+"use client";
+
 import { notFound } from "next/navigation";
-import { serviceCategories, serviceItems } from "@/lib/services";
 import CategoryClient from "@/components/services/CategoryClient";
-import type { Metadata } from "next";
+import { ApiErrorState, ApiSkeletonBlock } from "@/components/shared/ApiState";
+import { getPublicServiceCatalog } from "@/lib/dashboard-api";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { useLanguage } from "@/lib/i18n";
 
-export const dynamicParams = true;
+export default function CategoryPage({ params }: { params: { category: string } }) {
+  const { locale } = useLanguage();
+  const { data, isLoading, error, refresh } = useApiQuery(getPublicServiceCatalog, []);
 
-export function generateStaticParams() {
-  return serviceCategories.map((cat) => ({ category: cat.id }));
-}
+  const category = data?.categories.find((item) => item.id === params.category);
+  const items = data?.services.filter((item) => item.categoryId === params.category) ?? [];
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ category: string }> }
-): Promise<Metadata> {
-  const { category } = await params;
-  const cat = serviceCategories.find((c) => c.id === category);
-  if (!cat) return {};
-  const url = `https://mizan-ac-servicing.vercel.app/services/category/${category}`;
-  return {
-    title: cat.name,
-    description: cat.description,
-    openGraph: {
-      title: cat.name,
-      description: cat.description,
-      url,
-      images: [{ url: cat.image, width: 1200, height: 630, alt: cat.name }],
-    },
-    alternates: { canonical: url },
-  };
-}
+  if (!isLoading && !error && data && !category) {
+    return notFound();
+  }
 
-export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
-  const { category: categoryId } = await params;
-  const category = serviceCategories.find((c) => c.id === categoryId);
-  if (!category) return notFound();
-  const items = serviceItems.filter((s) => s.categoryId === categoryId);
-  return <CategoryClient category={category} items={items} />;
+  return (
+    <>
+      {isLoading ? <ApiSkeletonBlock rows={4} /> : null}
+      {!isLoading && error ? (
+        <section className="relative pt-24 pb-14">
+          <div className="mx-auto max-w-7xl px-4">
+            <ApiErrorState
+              title={locale === "en" ? "Category failed to load" : "ক্যাটাগরি লোড হয়নি"}
+              description={error}
+              onRetry={() => void refresh()}
+            />
+          </div>
+        </section>
+      ) : null}
+      {!isLoading && !error && category ? <CategoryClient category={category} items={items} /> : null}
+    </>
+  );
 }

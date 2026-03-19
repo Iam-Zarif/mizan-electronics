@@ -31,6 +31,7 @@ export function NotificationDropdown() {
   const { locale, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const { data, setData } = useApiQuery(getProfileNotifications, [], Boolean(user));
 
   const notifications = data?.rows ?? [];
@@ -81,6 +82,12 @@ export function NotificationDropdown() {
     void markAllRead();
   }, [open, unreadCount]);
 
+  useEffect(() => {
+    if (!actionSuccess) return;
+    const timer = window.setTimeout(() => setActionSuccess(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [actionSuccess]);
+
   const markOneRead = async (notificationId: string) => {
     if (notificationId === "verify-warning") return;
     const { data: updated } = await markProfileNotificationRead(notificationId);
@@ -102,6 +109,11 @@ export function NotificationDropdown() {
         current
           ? { rows: current.rows.filter((item) => item._id !== notificationId) }
           : current,
+      );
+      setActionSuccess(
+        locale === "en"
+          ? "Notification deleted successfully."
+          : "নোটিফিকেশন সফলভাবে ডিলিট হয়েছে।",
       );
     } finally {
       setIsDeleting(false);
@@ -142,6 +154,11 @@ export function NotificationDropdown() {
                 </button>
               ) : null}
             </div>
+            {actionSuccess ? (
+              <p className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+                {actionSuccess}
+              </p>
+            ) : null}
           </div>
 
           <div className="max-h-[26rem] space-y-1 overflow-y-auto">

@@ -6,7 +6,9 @@ import { AdminPageHeader, AdminSurface } from "@/components/admin/AdminSections"
 import { ApiErrorState, ApiSkeletonBlock } from "@/components/shared/ApiState";
 import { PaginationControls } from "@/components/shared/PaginationControls";
 import { getAdminBookings, updateAdminBookingStatus } from "@/lib/dashboard-api";
+import { dispatchAdminSidebarRefresh } from "@/lib/admin-sidebar-events";
 import { getErrorMessage } from "@/lib/api";
+import { getValueOrEmpty } from "@/lib/display";
 import { useLanguage } from "@/lib/i18n";
 import { useApiQuery } from "@/hooks/use-api-query";
 
@@ -14,6 +16,18 @@ type SortKey = "latest" | "oldest" | "alphabetical" | "service";
 type StatusFilter = "all" | "pending" | "ongoing" | "work_done" | "cancelled";
 type BookingStatus = Exclude<StatusFilter, "all">;
 type PaymentStatus = "paid" | "partial" | "unpaid";
+
+const getSafeBookingAmounts = (booking: {
+  subtotal?: number;
+  amountPaid?: number;
+  due?: number;
+}) => {
+  const subtotal = Math.max(0, booking.subtotal ?? 0);
+  const amountPaid = Math.max(0, Math.min(subtotal, booking.amountPaid ?? 0));
+  const due = Math.max(0, booking.due ?? subtotal - amountPaid);
+
+  return { subtotal, amountPaid, due };
+};
 
 export default function DashboardBookingsPage() {
   const { locale } = useLanguage();
@@ -43,11 +57,15 @@ export default function DashboardBookingsPage() {
 
   const selectedBooking =
     data?.rows.find((booking) => booking._id === selectedBookingId) ?? null;
+  const selectedBookingAmounts = selectedBooking
+    ? getSafeBookingAmounts(selectedBooking)
+    : null;
 
   const handleStatusChange = async (
     bookingId: string,
     nextStatus: BookingStatus,
     paymentStatus?: PaymentStatus,
+    amounts?: { subtotal?: number; amountPaid?: number },
   ) => {
     setStatusError(null);
     setStatusUpdatingId(bookingId);
@@ -56,6 +74,8 @@ export default function DashboardBookingsPage() {
       const response = await updateAdminBookingStatus(bookingId, {
         status: nextStatus,
         paymentStatus,
+        subtotal: amounts?.subtotal,
+        amountPaid: amounts?.amountPaid,
       });
       const updated = response.data;
 
@@ -73,6 +93,9 @@ export default function DashboardBookingsPage() {
                     ...booking,
                     status: updated.status,
                     paymentStatus: updated.paymentStatus ?? booking.paymentStatus,
+                    subtotal: updated.subtotal ?? booking.subtotal ?? 0,
+                    amountPaid: updated.amountPaid ?? booking.amountPaid ?? 0,
+                    due: updated.due ?? booking.due ?? 0,
                     invoiceNo: updated.invoiceNo ?? booking.invoiceNo,
                     completedServiceId: updated.completedServiceId ?? booking.completedServiceId,
                   }
@@ -94,6 +117,7 @@ export default function DashboardBookingsPage() {
           },
         };
       });
+      dispatchAdminSidebarRefresh();
     } catch (nextError) {
       setStatusError(getErrorMessage(nextError));
     } finally {
@@ -107,7 +131,48 @@ export default function DashboardBookingsPage() {
   ) => {
     const booking = data?.rows.find((row) => row._id === bookingId);
     if (!booking) return;
-    await handleStatusChange(bookingId, booking.status, nextPaymentStatus);
+    const amounts = getSafeBookingAmounts(booking);
+    await handleStatusChange(bookingId, booking.status, nextPaymentStatus, {
+      subtotal: amounts.subtotal,
+      amountPaid: amounts.amountPaid,
+    });
+  };
+
+  const updateBookingDraft = (
+    bookingId: string,
+    patch: Partial<{ subtotal: number; amountPaid: number }>,
+  ) => {
+    setData((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        rows: current.rows.map((booking) => {
+          if (booking._id !== bookingId) return booking;
+          const currentAmounts = getSafeBookingAmounts(booking);
+          const subtotal = Math.max(0, patch.subtotal ?? currentAmounts.subtotal);
+          const amountPaid = Math.max(
+            0,
+            Math.min(subtotal, patch.amountPaid ?? currentAmounts.amountPaid),
+          );
+          return {
+            ...booking,
+            subtotal,
+            amountPaid,
+            due: Math.max(subtotal - amountPaid, 0),
+          };
+        }),
+      };
+    });
+  };
+
+  const handleAmountSave = async (bookingId: string) => {
+    const booking = data?.rows.find((row) => row._id === bookingId);
+    if (!booking) return;
+    const amounts = getSafeBookingAmounts(booking);
+    await handleStatusChange(bookingId, booking.status, booking.paymentStatus, {
+      subtotal: amounts.subtotal,
+      amountPaid: amounts.amountPaid,
+    });
   };
 
   return (
@@ -186,85 +251,92 @@ export default function DashboardBookingsPage() {
           ) : null}
 
           <div className="space-y-3">
-            {data.rows.map((booking) => (
-              <div
-                key={booking._id}
-                className="rounded-2xl bg-[#f8fbff] px-4 py-4 dark:bg-[#11192c]"
-              >
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8a96ad] dark:text-[#70809c]">
-                      {locale === "en" ? "Customer" : "কাস্টমার"}
-                    </p>
-                    <p className="mt-2 font-semibold text-[#1f2638] dark:text-white">
-                      {booking.customerName}
-                    </p>
-                    <p className="mt-1 text-sm text-[#60708d] dark:text-[#a7b3c9]">
-                      {booking.customerPhone}
-                    </p>
-                    <p className="mt-1 text-xs text-[#8a96ad] dark:text-[#70809c]">
-                      {new Date(booking.requestedAt).toLocaleDateString(
-                        locale === "en" ? "en-GB" : "bn-BD",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        },
-                      )}
-                    </p>
-                  </div>
+            {data.rows.map((booking) => {
+              const amounts = getSafeBookingAmounts(booking);
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-[#5c6cff] shadow-sm dark:bg-[#1a2440] dark:text-[#aab5ff]">
-                      {booking.status}
-                    </span>
-                    <select
-                      value={booking.status}
-                      onChange={(event) =>
-                        void handleStatusChange(
-                          booking._id,
-                          event.target.value as BookingStatus,
-                          booking.paymentStatus,
-                        )
-                      }
-                      disabled={statusUpdatingId === booking._id}
-                      className="rounded-full border border-[#d7e1f0] bg-white px-3 py-1 text-xs font-semibold text-[#2160ba] outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-[#1a2440] dark:text-[#aab5ff]"
-                    >
-                      <option value="pending">{locale === "en" ? "Pending" : "পেন্ডিং"}</option>
-                      <option value="ongoing">{locale === "en" ? "Ongoing" : "অনগোয়িং"}</option>
-                      <option value="work_done">{locale === "en" ? "Work done" : "কাজ সম্পন্ন"}</option>
-                      <option value="cancelled">{locale === "en" ? "Cancelled" : "ক্যানসেলড"}</option>
-                    </select>
-                    <select
-                      value={booking.paymentStatus}
-                      onChange={(event) =>
-                        void handlePaymentStatusChange(
-                          booking._id,
-                          event.target.value as PaymentStatus,
-                        )
-                      }
-                      disabled={statusUpdatingId === booking._id}
-                      className="rounded-full border border-[#d7e1f0] bg-white px-3 py-1 text-xs font-semibold text-[#0f8a63] outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-[#1a2440] dark:text-[#87e4c0]"
-                    >
-                      <option value="paid">{locale === "en" ? "Paid" : "পেইড"}</option>
-                      <option value="partial">{locale === "en" ? "Partial" : "পার্শিয়াল"}</option>
-                      <option value="unpaid">{locale === "en" ? "Unpaid" : "আনপেইড"}</option>
-                    </select>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#4f6bff] shadow-sm dark:bg-[#1a2440] dark:text-[#aab5ff]">
-                      <Wrench size={13} />
-                      {locale === "en" ? booking.serviceTitleEn : booking.serviceTitleBn}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedBookingId(booking._id)}
-                      className="rounded-full border border-[#d7e1f0] bg-white px-3 py-1 text-xs font-semibold text-[#2160ba] shadow-sm transition hover:bg-[#f3f6fd] dark:border-white/10 dark:bg-[#1a2440] dark:text-[#aab5ff] dark:hover:bg-[#223052]"
-                    >
-                      {locale === "en" ? "Details" : "ডিটেইলস"}
-                    </button>
+              return (
+                <div
+                  key={booking._id}
+                  className="rounded-2xl bg-[#f8fbff] px-4 py-4 dark:bg-[#11192c]"
+                >
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8a96ad] dark:text-[#70809c]">
+                        {locale === "en" ? "Customer" : "কাস্টমার"}
+                      </p>
+                      <p className="mt-2 font-semibold text-[#1f2638] dark:text-white">
+                        {booking.customerName}
+                      </p>
+                      <p className="mt-1 text-sm text-[#60708d] dark:text-[#a7b3c9]">
+                        {booking.customerPhone}
+                      </p>
+                      <p className="mt-1 text-xs text-[#8a96ad] dark:text-[#70809c]">
+                        {new Date(booking.requestedAt).toLocaleDateString(
+                          locale === "en" ? "en-GB" : "bn-BD",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-[#5c6cff] shadow-sm dark:bg-[#1a2440] dark:text-[#aab5ff]">
+                        {booking.status}
+                      </span>
+                      <select
+                        value={booking.status}
+                        onChange={(event) =>
+                          void handleStatusChange(
+                            booking._id,
+                            event.target.value as BookingStatus,
+                            booking.paymentStatus,
+                          )
+                        }
+                        disabled={statusUpdatingId === booking._id}
+                        className="rounded-full border border-[#d7e1f0] bg-white px-3 py-1 text-xs font-semibold text-[#2160ba] outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-[#1a2440] dark:text-[#aab5ff]"
+                      >
+                        <option value="pending">{locale === "en" ? "Pending" : "পেন্ডিং"}</option>
+                        <option value="ongoing">{locale === "en" ? "Ongoing" : "অনগোয়িং"}</option>
+                        <option value="work_done">{locale === "en" ? "Work done" : "কাজ সম্পন্ন"}</option>
+                        <option value="cancelled">{locale === "en" ? "Cancelled" : "ক্যানসেলড"}</option>
+                      </select>
+                      <select
+                        value={booking.paymentStatus}
+                        onChange={(event) =>
+                          void handlePaymentStatusChange(
+                            booking._id,
+                            event.target.value as PaymentStatus,
+                          )
+                        }
+                        disabled={statusUpdatingId === booking._id}
+                        className="rounded-full border border-[#d7e1f0] bg-white px-3 py-1 text-xs font-semibold text-[#0f8a63] outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-[#1a2440] dark:text-[#87e4c0]"
+                      >
+                        <option value="paid">{locale === "en" ? "Paid" : "পেইড"}</option>
+                        <option value="partial">{locale === "en" ? "Partial" : "পার্শিয়াল"}</option>
+                        <option value="unpaid">{locale === "en" ? "Unpaid" : "আনপেইড"}</option>
+                      </select>
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#4f6bff] shadow-sm dark:bg-[#1a2440] dark:text-[#aab5ff]">
+                        <Wrench size={13} />
+                        {locale === "en" ? booking.serviceTitleEn : booking.serviceTitleBn}
+                      </span>
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#0f8a63] shadow-sm dark:bg-[#1a2440] dark:text-[#87e4c0]">
+                        ৳{amounts.amountPaid.toLocaleString()} / ৳{amounts.subtotal.toLocaleString()}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBookingId(booking._id)}
+                        className="rounded-full border border-[#d7e1f0] bg-white px-3 py-1 text-xs font-semibold text-[#2160ba] shadow-sm transition hover:bg-[#f3f6fd] dark:border-white/10 dark:bg-[#1a2440] dark:text-[#aab5ff] dark:hover:bg-[#223052]"
+                      >
+                        {locale === "en" ? "Details" : "ডিটেইলস"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {!data.rows.length ? (
               <div className="rounded-2xl border border-dashed border-[#dbe4f4] px-4 py-10 text-center text-sm text-[#7f8ba3] dark:border-white/10 dark:text-[#a7b3c9]">
@@ -310,20 +382,33 @@ export default function DashboardBookingsPage() {
                   {
                     icon: PhoneCall,
                     label: locale === "en" ? "Phone" : "ফোন",
-                    value: selectedBooking.customerPhone || "—",
+                    value: getValueOrEmpty(
+                      selectedBooking.customerPhone,
+                      locale,
+                      "Phone",
+                      "ফোন",
+                    ),
                   },
                   {
                     icon: Mail,
                     label: locale === "en" ? "Email" : "ইমেইল",
-                    value: selectedBooking.customerEmail || "—",
+                    value: getValueOrEmpty(
+                      selectedBooking.customerEmail,
+                      locale,
+                      "Email",
+                      "ইমেইল",
+                    ),
                   },
                   {
                     icon: MapPin,
                     label: locale === "en" ? "Address" : "ঠিকানা",
                     value:
-                      locale === "en"
-                        ? selectedBooking.addressEn || "—"
-                        : selectedBooking.addressBn || "—",
+                      getValueOrEmpty(
+                        locale === "en" ? selectedBooking.addressEn : selectedBooking.addressBn,
+                        locale,
+                        "Address",
+                        "ঠিকানা",
+                      ),
                   },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -410,6 +495,43 @@ export default function DashboardBookingsPage() {
                   </div>
                   <div className="rounded-2xl border border-[#e5ebf7] bg-white px-4 py-4 dark:border-white/10 dark:bg-[#161f36]">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a96ad]">
+                      {locale === "en" ? "Total amount" : "মোট পরিমাণ"}
+                    </p>
+                    <input
+                      type="number"
+                      min={0}
+                      value={selectedBookingAmounts?.subtotal ?? 0}
+                      onChange={(event) =>
+                        updateBookingDraft(selectedBooking._id, {
+                          subtotal: Number(event.target.value) || 0,
+                        })
+                      }
+                      onBlur={() => void handleAmountSave(selectedBooking._id)}
+                      disabled={statusUpdatingId === selectedBooking._id}
+                      className="mt-2 w-full rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-3 py-2 text-sm font-semibold text-[#1f2638] outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-[#11192c] dark:text-white"
+                    />
+                  </div>
+                  <div className="rounded-2xl border border-[#e5ebf7] bg-white px-4 py-4 dark:border-white/10 dark:bg-[#161f36]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a96ad]">
+                      {locale === "en" ? "Amount paid" : "পরিশোধিত পরিমাণ"}
+                    </p>
+                    <input
+                      type="number"
+                      min={0}
+                      max={selectedBookingAmounts?.subtotal ?? 0}
+                      value={selectedBookingAmounts?.amountPaid ?? 0}
+                      onChange={(event) =>
+                        updateBookingDraft(selectedBooking._id, {
+                          amountPaid: Number(event.target.value) || 0,
+                        })
+                      }
+                      onBlur={() => void handleAmountSave(selectedBooking._id)}
+                      disabled={statusUpdatingId === selectedBooking._id}
+                      className="mt-2 w-full rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-3 py-2 text-sm font-semibold text-[#1f2638] outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-[#11192c] dark:text-white"
+                    />
+                  </div>
+                  <div className="rounded-2xl border border-[#e5ebf7] bg-white px-4 py-4 dark:border-white/10 dark:bg-[#161f36]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a96ad]">
                       {locale === "en" ? "Channel" : "চ্যানেল"}
                     </p>
                     <p className="mt-2 text-sm font-semibold capitalize text-[#1f2638] dark:text-white">
@@ -429,7 +551,15 @@ export default function DashboardBookingsPage() {
                       {locale === "en" ? "Invoice no" : "ইনভয়েস নং"}
                     </p>
                     <p className="mt-2 text-sm font-semibold text-[#1f2638] dark:text-white">
-                      {selectedBooking.invoiceNo || "—"}
+                      {getValueOrEmpty(selectedBooking.invoiceNo, locale, "Invoice", "ইনভয়েস")}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-[#e5ebf7] bg-white px-4 py-4 dark:border-white/10 dark:bg-[#161f36]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a96ad]">
+                      {locale === "en" ? "Due" : "বাকি"}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#1f2638] dark:text-white">
+                      ৳{(selectedBookingAmounts?.due ?? 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -450,7 +580,12 @@ export default function DashboardBookingsPage() {
                     {locale === "en" ? "Note" : "নোট"}
                   </p>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#60708d] dark:text-[#a7b3c9]">
-                    {(locale === "en" ? selectedBooking.noteEn : selectedBooking.noteBn) || "—"}
+                    {getValueOrEmpty(
+                      locale === "en" ? selectedBooking.noteEn : selectedBooking.noteBn,
+                      locale,
+                      "Note",
+                      "নোট",
+                    )}
                   </p>
                 </div>
               </div>

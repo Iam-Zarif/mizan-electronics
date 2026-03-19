@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo, type KeyboardEvent, type ReactNode } from "react";
 import { LayoutDashboard } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { quickAlerts, topCards } from "@/lib/admin-dashboard";
@@ -28,7 +28,13 @@ export function AdminPageHeader({
   );
 }
 
-export function AlertWidgets({ overview }: { overview: DashboardOverview }) {
+export function AlertWidgets({
+  overview,
+  onOpenTerminateUsers,
+}: {
+  overview: DashboardOverview;
+  onOpenTerminateUsers?: () => void;
+}) {
   const { locale } = useLanguage();
   const toneClasses = {
     amber: "border-amber-200 bg-amber-50 text-amber-800",
@@ -44,24 +50,49 @@ export function AlertWidgets({ overview }: { overview: DashboardOverview }) {
     <div className="flex flex-wrap gap-4">
       {quickAlerts.map((alert) => {
         const Icon = alert.icon;
+        const isTerminateCard = alert.key === "terminate" && onOpenTerminateUsers;
+
+        const cardContent = (
+          <div className="flex h-full flex-col justify-between gap-4">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/70">
+              <Icon size={18} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[30px] font-extrabold leading-none">
+                {counts[alert.key as keyof typeof counts]}
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-5">
+                {locale === "en" ? alert.enLabel : alert.bnLabel}
+              </p>
+            </div>
+          </div>
+        );
+
+        if (isTerminateCard) {
+          return (
+            <button
+              key={alert.key}
+              type="button"
+              onClick={onOpenTerminateUsers}
+              onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onOpenTerminateUsers?.();
+                }
+              }}
+              className={`min-h-[148px] w-full max-w-[220px] rounded-[22px] border px-4 py-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_16px_30px_-22px_rgba(31,38,56,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f6bff]/45 ${toneClasses[alert.tone]}`}
+            >
+              {cardContent}
+            </button>
+          );
+        }
+
         return (
           <div
             key={alert.key}
             className={`min-h-[148px] w-full max-w-[220px] rounded-[22px] border px-4 py-4 ${toneClasses[alert.tone]}`}
           >
-            <div className="flex h-full flex-col justify-between gap-4">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/70">
-                <Icon size={18} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[30px] font-extrabold leading-none">
-                  {counts[alert.key as keyof typeof counts]}
-                </p>
-                <p className="mt-2 text-sm font-semibold leading-5">
-                  {locale === "en" ? alert.enLabel : alert.bnLabel}
-                </p>
-              </div>
-            </div>
+            {cardContent}
           </div>
         );
       })}

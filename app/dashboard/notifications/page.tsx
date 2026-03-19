@@ -9,6 +9,8 @@ import {
   ApiSkeletonBlock,
 } from "@/components/shared/ApiState";
 import { PaginationControls } from "@/components/shared/PaginationControls";
+import { SuccessToast } from "@/components/shared/SuccessToast";
+import { dispatchAdminSidebarRefresh } from "@/lib/admin-sidebar-events";
 import {
   deleteAdminNotification,
   getAdminNotifications,
@@ -52,10 +54,17 @@ export default function DashboardNotificationsPage() {
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [page, setPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     setPage(1);
   }, [viewFilter, sortOrder]);
+
+  useEffect(() => {
+    if (!actionSuccess) return;
+    const timer = window.setTimeout(() => setActionSuccess(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [actionSuccess]);
 
   const { data, isLoading, error, refresh, setData } = useApiQuery(
     () => getAdminNotifications({ filter: viewFilter, sort: sortOrder, page, limit: 12 }),
@@ -92,6 +101,7 @@ export default function DashboardNotificationsPage() {
           }
         : current,
     );
+    dispatchAdminSidebarRefresh();
   };
 
   const markOneRead = async (notificationId: string) => {
@@ -108,6 +118,7 @@ export default function DashboardNotificationsPage() {
         pagination: current.pagination,
       };
     });
+    dispatchAdminSidebarRefresh();
   };
 
   const deleteOne = async (notificationId: string) => {
@@ -126,6 +137,12 @@ export default function DashboardNotificationsPage() {
           pagination: current.pagination,
         };
       });
+      setActionSuccess(
+        locale === "en"
+          ? "Notification deleted successfully."
+          : "নোটিফিকেশন সফলভাবে ডিলিট হয়েছে।",
+      );
+      dispatchAdminSidebarRefresh();
     } finally {
       setIsDeleting(false);
     }
@@ -134,6 +151,7 @@ export default function DashboardNotificationsPage() {
   return (
     <AdminSurface>
       <div className="space-y-5">
+        <SuccessToast message={actionSuccess} />
         {isLoading ? <ApiSkeletonBlock rows={4} /> : null}
         {!isLoading && error ? (
           <ApiErrorState

@@ -21,6 +21,7 @@ import {
   getAdminUsers,
   type AdminCustomerRow,
 } from "@/lib/dashboard-api";
+import { getValueOrEmpty } from "@/lib/display";
 import { useLanguage } from "@/lib/i18n";
 import { useApiQuery } from "@/hooks/use-api-query";
 
@@ -228,7 +229,7 @@ export default function DashboardUsersPage() {
                         {item.email}
                       </p>
                       <p className="text-sm text-[#60708d] dark:text-[#a7b3c9]">
-                        {item.phone || "—"}
+                        {getValueOrEmpty(item.phone, locale, "Phone", "ফোন")}
                       </p>
                       <div>
                         <span
@@ -326,13 +327,18 @@ export default function DashboardUsersPage() {
                     icon: PhoneCall,
                     labelEn: "Phone",
                     labelBn: "ফোন",
-                    value: selectedUser.phone || "—",
+                    value: getValueOrEmpty(selectedUser.phone, locale, "Phone", "ফোন"),
                   },
                   {
                     icon: MapPin,
                     labelEn: "Primary Address",
                     labelBn: "প্রাইমারি ঠিকানা",
-                    value: selectedUser.primaryAddress || "—",
+                    value: getValueOrEmpty(
+                      selectedUser.primaryAddress,
+                      locale,
+                      "Primary address",
+                      "প্রাইমারি ঠিকানা",
+                    ),
                   },
                 ].map((item) => {
                   const Icon = item.icon;

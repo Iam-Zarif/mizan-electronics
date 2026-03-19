@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/shared/Navbar";
 import Footer from "@/shared/Footer";
 import FloatingContacts from "@/components/shared/FloatingContacts";
 import FirebaseAnalytics from "@/components/shared/FirebaseAnalytics";
+import { PendingReviewPrompt } from "@/components/shared/PendingReviewPrompt";
 import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/Providers/AuthProviders";
 
@@ -27,10 +29,29 @@ export const metadata: Metadata = {
     default: "Mizan AC Servicing",
     template: "%s | Mizan AC Servicing",
   },
-  description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
+  description:
+    "Mizan AC Servicing in Dhaka provides AC servicing, AC repair, AC installation, gas refill, leak fixing, cleaning, maintenance, compressor and spare parts support across Dhaka.",
+  keywords: [
+    "Mizan AC Servicing",
+    "AC servicing Dhaka",
+    "AC repair Dhaka",
+    "AC installation Dhaka",
+    "AC gas refill Dhaka",
+    "AC cleaning Dhaka",
+    "AC maintenance Dhaka",
+    "AC technician Dhaka",
+    "AC leak fixing Dhaka",
+    "AC compressor replacement Dhaka",
+  ],
+  applicationName: "Mizan AC Servicing",
+  category: "Home Services",
+  alternates: {
+    canonical: "https://mizan-ac-servicing.vercel.app",
+  },
   openGraph: {
     title: "Mizan AC Servicing",
-    description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
+    description:
+      "AC servicing, repair, installation, gas refill and maintenance in Dhaka by Mizan AC Servicing.",
     url: "https://mizan-ac-servicing.vercel.app",
     siteName: "Mizan AC Servicing",
     locale: "bn_BD",
@@ -47,9 +68,51 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Mizan AC Servicing | AC Service in Dhaka",
-    description: "ঢাকার নির্ভরযোগ্য এসি সার্ভিস, ইনস্টলেশন ও মেইনটেন্যান্স",
+    description:
+      "AC servicing, repair, installation and gas refill in Dhaka by Mizan AC Servicing.",
     images: [socialPreviewImage],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+const organizationStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: "Mizan AC Servicing",
+  image: socialPreviewImage,
+  url: "https://mizan-ac-servicing.vercel.app",
+  telephone: "+8801949397234",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "657, Hatimbag, Dakshinkhan",
+    addressLocality: "Dhaka",
+    addressCountry: "BD",
+  },
+  areaServed: "Dhaka",
+  serviceArea: {
+    "@type": "City",
+    name: "Dhaka",
+  },
+  sameAs: [
+    "https://www.facebook.com/mizanACservicing",
+    "https://www.youtube.com/@MizanACservicing",
+  ],
+  makesOffer: [
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "AC Repair" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "AC Installation" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "AC Cleaning" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "AC Gas Refill" } },
+  ],
 };
 
 export default function RootLayout({
@@ -68,6 +131,15 @@ export default function RootLayout({
             <FirebaseAnalytics />
             <FloatingContacts />
             <Navbar />
+            <Suspense fallback={null}>
+              <PendingReviewPrompt />
+            </Suspense>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(organizationStructuredData),
+              }}
+            />
             {children}
             <Footer />
           </LanguageProvider>

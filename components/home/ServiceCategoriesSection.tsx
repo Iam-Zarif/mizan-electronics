@@ -10,6 +10,7 @@ import {
   ApiEmptyState,
   ApiSkeletonBlock,
 } from "@/components/shared/ApiState";
+import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   "cleaning-maintenance": Wrench,
@@ -57,7 +58,13 @@ export default function ServiceCategoriesSection() {
                 className="group relative overflow-hidden rounded-3xl border border-white/15 bg-white/70 shadow-[0_25px_60px_-40px_rgba(0,0,0,0.35)] backdrop-blur dark:border-white/10 dark:bg-neutral-900/70 cursor-pointer"
               >
                 <div className="relative h-64 w-full overflow-hidden">
-                  <Image src={cat.image} alt={cat.name} fill className="object-cover transition duration-500 group-hover:scale-105" />
+                  <Image
+                    src={getOptimizedCloudinaryUrl(cat.image, { width: 900, crop: "fill" })}
+                    alt={cat.name}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
                   <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/25 to-transparent" />
                   <div className="absolute left-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-white/85 px-4 py-2 text-sm font-semibold text-[#6366f1] shadow">
                     <Icon size={16} />

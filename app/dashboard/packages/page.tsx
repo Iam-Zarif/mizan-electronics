@@ -18,7 +18,9 @@ import {
   ApiSkeletonBlock,
 } from "@/components/shared/ApiState";
 import { PaginationControls } from "@/components/shared/PaginationControls";
+import { SuccessToast } from "@/components/shared/SuccessToast";
 import { getErrorMessage } from "@/lib/api";
+import { dispatchAdminSidebarRefresh } from "@/lib/admin-sidebar-events";
 import {
   createAdminPackage,
   deleteAdminPackage,
@@ -78,6 +80,12 @@ export default function DashboardPackagesPage() {
     () => getAdminPackages({ search: "", page: 1, limit: 100 }),
     [],
   );
+
+  useEffect(() => {
+    if (!actionSuccess) return;
+    const timer = window.setTimeout(() => setActionSuccess(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [actionSuccess]);
   const { data: servicesData } = useApiQuery(
     () => getAdminServices({ search: "" }),
     [],
@@ -211,6 +219,7 @@ export default function DashboardPackagesPage() {
             ? "প্যাকেজ সফলভাবে আপডেট হয়েছে।"
             : "প্যাকেজ সফলভাবে তৈরি হয়েছে।",
       );
+      dispatchAdminSidebarRefresh();
       void refresh();
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
@@ -242,6 +251,7 @@ export default function DashboardPackagesPage() {
       setActionSuccess(
         locale === "en" ? "Package deleted successfully." : "প্যাকেজ সফলভাবে ডিলিট হয়েছে।",
       );
+      dispatchAdminSidebarRefresh();
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
@@ -251,6 +261,7 @@ export default function DashboardPackagesPage() {
 
   return (
     <AdminSurface>
+      <SuccessToast message={actionSuccess} />
       <AdminPageHeader titleBn="কম্বো প্যাকেজ" titleEn="Combo Packages" />
 
       {isLoading ? <ApiSkeletonBlock rows={4} /> : null}
@@ -301,11 +312,6 @@ export default function DashboardPackagesPage() {
                 {actionError}
               </p>
             ) : null}
-            {actionSuccess ? (
-              <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                {actionSuccess}
-              </p>
-            ) : null}
           </div>
 
           {filteredRows.length === 0 ? (
@@ -322,56 +328,78 @@ export default function DashboardPackagesPage() {
               {paginatedRows.rows.map((item) => (
                 <div
                   key={item._id}
-                  className="rounded-[24px] border border-[#e8edf7] bg-white p-5 shadow-[0_18px_35px_-28px_rgba(63,94,160,0.35)] dark:border-white/10 dark:bg-[#161f36]"
+                  className="h-full overflow-hidden rounded-[24px] border border-[#e8edf7] bg-white shadow-[0_18px_35px_-28px_rgba(63,94,160,0.35)] dark:border-white/10 dark:bg-[#161f36]"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-[#f3f6fd] px-3 py-1 text-xs font-semibold text-[#2160ba] dark:bg-white/8 dark:text-[#aab5ff]">
-                        <Tag size={12} />
-                        <span>{locale === "en" ? item.categoryNameEn : item.categoryName}</span>
+                  <div className="h-1.5 bg-linear-to-r from-[#2160ba] via-[#5d7cff] to-[#ecaa81]" />
+                  <div className="flex h-full flex-col p-4">
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2.5">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#2160ba] dark:bg-white/8 dark:text-[#aab5ff]">
+                            <Gift size={17} />
+                          </span>
+                          <div className="min-w-0">
+                            <div className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#f3f6fd] px-2.5 py-1 text-[10px] font-semibold text-[#2160ba] dark:bg-white/8 dark:text-[#aab5ff]">
+                              <Tag size={11} />
+                              <span className="truncate">
+                                {locale === "en" ? item.categoryNameEn : item.categoryName}
+                              </span>
+                            </div>
+                            <h3 className="mt-2 line-clamp-1 text-base font-bold leading-5 text-[#1f2638] dark:text-white">
+                              {locale === "en" ? item.titleEn : item.title}
+                            </h3>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="mt-3 text-lg font-bold text-[#1f2638] dark:text-white">
-                        {locale === "en" ? item.titleEn : item.title}
-                      </h3>
+                      <span className="shrink-0 rounded-2xl bg-[#ecaa81] px-2.5 py-1.5 text-[11px] font-bold text-white shadow-[0_14px_30px_-18px_rgba(236,170,129,0.9)]">
+                        {item.price}
+                      </span>
                     </div>
-                    <span className="rounded-xl bg-[#ecaa81] px-3 py-1 text-xs font-bold text-white">
-                      {item.price}
-                    </span>
-                  </div>
 
-                  <p className="mt-3 text-sm leading-6 text-[#60708d] dark:text-[#a7b3c9]">
-                    {locale === "en" ? item.summaryEn : item.summary}
-                  </p>
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#60708d] dark:text-[#a7b3c9]">
+                      {locale === "en" ? item.summaryEn : item.summary}
+                    </p>
 
-                  <div className="mt-4 space-y-2">
-                    {(locale === "en" ? item.includesEn : item.includes).map((entry) => (
-                      <div
-                        key={entry}
-                        className="flex items-center gap-2 text-sm text-[#60708d] dark:text-[#a7b3c9]"
-                      >
-                        <span className="h-2 w-2 rounded-full bg-[#6366f1]" />
-                        <span>{entry}</span>
+                    <div className="mt-3 rounded-[20px] bg-[#f8fbff] p-3 dark:bg-[#11192c]">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#7b8aa8] dark:text-[#8fa0bf]">
+                          {locale === "en" ? "Included Services" : "যা থাকবে"}
+                        </p>
+                        <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-[#2160ba] dark:bg-white/8 dark:text-[#aab5ff]">
+                          {(locale === "en" ? item.includesEn : item.includes).length}
+                        </span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="space-y-1.5">
+                        {(locale === "en" ? item.includesEn : item.includes).slice(0, 3).map((entry) => (
+                          <div
+                            key={entry}
+                            className="flex items-start gap-2 text-xs leading-5 text-[#60708d] dark:text-[#a7b3c9]"
+                          >
+                            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#5d7cff]" />
+                            <span className="line-clamp-1">{entry}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                  <div className="mt-5 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(item)}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-4 py-2 text-sm font-semibold text-[#2160ba] dark:border-white/10 dark:bg-[#11192c] dark:text-white"
-                    >
-                      <Pencil size={14} />
-                      {locale === "en" ? "Edit" : "এডিট"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(item)}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-red-500 px-4 py-2 text-sm font-semibold text-white"
-                    >
-                      <Trash2 size={14} />
-                      {locale === "en" ? "Delete" : "ডিলিট"}
-                    </button>
+                    <div className="mt-4 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(item)}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-4 py-2.5 text-sm font-semibold text-[#2160ba] dark:border-white/10 dark:bg-[#11192c] dark:text-white"
+                      >
+                        <Pencil size={14} />
+                        {locale === "en" ? "Edit" : "এডিট"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget(item)}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white"
+                      >
+                        <Trash2 size={14} />
+                        {locale === "en" ? "Delete" : "ডিলিট"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

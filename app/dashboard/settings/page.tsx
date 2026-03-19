@@ -20,6 +20,7 @@ import {
 import { useProvider } from "@/Providers/AuthProviders";
 import { AdminPageHeader, AdminSurface } from "@/components/admin/AdminSections";
 import { useLanguage } from "@/lib/i18n";
+import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
 
 export default function DashboardSettingsPage() {
   const { locale } = useLanguage();
@@ -336,7 +337,11 @@ export default function DashboardSettingsPage() {
               <div className="flex items-center gap-4">
                 {adminAvatar ? (
                   <Image
-                    src={adminAvatar}
+                    src={getOptimizedCloudinaryUrl(adminAvatar, {
+                      width: 144,
+                      height: 144,
+                      crop: "fill",
+                    })}
                     alt={adminName}
                     width={72}
                     height={72}

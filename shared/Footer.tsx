@@ -88,13 +88,13 @@ const Footer = () => {
               </p>
               <div className="flex items-center gap-5">
                 <SocialIcon
-                  href="https://www.facebook.com/profile.php?id=61583720444800"
+                  href="https://www.facebook.com/mizanACservicing"
                   icon={<FaFacebookF />}
                   color="text-blue-600"
                 />
 
                 <SocialIcon
-                  href="https://www.youtube.com/@MizanElectronicsService"
+                  href="https://www.youtube.com/@MizanACservicing"
                   icon={<FaYoutube />}
                   color="text-red-500"
                 />

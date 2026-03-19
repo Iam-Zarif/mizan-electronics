@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  ArrowUpDown,
   BadgeCheck,
   CircleDollarSign,
   Eye,
   FilePlus2,
+  Search,
   Mail,
   MapPin,
   PhoneCall,
@@ -23,19 +25,26 @@ import {
   getAdminUsers,
 } from "@/lib/dashboard-api";
 import { getErrorMessage } from "@/lib/api";
+import { dispatchAdminSidebarRefresh } from "@/lib/admin-sidebar-events";
+import { getValueOrEmpty } from "@/lib/display";
 import { useLanguage } from "@/lib/i18n";
 import { useApiQuery } from "@/hooks/use-api-query";
 
 type PaymentStatus = "paid" | "partial" | "unpaid";
+type CustomerSortKey = "latest" | "oldest" | "alphabetical" | "amount_high" | "amount_low" | "most_purchases";
+type ServiceLine = {
+  serviceSlug: string;
+  qty: number;
+};
 
 type AddCustomerForm = {
   requestId: string;
   customerName: string;
   phone: string;
   email: string;
-  serviceSlug: string;
+  serviceItems: ServiceLine[];
   invoiceNo: string;
-  amount: string;
+  amountPaid: string;
   paymentStatus: PaymentStatus;
   note: string;
 };
@@ -45,9 +54,9 @@ const emptyForm: AddCustomerForm = {
   customerName: "",
   phone: "",
   email: "",
-  serviceSlug: "",
+  serviceItems: [{ serviceSlug: "", qty: 1 }],
   invoiceNo: "",
-  amount: "",
+  amountPaid: "",
   paymentStatus: "paid",
   note: "",
 };
@@ -64,22 +73,31 @@ const getNextInvoiceSerial = (invoiceNumbers: string[]) => {
   return String(maxNumber + 1).padStart(2, "0");
 };
 
+const parsePriceFloor = (priceText: string) => {
+  const numbers = priceText
+    .replace(/[^\d-]/g, "")
+    .split("-")
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value >= 0);
+
+  return numbers[0] ?? 0;
+};
+
 export default function DashboardMatchingPage() {
   const { locale } = useLanguage();
+  const pageSize = 12;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [activeField, setActiveField] = useState<"customerName" | "phone" | "email" | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<CustomerSortKey>("latest");
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, error, refresh } = useApiQuery(
-    () => getAdminCustomers({ page, limit: 12 }),
-    [page],
-  );
-  const { data: allCustomersData, refresh: refreshAllCustomers } = useApiQuery(
-    () => getAdminCustomers({ page: 1, limit: 200 }),
+  const { data: allCustomersData, isLoading, error, refresh: refreshAllCustomers } = useApiQuery(
+    () => getAdminCustomers({ page: 1, limit: 500 }),
     [],
   );
   const { data: usersData } = useApiQuery(
@@ -104,7 +122,7 @@ export default function DashboardMatchingPage() {
       paid: purchases.filter((item) => item.paymentStatus === "paid").length,
       pending: purchases.filter((item) => item.paymentStatus !== "paid").length,
     };
-  }, [data]);
+  }, [allCustomersData]);
 
   const nextInvoiceNo = useMemo(() => {
     const invoiceNumbers =
@@ -112,14 +130,136 @@ export default function DashboardMatchingPage() {
     return getNextInvoiceSerial(invoiceNumbers);
   }, [allCustomersData]);
 
+  const serviceOptions = useMemo(
+    () =>
+      (servicesData?.rows ?? []).flatMap((category) =>
+        category.services.map((service) => ({
+          value: service.slug,
+          label: locale === "en" ? service.titleEn : service.title,
+          categoryLabel: locale === "en" ? category.nameEn : category.name,
+          price: service.price,
+        })),
+      ),
+    [locale, servicesData],
+  );
+
+  const selectedServiceTotal = useMemo(() => {
+    const bySlug = new Map(
+      serviceOptions.map((service) => [service.value, parsePriceFloor(service.price)]),
+    );
+
+    return form.serviceItems.reduce((sum, item) => {
+      if (!item.serviceSlug) return sum;
+      return sum + (bySlug.get(item.serviceSlug) ?? 0) * Math.max(1, item.qty || 1);
+    }, 0);
+  }, [form.serviceItems, serviceOptions]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, sortBy]);
+
+  useEffect(() => {
+    setForm((current) => {
+      if (current.paymentStatus === "paid") {
+        const nextAmount = String(selectedServiceTotal || "");
+        return current.amountPaid === nextAmount ? current : { ...current, amountPaid: nextAmount };
+      }
+
+      if (current.paymentStatus === "unpaid") {
+        return current.amountPaid === "0" ? current : { ...current, amountPaid: "0" };
+      }
+
+      return current;
+    });
+  }, [selectedServiceTotal, form.paymentStatus]);
+
+  const filteredCustomers = useMemo(() => {
+    const rows = [...(allCustomersData?.rows ?? [])];
+    const normalizedQuery = query.trim().toLowerCase();
+
+    const searched = normalizedQuery
+      ? rows.filter((customer) => {
+          const looksLikePhone = /^[\d+\-\s()]+$/.test(normalizedQuery);
+          const looksLikeEmail = normalizedQuery.includes("@");
+          const looksLikeInvoice = /\d/.test(normalizedQuery) && !looksLikePhone;
+
+          if (looksLikeEmail) {
+            return (customer.customerEmail ?? "").toLowerCase().includes(normalizedQuery);
+          }
+
+          if (looksLikePhone) {
+            return (customer.customerPhone ?? "").toLowerCase().includes(normalizedQuery);
+          }
+
+          if (looksLikeInvoice) {
+            return customer.purchases.some((purchase) =>
+              purchase.invoiceNo.toLowerCase().includes(normalizedQuery),
+            );
+          }
+
+          return customer.customerName.toLowerCase().includes(normalizedQuery);
+        })
+      : rows;
+
+    searched.sort((a, b) => {
+      const aLatest = new Date(a.purchases[0]?.completedAt ?? 0).getTime();
+      const bLatest = new Date(b.purchases[0]?.completedAt ?? 0).getTime();
+      const aTotal = a.purchases.reduce((sum, item) => sum + item.subtotal, 0);
+      const bTotal = b.purchases.reduce((sum, item) => sum + item.subtotal, 0);
+
+      switch (sortBy) {
+        case "oldest":
+          return aLatest - bLatest;
+        case "alphabetical":
+          return a.customerName.localeCompare(b.customerName);
+        case "amount_high":
+          return bTotal - aTotal;
+        case "amount_low":
+          return aTotal - bTotal;
+        case "most_purchases":
+          return b.purchases.length - a.purchases.length;
+        case "latest":
+        default:
+          return bLatest - aLatest;
+      }
+    });
+
+    return searched;
+  }, [allCustomersData, query, sortBy]);
+
+  const pagination = useMemo(() => {
+    const totalItems = filteredCustomers.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * pageSize;
+
+    return {
+      rows: filteredCustomers.slice(start, start + pageSize),
+      meta: {
+        page: safePage,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasPreviousPage: safePage > 1,
+        hasNextPage: safePage < totalPages,
+      },
+    };
+  }, [filteredCustomers, page]);
+
+  useEffect(() => {
+    if (page !== pagination.meta.page) {
+      setPage(pagination.meta.page);
+    }
+  }, [page, pagination.meta.page]);
+
   const selectedCustomer = useMemo(() => {
     if (!selectedKey) return null;
     return (
-      data?.rows.find(
+      (allCustomersData?.rows ?? []).find(
         (item) => (item.customerEmail || item.customerPhone || item.customerName) === selectedKey,
       ) ?? null
     );
-  }, [data, selectedKey]);
+  }, [allCustomersData, selectedKey]);
 
   const userSuggestions = useMemo(() => {
     if (!activeField || !usersData?.rows.length) return [];
@@ -142,18 +282,6 @@ export default function DashboardMatchingPage() {
     return matched.slice(0, 6);
   }, [activeField, form, usersData]);
 
-  const serviceOptions = useMemo(
-    () =>
-      (servicesData?.rows ?? []).flatMap((category) =>
-        category.services.map((service) => ({
-          value: service.slug,
-          label: locale === "en" ? service.titleEn : service.title,
-          categoryLabel: locale === "en" ? category.nameEn : category.name,
-        })),
-      ),
-    [locale, servicesData],
-  );
-
   const requestOptions = useMemo(
     () =>
       (bookingsData?.rows ?? [])
@@ -163,11 +291,11 @@ export default function DashboardMatchingPage() {
           label: `${booking.requestCode} • ${
             locale === "en" ? booking.serviceTitleEn : booking.serviceTitleBn
           }`,
-        customerName: booking.customerName,
-        customerPhone: booking.customerPhone,
-        customerEmail: booking.customerEmail,
-        serviceSlug: booking.serviceSlug,
-        note: locale === "en" ? booking.addressEn || booking.noteEn : booking.addressBn || booking.noteBn,
+          customerName: booking.customerName,
+          customerPhone: booking.customerPhone,
+          customerEmail: booking.customerEmail,
+          serviceSlug: booking.serviceSlug,
+          note: locale === "en" ? booking.addressEn || booking.noteEn : booking.addressBn || booking.noteBn,
           paymentStatus: booking.paymentStatus,
         })),
     [bookingsData, locale],
@@ -213,9 +341,37 @@ export default function DashboardMatchingPage() {
       customerName: selectedRequest?.customerName || current.customerName,
       phone: selectedRequest?.customerPhone || current.phone,
       email: selectedRequest?.customerEmail || current.email,
-      serviceSlug: selectedRequest?.serviceSlug || current.serviceSlug,
+      serviceItems: selectedRequest?.serviceSlug
+        ? [{ serviceSlug: selectedRequest.serviceSlug, qty: 1 }]
+        : current.serviceItems,
       paymentStatus: selectedRequest?.paymentStatus || current.paymentStatus,
       note: selectedRequest?.note || current.note,
+    }));
+  };
+
+  const updateServiceItem = (index: number, patch: Partial<ServiceLine>) => {
+    setForm((current) => ({
+      ...current,
+      serviceItems: current.serviceItems.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, ...patch } : item,
+      ),
+    }));
+  };
+
+  const addServiceItemRow = () => {
+    setForm((current) => ({
+      ...current,
+      serviceItems: [...current.serviceItems, { serviceSlug: "", qty: 1 }],
+    }));
+  };
+
+  const removeServiceItemRow = (index: number) => {
+    setForm((current) => ({
+      ...current,
+      serviceItems:
+        current.serviceItems.length > 1
+          ? current.serviceItems.filter((_, itemIndex) => itemIndex !== index)
+          : current.serviceItems,
     }));
   };
 
@@ -225,21 +381,27 @@ export default function DashboardMatchingPage() {
     setIsSubmitting(true);
 
     try {
-      const amount = Number(form.amount.replace(/[^\d]/g, "")) || 0;
+      const amountPaid = Number(form.amountPaid.replace(/[^\d]/g, "")) || 0;
 
       await createAdminCompletedService({
         requestId: form.requestId || undefined,
         customerName: form.customerName.trim(),
         customerEmail: form.email.trim(),
         customerPhone: form.phone.trim(),
-        serviceSlug: form.serviceSlug,
+        serviceItems: form.serviceItems
+          .filter((item) => item.serviceSlug)
+          .map((item) => ({
+            serviceSlug: item.serviceSlug,
+            qty: Math.max(1, item.qty || 1),
+          })),
         invoiceNo: form.invoiceNo.trim(),
-        amount,
         paymentStatus: form.paymentStatus,
+        amountPaid,
         note: form.note.trim(),
       });
 
-      await Promise.all([refresh(), refreshAllCustomers()]);
+      await refreshAllCustomers();
+      dispatchAdminSidebarRefresh();
       handleClose();
     } catch (submitError) {
       setSubmitError(getErrorMessage(submitError));
@@ -264,12 +426,44 @@ export default function DashboardMatchingPage() {
           <ApiErrorState
             title={locale === "en" ? "Purchased customers failed to load" : "কাস্টমার ডেটা লোড হয়নি"}
             description={error}
-            onRetry={() => void refresh()}
+            onRetry={() => void refreshAllCustomers()}
           />
         ) : null}
 
-        {!isLoading && !error && data ? (
+        {!isLoading && !error && allCustomersData ? (
           <div className="space-y-5">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full items-center gap-2 rounded-2xl border border-[#e3eaf6] bg-[#f8fbff] px-4 py-3 text-sm text-[#6f7c98] dark:border-white/10 dark:bg-[#11192c] dark:text-[#a7b3c9] xl:max-w-[360px]">
+                <Search size={16} />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={
+                    locale === "en"
+                      ? "Search by customer, phone, email or invoice"
+                      : "কাস্টমার, ফোন, ইমেইল বা ইনভয়েস দিয়ে সার্চ করুন"
+                  }
+                  className="w-full bg-transparent outline-none placeholder:text-[#8a96ad] dark:placeholder:text-[#70809c]"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 rounded-2xl border border-[#e3eaf6] bg-[#f8fbff] px-4 py-3 text-sm text-[#6f7c98] dark:border-white/10 dark:bg-[#11192c] dark:text-[#a7b3c9] xl:w-[260px] xl:flex-none">
+                <ArrowUpDown size={16} />
+                <select
+                  value={sortBy}
+                  onChange={(event) => setSortBy(event.target.value as CustomerSortKey)}
+                  className="w-full bg-transparent outline-none"
+                >
+                  <option value="latest">{locale === "en" ? "Newest to oldest" : "নতুন থেকে পুরোনো"}</option>
+                  <option value="oldest">{locale === "en" ? "Oldest to newest" : "পুরোনো থেকে নতুন"}</option>
+                  <option value="alphabetical">{locale === "en" ? "Alphabet A-Z" : "বর্ণানুক্রম A-Z"}</option>
+                  <option value="amount_high">{locale === "en" ? "Amount high to low" : "অ্যামাউন্ট বেশি থেকে কম"}</option>
+                  <option value="amount_low">{locale === "en" ? "Amount low to high" : "অ্যামাউন্ট কম থেকে বেশি"}</option>
+                  <option value="most_purchases">{locale === "en" ? "Most purchases" : "সবচেয়ে বেশি সার্ভিস"}</option>
+                </select>
+              </label>
+            </div>
+
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap gap-3">
                 <div className="inline-flex items-center gap-2 rounded-2xl bg-[#f3f6fd] px-4 py-3 text-sm font-medium text-[#4f6bff] dark:bg-white/8 dark:text-[#aab5ff]">
@@ -322,7 +516,7 @@ export default function DashboardMatchingPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.rows.map((customer) => {
+                    {pagination.rows.map((customer) => {
                       const key =
                         customer.customerEmail || customer.customerPhone || customer.customerName;
                       const latestPurchase = customer.purchases[0];
@@ -349,7 +543,12 @@ export default function DashboardMatchingPage() {
                               : latestPurchase?.serviceTitleBn}
                           </td>
                           <td className="px-5 py-4 align-top text-sm font-medium text-[#1f2638] dark:text-white">
-                            {latestPurchase?.invoiceNo || "—"}
+                            {getValueOrEmpty(
+                              latestPurchase?.invoiceNo,
+                              locale,
+                              "Invoice",
+                              "ইনভয়েস",
+                            )}
                           </td>
                           <td className="px-5 py-4 align-top text-sm font-medium text-[#1f2638] dark:text-white">
                             ৳{totalAmount.toLocaleString()}
@@ -379,7 +578,7 @@ export default function DashboardMatchingPage() {
               </div>
             </div>
 
-            <PaginationControls pagination={data.pagination} onPageChange={setPage} />
+            <PaginationControls pagination={pagination.meta} onPageChange={setPage} />
           </div>
         ) : null}
       </AdminSurface>
@@ -437,7 +636,7 @@ export default function DashboardMatchingPage() {
                 ["customerName", locale === "en" ? "Customer name" : "কাস্টমার নাম"],
                 ["phone", locale === "en" ? "Phone number" : "ফোন নম্বর"],
                 ["email", locale === "en" ? "Email" : "ইমেইল"],
-                ["amount", locale === "en" ? "Amount" : "অ্যামাউন্ট"],
+                ["amountPaid", locale === "en" ? "Amount paid" : "পরিশোধিত অ্যামাউন্ট"],
               ].map(([key, label]) => {
                 const typedKey = key as keyof AddCustomerForm;
                 const isSuggestField =
@@ -490,7 +689,7 @@ export default function DashboardMatchingPage() {
                             </div>
                             <div className="shrink-0 text-right">
                               <p className="text-sm font-medium text-[#60708d] dark:text-[#a7b3c9]">
-                                {user.phone || "—"}
+                                {getValueOrEmpty(user.phone, locale, "Phone", "ফোন")}
                               </p>
                             </div>
                           </button>
@@ -504,39 +703,78 @@ export default function DashboardMatchingPage() {
               <label className="relative min-w-0 grid gap-2 text-sm font-medium text-[#1f2638] dark:text-white">
                 <span>{locale === "en" ? "Invoice no" : "ইনভয়েস নং"}</span>
                 <input
-                  required
                   value={form.invoiceNo}
-                  onChange={(e) =>
-                    setForm((current) => ({ ...current, invoiceNo: e.target.value }))
-                  }
-                  className="w-full min-w-0 rounded-2xl border border-[#e3eaf6] bg-[#f8fbff] px-4 py-3 outline-none dark:border-white/10 dark:bg-[#11192c]"
+                  readOnly
+                  aria-readonly="true"
+                  className="w-full min-w-0 cursor-not-allowed rounded-2xl border border-[#e3eaf6] bg-[#eef3fb] px-4 py-3 text-[#60708d] outline-none dark:border-white/10 dark:bg-[#0f1728] dark:text-[#a7b3c9]"
                 />
               </label>
 
-              <label className="grid min-w-0 gap-2 text-sm font-medium text-[#1f2638] dark:text-white md:col-span-2">
-                <span>{locale === "en" ? "Available service" : "এভেইলেবল সার্ভিস"}</span>
-                <select
-                  required
-                  value={form.serviceSlug}
-                  onChange={(e) =>
-                    setForm((current) => ({ ...current, serviceSlug: e.target.value }))
-                  }
-                  className="w-full min-w-0 rounded-2xl border border-[#e3eaf6] bg-[#f8fbff] px-4 py-3 outline-none dark:border-white/10 dark:bg-[#11192c]"
-                >
-                  <option value="">
-                    {locale === "en" ? "Select service" : "সার্ভিস সিলেক্ট করুন"}
-                  </option>
-                  {serviceOptions.map((service) => (
-                    <option key={`${service.categoryLabel}-${service.value}`} value={service.value}>
-                      {service.label}
-                    </option>
+              <div className="grid gap-3 md:col-span-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-[#1f2638] dark:text-white">
+                    {locale === "en" ? "Available services" : "এভেইলেবল সার্ভিসসমূহ"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={addServiceItemRow}
+                    className="rounded-full bg-[#f3f6fd] px-3 py-1.5 text-xs font-semibold text-[#4f6bff] dark:bg-white/8 dark:text-[#aab5ff]"
+                  >
+                    {locale === "en" ? "Add more service" : "আরও সার্ভিস যোগ করুন"}
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {form.serviceItems.map((item, index) => (
+                    <div
+                      key={`${index}-${item.serviceSlug}`}
+                      className="grid gap-3 rounded-2xl border border-[#e3eaf6] bg-[#f8fbff] p-3 dark:border-white/10 dark:bg-[#11192c] md:grid-cols-[1fr_auto]"
+                    >
+                      <select
+                        required
+                        value={item.serviceSlug}
+                        onChange={(event) =>
+                          updateServiceItem(index, { serviceSlug: event.target.value })
+                        }
+                        className="w-full min-w-0 rounded-2xl border border-[#d9e3f2] bg-white px-4 py-3 outline-none dark:border-white/10 dark:bg-[#161f36]"
+                      >
+                        <option value="">
+                          {locale === "en" ? "Select service" : "সার্ভিস সিলেক্ট করুন"}
+                        </option>
+                        {serviceOptions.map((service) => (
+                          <option key={`${service.categoryLabel}-${service.value}`} value={service.value}>
+                            {service.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => removeServiceItemRow(index)}
+                        disabled={form.serviceItems.length === 1}
+                        className="rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-red-600 disabled:cursor-not-allowed disabled:opacity-45 dark:border-red-500/30 dark:bg-[#161f36] dark:text-red-300"
+                      >
+                        {locale === "en" ? "Remove" : "বাদ দিন"}
+                      </button>
+                    </div>
                   ))}
-                </select>
+                </div>
+
                 <p className="text-xs text-[#7f8ba3]">
                   {locale === "en"
-                    ? "Choose from the existing service list."
-                    : "বিদ্যমান সার্ভিস লিস্ট থেকে সিলেক্ট করুন।"}
+                    ? "One invoice can contain multiple services."
+                    : "একটি ইনভয়েসে একাধিক সার্ভিস যোগ করা যাবে।"}
                 </p>
+              </div>
+
+              <label className="grid gap-2 text-sm font-medium text-[#1f2638] dark:text-white">
+                <span>{locale === "en" ? "Subtotal" : "সাবটোটাল"}</span>
+                <input
+                  value={`৳${selectedServiceTotal.toLocaleString()}`}
+                  readOnly
+                  aria-readonly="true"
+                  className="w-full min-w-0 cursor-not-allowed rounded-2xl border border-[#e3eaf6] bg-[#eef3fb] px-4 py-3 text-[#60708d] outline-none dark:border-white/10 dark:bg-[#0f1728] dark:text-[#a7b3c9]"
+                />
               </label>
 
               <label className="grid min-w-0 gap-2 text-sm font-medium text-[#1f2638] dark:text-white">
@@ -622,8 +860,8 @@ export default function DashboardMatchingPage() {
             <div className="grid gap-5 xl:grid-cols-[0.9fr,1.1fr]">
               <div className="space-y-3">
                 {[
-                  { icon: Mail, label: locale === "en" ? "Email" : "ইমেইল", value: selectedCustomer.customerEmail || "—" },
-                  { icon: PhoneCall, label: locale === "en" ? "Phone" : "ফোন", value: selectedCustomer.customerPhone || "—" },
+                  { icon: Mail, label: locale === "en" ? "Email" : "ইমেইল", value: getValueOrEmpty(selectedCustomer.customerEmail, locale, "Email", "ইমেইল") },
+                  { icon: PhoneCall, label: locale === "en" ? "Phone" : "ফোন", value: getValueOrEmpty(selectedCustomer.customerPhone, locale, "Phone", "ফোন") },
                   { icon: MapPin, label: locale === "en" ? "Address" : "ঠিকানা", value: locale === "en" ? selectedCustomer.addressEn : selectedCustomer.addressBn },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -645,13 +883,13 @@ export default function DashboardMatchingPage() {
 
               <div className="rounded-2xl bg-[#f8fbff] p-4 dark:bg-[#11192c]">
                 <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
+                  <div className="flex items-center gap-2">
                     <p className="text-lg font-bold text-[#1f2638] dark:text-white">
                       {locale === "en" ? "Purchased Services" : "কেনা সার্ভিস"}
                     </p>
-                    <p className="text-sm text-[#7f8ba3]">
-                      {selectedCustomer.purchases.length} {locale === "en" ? "entries" : "এন্ট্রি"}
-                    </p>
+                    <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-[#eaf0ff] px-2.5 py-1 text-xs font-semibold text-[#4f6bff] dark:bg-white/10 dark:text-[#aab5ff]">
+                      {selectedCustomer.purchases.length}
+                    </span>
                   </div>
                 </div>
 
@@ -679,6 +917,34 @@ export default function DashboardMatchingPage() {
                         <p>{locale === "en" ? "Due" : "বাকি"}: ৳{purchase.due.toLocaleString()}</p>
                         <p>{new Date(purchase.completedAt).toLocaleDateString(locale === "en" ? "en-GB" : "bn-BD")}</p>
                       </div>
+
+                      {purchase.items.length ? (
+                        <div className="mt-4 rounded-2xl bg-[#f8fbff] p-3 dark:bg-[#11192c]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a96ad]">
+                            {locale === "en" ? "Invoice items" : "ইনভয়েস আইটেম"}
+                          </p>
+                          <div className="mt-3 space-y-2">
+                            {purchase.items.map((item, itemIndex) => (
+                              <div
+                                key={`${purchase.invoiceNo}-${itemIndex}`}
+                                className="flex flex-col gap-2 rounded-xl border border-[#e5ebf7] bg-white px-3 py-3 text-sm dark:border-white/10 dark:bg-[#161f36] sm:flex-row sm:items-center sm:justify-between"
+                              >
+                                <div className="min-w-0">
+                                  <p className="font-medium text-[#1f2638] dark:text-white">
+                                    {locale === "en" ? item.descriptionEn : item.descriptionBn}
+                                  </p>
+                                  <p className="mt-1 text-xs text-[#8a96ad]">
+                                    {locale === "en" ? "Qty" : "পরিমাণ"}: {item.qty}
+                                  </p>
+                                </div>
+                                <div className="text-sm font-medium text-[#60708d] dark:text-[#a7b3c9]">
+                                  ৳{item.total.toLocaleString()}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                 </div>

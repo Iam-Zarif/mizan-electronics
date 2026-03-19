@@ -25,6 +25,7 @@ import {
   ApiSkeletonBlock,
 } from "@/components/shared/ApiState";
 import { PaginationControls } from "@/components/shared/PaginationControls";
+import { SuccessToast } from "@/components/shared/SuccessToast";
 import {
   createAdminCategory,
   deleteAdminCategory,
@@ -37,7 +38,9 @@ import {
   type AdminServiceUpdateInput,
 } from "@/lib/dashboard-api";
 import { getErrorMessage } from "@/lib/api";
+import { dispatchAdminSidebarRefresh } from "@/lib/admin-sidebar-events";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
 import { useLanguage } from "@/lib/i18n";
 
 type EditFormState = {
@@ -79,6 +82,7 @@ export default function DashboardServicesPage() {
   const [page, setPage] = useState(1);
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
   const [categoryState, setCategoryState] = useState<CategoryFormState>({
     name: "",
     description: "",
@@ -102,6 +106,12 @@ export default function DashboardServicesPage() {
     () => getAdminServices({ page: 1, limit: 100 }),
     [],
   );
+
+  useEffect(() => {
+    if (!actionSuccess) return;
+    const timer = window.setTimeout(() => setActionSuccess(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [actionSuccess]);
 
   useEffect(() => {
     if (!data?.rows.length) return;
@@ -192,9 +202,13 @@ export default function DashboardServicesPage() {
   const toggleCategory = (categoryId: string) => {
     setOpenCategories((current) =>
       current.includes(categoryId)
-        ? current.filter((item) => item !== categoryId)
-        : [...current, categoryId],
+        ? []
+        : [categoryId],
     );
+  };
+
+  const openImagePreview = (src: string, alt: string) => {
+    setPreviewImage({ src, alt });
   };
 
   const openEditModal = (service: AdminServiceRow) => {
@@ -268,6 +282,7 @@ export default function DashboardServicesPage() {
       setActionSuccess(
         locale === "en" ? "Service updated successfully." : "সার্ভিস সফলভাবে আপডেট হয়েছে।",
       );
+      dispatchAdminSidebarRefresh();
       setEditingService(null);
       setEditState(null);
       void refresh();
@@ -306,6 +321,7 @@ export default function DashboardServicesPage() {
       setActionSuccess(
         locale === "en" ? "Service deleted successfully." : "সার্ভিস সফলভাবে ডিলিট হয়েছে।",
       );
+      dispatchAdminSidebarRefresh();
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
@@ -367,13 +383,14 @@ export default function DashboardServicesPage() {
           pagination: current.pagination,
         };
       });
-      setOpenCategories((current) => [...new Set([...current, createdCategory.id])]);
+      setOpenCategories([createdCategory.id]);
       closeCategoryModal();
       setActionSuccess(
         locale === "en"
           ? "Category created successfully."
           : "ক্যাটাগরি সফলভাবে তৈরি হয়েছে।",
       );
+      dispatchAdminSidebarRefresh();
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
@@ -467,6 +484,7 @@ export default function DashboardServicesPage() {
           ? "Category deleted successfully."
           : "ক্যাটাগরি সফলভাবে ডিলিট হয়েছে।",
       );
+      dispatchAdminSidebarRefresh();
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
@@ -476,6 +494,7 @@ export default function DashboardServicesPage() {
 
   return (
     <AdminSurface>
+      <SuccessToast message={actionSuccess} />
       <AdminPageHeader titleBn="মোট সার্ভিস" titleEn="Total Services" />
 
       {isLoading ? <ApiSkeletonBlock rows={4} /> : null}
@@ -534,11 +553,6 @@ export default function DashboardServicesPage() {
                 {actionError}
               </p>
             ) : null}
-            {actionSuccess ? (
-              <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                {actionSuccess}
-              </p>
-            ) : null}
           </div>
 
           {filteredData.rows.length === 0 ? (
@@ -567,9 +581,31 @@ export default function DashboardServicesPage() {
                         onClick={() => toggleCategory(category.id)}
                         className="flex min-w-0 flex-1 items-center gap-4 text-left"
                       >
-                        <div className="relative h-18 w-24 shrink-0 overflow-hidden rounded-2xl bg-[#edf3ff]">
+                        <div
+                          className="relative h-18 w-24 shrink-0 overflow-hidden rounded-2xl bg-[#edf3ff]"
+                          role="button"
+                          tabIndex={0}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openImagePreview(category.image, locale === "en" ? category.nameEn : category.name);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              openImagePreview(
+                                category.image,
+                                locale === "en" ? category.nameEn : category.name,
+                              );
+                            }
+                          }}
+                        >
                           <Image
-                            src={category.image}
+                            src={getOptimizedCloudinaryUrl(category.image, {
+                              width: 192,
+                              height: 144,
+                              crop: "fill",
+                            })}
                             alt={locale === "en" ? category.nameEn : category.name}
                             fill
                             className="object-cover"
@@ -619,14 +655,50 @@ export default function DashboardServicesPage() {
 
                     {isOpen ? (
                       <div className="border-t border-[#edf1f7] px-5 pb-5 pt-4 dark:border-white/10">
-                        <div className="space-y-1.5">
+                        <div className="grid gap-3 md:grid-cols-2">
                           {category.services.map((service) => (
                             <div
                               key={service._id}
-                              className="rounded-[20px] border border-[#edf1f7] bg-[#fbfdff] p-4 dark:border-white/10 dark:bg-[#11192c]"
+                              className="overflow-hidden rounded-[22px] border border-[#edf1f7] bg-[#fbfdff] dark:border-white/10 dark:bg-[#11192c]"
                             >
-                              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                                <div className="min-w-0 flex-1">
+                              <div className="relative h-72 w-full overflow-hidden bg-[#edf3ff] dark:bg-[#0f172a]">
+                                {service.images[0] ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditModal(service)}
+                                    className="group relative block h-full w-full text-left"
+                                  >
+                                    <Image
+                                      src={getOptimizedCloudinaryUrl(service.images[0], {
+                                        width: 720,
+                                        height: 420,
+                                        crop: "fill",
+                                      })}
+                                      alt={locale === "en" ? service.titleEn : service.title}
+                                      fill
+                                      className="object-cover transition duration-300 group-hover:scale-[1.02]"
+                                      sizes="(max-width: 768px) 100vw, 50vw"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/55 via-[#0f172a]/15 to-transparent" />
+                                    <span className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full bg-white/92 px-3 py-1.5 text-xs font-semibold text-[#2160ba] shadow-sm transition group-hover:bg-white">
+                                      <Pencil size={13} />
+                                      {locale === "en" ? "Edit" : "এডিট"}
+                                    </span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditModal(service)}
+                                    className="flex h-full w-full items-center justify-center gap-2 bg-[#edf3ff] text-sm font-semibold text-[#2160ba] dark:bg-[#11192c] dark:text-[#aab5ff]"
+                                  >
+                                    <Pencil size={16} />
+                                    {locale === "en" ? "Edit image and details" : "ইমেজ ও ডিটেইলস এডিট করুন"}
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="p-4">
+                                <div className="min-w-0">
                                   <div className="flex flex-wrap items-center gap-2">
                                     <div className="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#2160ba] dark:bg-white/8 dark:text-[#aab5ff]">
                                       <Wrench size={15} />
@@ -664,15 +736,7 @@ export default function DashboardServicesPage() {
                                   </div>
                                 </div>
 
-                                <div className="flex shrink-0 items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => openEditModal(service)}
-                                    className="inline-flex items-center gap-2 rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] px-4 py-2 text-sm font-semibold text-[#2160ba] dark:border-white/10 dark:bg-[#161f36] dark:text-white"
-                                  >
-                                    <Pencil size={15} />
-                                    {locale === "en" ? "Edit" : "এডিট"}
-                                  </button>
+                                <div className="mt-4 flex items-center justify-end">
                                   <button
                                     type="button"
                                     onClick={() => setDeleteTarget(service)}
@@ -792,7 +856,18 @@ export default function DashboardServicesPage() {
                         key={imageUrl}
                         className="overflow-hidden rounded-2xl border border-[#d7e1f0] bg-white dark:border-white/10 dark:bg-[#161f36]"
                       >
-                        <div className="relative h-32 w-full">
+                        <div
+                          className="relative h-32 w-full cursor-zoom-in"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openImagePreview(imageUrl, "Service image")}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              openImagePreview(imageUrl, "Service image");
+                            }
+                          }}
+                        >
                           <Image
                             src={imageUrl}
                             alt="Service image"
@@ -944,9 +1019,24 @@ export default function DashboardServicesPage() {
                 <div className="rounded-2xl border border-[#d7e1f0] bg-[#f8fbff] p-4 dark:border-white/10 dark:bg-[#11192c]">
                   {categoryState.image ? (
                     <div className="overflow-hidden rounded-2xl border border-[#d7e1f0] bg-white dark:border-white/10 dark:bg-[#161f36]">
-                      <div className="relative h-44 w-full">
+                      <div
+                        className="relative h-44 w-full cursor-zoom-in"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openImagePreview(categoryState.image, "Category image")}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openImagePreview(categoryState.image, "Category image");
+                          }
+                        }}
+                      >
                         <Image
-                          src={categoryState.image}
+                          src={getOptimizedCloudinaryUrl(categoryState.image, {
+                            width: 1280,
+                            height: 880,
+                            crop: "fill",
+                          })}
                           alt="Category image"
                           fill
                           className="object-cover"
@@ -1020,6 +1110,34 @@ export default function DashboardServicesPage() {
                     ? "Create Category"
                     : "ক্যাটাগরি তৈরি করুন"}
               </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {previewImage ? (
+        <div className="fixed inset-0 z-[98] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+          <div className="relative w-full max-w-5xl rounded-[28px] bg-white p-4 shadow-2xl dark:bg-[#161f36]">
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f3f6fd] text-[#60708d] dark:bg-white/8 dark:text-white"
+            >
+              <X size={18} />
+            </button>
+            <div className="relative h-[72vh] w-full overflow-hidden rounded-[22px] bg-[#f8fbff] dark:bg-[#11192c]">
+              <Image
+                src={getOptimizedCloudinaryUrl(previewImage.src, {
+                  width: 1800,
+                  height: 1800,
+                  crop: "fit",
+                })}
+                alt={previewImage.alt}
+                fill
+                className="object-contain"
+                sizes="100vw"
+                priority
+              />
             </div>
           </div>
         </div>

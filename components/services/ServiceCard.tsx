@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import ServiceBookingActions from "@/components/services/ServiceBookingActions";
+import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
 
 export type ServiceCardItem = {
   id: string;
@@ -42,7 +43,13 @@ export default function ServiceCard({
       className={`cursor-pointer rounded-3xl border border-white/15 bg-white shadow-[0_25px_60px_-40px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-neutral-900 ${className}`}
     >
       <div className={`relative w-full overflow-hidden rounded-t-3xl ${imageHeightClass}`}>
-        <Image src={service.images[0]} alt={service.title} fill className="object-cover" />
+        <Image
+          src={getOptimizedCloudinaryUrl(service.images[0], { width: 800, crop: "fill" })}
+          alt={service.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+        />
         <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-[#2160ba] shadow">
           {service.price}
         </span>

@@ -16,6 +16,7 @@ import { useProvider } from "@/Providers/AuthProviders";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import { ApiErrorState, ApiEmptyState, ApiSkeletonBlock } from "@/components/shared/ApiState";
 import { getProfileServices, type ProfileService } from "@/lib/dashboard-api";
+import { getEmptyFieldText, getValueOrEmpty } from "@/lib/display";
 import { useApiQuery } from "@/hooks/use-api-query";
 import type { ProfileServiceHistory } from "@/lib/profile-static";
 
@@ -42,7 +43,7 @@ const toHistoryShape = (service: ProfileService): ProfileServiceHistory => ({
     month: "short",
     year: "numeric",
   }),
-  invoice: service.invoiceNo || "—",
+  invoice: getValueOrEmpty(service.invoiceNo, "en", "Invoice", "ইনভয়েস"),
   noteBn: service.noteBn,
   noteEn: service.noteEn,
   paymentStatus: service.paymentStatus,
@@ -51,14 +52,16 @@ const toHistoryShape = (service: ProfileService): ProfileServiceHistory => ({
   due: service.due,
   addressBn: service.addressBn,
   addressEn: service.addressEn,
-  dueDateBn: service.dueDate ? new Date(service.dueDate).toLocaleDateString("bn-BD") : "—",
+  dueDateBn: service.dueDate
+    ? new Date(service.dueDate).toLocaleDateString("bn-BD")
+    : getEmptyFieldText("bn", "Due date", "ডিউ ডেট"),
   dueDateEn: service.dueDate
     ? new Date(service.dueDate).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
       })
-    : "—",
+    : getEmptyFieldText("en", "Due date", "ডিউ ডেট"),
   items: service.items,
 });
 
@@ -165,7 +168,7 @@ export function ProfileServicesTab() {
                     <span className="font-medium text-neutral-900 dark:text-white">
                       {t("profile.serviceInvoice")}:
                     </span>
-                    <span>{service.invoiceNo || "—"}</span>
+                    <span>{getValueOrEmpty(service.invoiceNo, locale, "Invoice", "ইনভয়েস")}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Wallet size={15} />
@@ -196,7 +199,12 @@ export function ProfileServicesTab() {
                     <span className="font-medium text-neutral-900 dark:text-white">
                       {t("profile.serviceNote")}:
                     </span>{" "}
-                    {locale === "en" ? service.noteEn : service.noteBn}
+                    {getValueOrEmpty(
+                      locale === "en" ? service.noteEn : service.noteBn,
+                      locale,
+                      "Note",
+                      "নোট",
+                    )}
                   </p>
                   <button
                     type="button"

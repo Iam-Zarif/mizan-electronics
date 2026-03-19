@@ -20,6 +20,7 @@ import {
 import { useProvider } from "@/Providers/AuthProviders";
 import { useLanguage } from "@/lib/i18n";
 import { isAdminUser } from "@/lib/auth";
+import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
 
 export function ProfileDetails() {
   const router = useRouter();
@@ -162,8 +163,7 @@ export function ProfileDetails() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push("/");
-      router.refresh();
+      window.location.replace("/");
     } catch {
       setError(t("profile.logoutFailed"));
     }
@@ -287,7 +287,11 @@ export function ProfileDetails() {
                 />
               ) : user.avatar?.url ? (
                 <Image
-                  src={user.avatar.url}
+                  src={getOptimizedCloudinaryUrl(user.avatar.url, {
+                    width: 160,
+                    height: 160,
+                    crop: "fill",
+                  })}
                   alt={user.f_name}
                   fill
                   className="object-cover"

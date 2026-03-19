@@ -11,6 +11,13 @@ export type DashboardOverview = {
     invoiceLinksReady: number;
     expiresIn24h: number;
   };
+  terminateUsers: Array<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    joinedAt: string;
+  }>;
   overviewMetrics: {
     verifiedUsers: string;
     pendingBookings: number;
@@ -57,6 +64,9 @@ export type AdminBookingRow = {
   channel: "website" | "whatsapp" | "messenger" | "phone";
   status: "pending" | "ongoing" | "work_done" | "cancelled";
   paymentStatus: "paid" | "partial" | "unpaid";
+  subtotal: number;
+  amountPaid: number;
+  due: number;
   completedServiceId?: string | null;
   invoiceNo?: string;
   requestedAt: string;
@@ -109,6 +119,13 @@ export type CustomerPurchase = {
   subtotal: number;
   due: number;
   completedAt: string;
+  items: Array<{
+    descriptionBn: string;
+    descriptionEn: string;
+    qty: number;
+    unitPrice: number;
+    total: number;
+  }>;
 };
 
 export type AdminCustomerRow = {
@@ -130,10 +147,13 @@ export type AdminCompletedServiceCreateInput = {
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
-  serviceSlug: string;
+  serviceItems: Array<{
+    serviceSlug: string;
+    qty: number;
+  }>;
   invoiceNo: string;
-  amount: number;
   paymentStatus: "paid" | "partial" | "unpaid";
+  amountPaid?: number;
   note?: string;
 };
 
@@ -249,6 +269,45 @@ export type ProfileNotification = {
 
 export type ProfileNotificationsResponse = {
   rows: ProfileNotification[];
+};
+
+export type PendingProfileReview = {
+  completedServiceId: string;
+  invoiceNo: string;
+  serviceSlug: string;
+  serviceTitleBn: string;
+  serviceTitleEn: string;
+  completedAt: string;
+  amountPaid: number;
+  subtotal: number;
+};
+
+export type PendingProfileReviewResponse = {
+  row: PendingProfileReview | null;
+};
+
+export type ProfileReviewCreateInput = {
+  completedServiceId: string;
+  rating: number;
+  message?: string;
+};
+
+export type PublicReviewRow = {
+  _id: string;
+  customerName: string;
+  avatarUrl: string;
+  customerLocationBn: string;
+  customerLocationEn: string;
+  serviceTitleBn: string;
+  serviceTitleEn: string;
+  rating: number;
+  messageBn: string;
+  messageEn: string;
+  createdAt: string;
+};
+
+export type PublicReviewsResponse = {
+  rows: PublicReviewRow[];
 };
 
 export type ProfileBookingCreateInput = {
@@ -412,6 +471,8 @@ export const updateAdminBookingStatus = async (
   payload: {
     status: "pending" | "ongoing" | "work_done" | "cancelled";
     paymentStatus?: "paid" | "partial" | "unpaid";
+    subtotal?: number;
+    amountPaid?: number;
   },
 ) => {
   const { data } = await api.patch(`/admin/bookings/${bookingId}/status`, payload);
@@ -425,6 +486,8 @@ export const getAdminInvoices = (params?: {
 }) => unwrap<AdminInvoicesResponse>(api.get("/admin/invoices", { params }));
 
 export const getAdminCustomers = (params?: {
+  search?: string;
+  sort?: string;
   page?: number;
   limit?: number;
 }) => unwrap<AdminCustomersResponse>(api.get("/admin/customers", { params }));
@@ -478,6 +541,9 @@ export const getPublicServiceCatalog = () =>
 export const getLandingPackages = () =>
   unwrap<PublicPackagesResponse>(api.get("/services/packages"));
 
+export const getPublicReviews = () =>
+  unwrap<PublicReviewsResponse>(api.get("/services/reviews"));
+
 export const getAdminPackages = (params?: {
   search?: string;
   page?: number;
@@ -528,6 +594,23 @@ export const getProfileServices = () =>
 
 export const getProfileNotifications = () =>
   unwrap<ProfileNotificationsResponse>(api.get("/profile/notifications"));
+
+export const getPendingProfileReview = (completedServiceId?: string) =>
+  unwrap<PendingProfileReviewResponse>(
+    api.get("/profile/reviews/pending", {
+      params: completedServiceId ? { completedServiceId } : undefined,
+    }),
+  );
+
+export const dismissPendingProfileReview = async (completedServiceId: string) => {
+  const { data } = await api.post("/profile/reviews/dismiss", { completedServiceId });
+  return data;
+};
+
+export const submitProfileReview = async (payload: ProfileReviewCreateInput) => {
+  const { data } = await api.post("/profile/reviews", payload);
+  return data;
+};
 
 export const markProfileNotificationRead = async (notificationId: string) => {
   const { data } = await api.patch(`/profile/notifications/${notificationId}/read`);
