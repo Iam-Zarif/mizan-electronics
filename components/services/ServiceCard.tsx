@@ -57,13 +57,12 @@ export default function ServiceCard({
           {service.price}
         </span>
       </div>
-
       <div className="space-y-3 px-4 py-4">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{title}</h4>
             <p
-              className={`${summaryHiddenOnMobile ? "hidden sm:block" : "block"} mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2`}
+              className={` mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2`}
             >
               {summary}
             </p>
