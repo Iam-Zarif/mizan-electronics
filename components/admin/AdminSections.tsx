@@ -272,13 +272,27 @@ export function DatabaseMonitorPanel({
   onOpenDetails?: () => void;
 }) {
   const { locale } = useLanguage();
+  const hasStorageLimit = monitor.database.fsTotalSizeMB !== null;
   const usagePercent =
     monitor.database.fsTotalSizeMB && monitor.database.usedStorageMB
       ? Math.min(
           100,
-          Math.round((monitor.database.usedStorageMB / monitor.database.fsTotalSizeMB) * 100),
+          Number(
+            ((monitor.database.usedStorageMB / monitor.database.fsTotalSizeMB) * 100).toFixed(1),
+          ),
         )
-      : Math.max(0, Math.min(100, Math.round((monitor.database.storageSizeMB / Math.max(monitor.database.dataSizeMB, 1)) * 10)));
+      : Math.max(
+          0,
+          Math.min(
+            100,
+            Number(
+              (
+                (monitor.database.storageSizeMB / Math.max(monitor.database.dataSizeMB, 1)) *
+                10
+              ).toFixed(1),
+            ),
+          ),
+        );
 
   return (
     <div className="rounded-[24px] border border-[#e8edf7] bg-white p-5 shadow-[0_18px_35px_-28px_rgba(63,94,160,0.35)] dark:border-white/10 dark:bg-[#161f36]">
@@ -311,13 +325,13 @@ export function DatabaseMonitorPanel({
         />
         <MonitorStat
           icon={<HardDrive size={16} />}
-          label={locale === "en" ? "Free Storage" : "ফ্রি স্টোরেজ"}
+          label={hasStorageLimit ? (locale === "en" ? "Free Storage" : "ফ্রি স্টোরেজ") : (locale === "en" ? "Storage Limit" : "স্টোরেজ লিমিট")}
           value={
-            monitor.database.freeStorageMB === null
-              ? locale === "en"
-                ? "Not available"
-                : "নেই"
-              : `${monitor.database.freeStorageMB.toLocaleString()} MB`
+            hasStorageLimit
+              ? `${monitor.database.freeStorageMB?.toLocaleString() ?? 0} MB`
+              : locale === "en"
+                ? "Set MONGODB_STORAGE_LIMIT_MB"
+                : "MONGODB_STORAGE_LIMIT_MB সেট করুন"
           }
         />
         <MonitorStat
@@ -340,7 +354,7 @@ export function DatabaseMonitorPanel({
         <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#e6edf8] dark:bg-white/8">
           <div
             className="h-full rounded-full bg-linear-to-r from-[#4f6bff] via-[#7b3dc8] to-[#ecaa81]"
-            style={{ width: `${usagePercent}%` }}
+            style={{ width: `${Math.max(usagePercent, 0.8)}%` }}
           />
         </div>
       </div>
