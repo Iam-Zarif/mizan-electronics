@@ -29,6 +29,67 @@ export type DashboardOverview = {
   };
 };
 
+export type AdminSystemMonitor = {
+  success: boolean;
+  system: {
+    platform: string;
+    architecture: string;
+    hostname: string;
+    cpuModel: string;
+    cpuCores: number;
+    loadAvg: number[];
+    uptimeSeconds: number;
+  };
+  memory: {
+    totalMB: number;
+    freeMB: number;
+    usedMB: number;
+    usagePercent: number;
+  };
+  process: {
+    pid: number;
+    nodeVersion: string;
+    memoryUsageMB: {
+      rss: number;
+      heapTotal: number;
+      heapUsed: number;
+      external: number;
+      arrayBuffers: number;
+    };
+    cpuUsage: {
+      user: number;
+      system: number;
+    };
+    uptimeSeconds: number;
+  };
+  database: {
+    name: string;
+    collections: number;
+    views: number;
+    objects: number;
+    dataSizeMB: number;
+    storageSizeMB: number;
+    indexes: number;
+    indexSizeMB: number;
+    avgObjSizeKB: number;
+    mongoVersion: string;
+    storageEngine: string;
+    host: string;
+    freeStorageMB: number | null;
+    usedStorageMB: number | null;
+    fsTotalSizeMB: number | null;
+    cacheBytesMB: number | null;
+    connections: {
+      current: number;
+      available: number;
+    };
+  };
+  redis: {
+    status: string;
+  };
+  timestamp: string;
+};
+
 export type AdminUserRow = {
   id: string;
   name: string;
@@ -531,6 +592,9 @@ export const getAdminOverview = () =>
 
 export const getAdminSettings = () =>
   unwrap<AdminSettingsResponse>(api.get("/admin/settings"));
+
+export const getAdminSystemMonitor = () =>
+  unwrap<AdminSystemMonitor>(api.get("/admin/monitor"));
 
 export const updateAdminSettings = async (payload: {
   supportPhone: string;

@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, type KeyboardEvent, type ReactNode } from "react";
-import { LayoutDashboard } from "lucide-react";
+import { Activity, Database, HardDrive, LayoutDashboard, ServerCog } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { quickAlerts, topCards } from "@/lib/admin-dashboard";
-import type { DashboardOverview } from "@/lib/dashboard-api";
+import type { AdminSystemMonitor, DashboardOverview } from "@/lib/dashboard-api";
 
 export function AdminSurface({ children }: { children: ReactNode }) {
   return <div className="rounded-[28px] dark:bg-[#101729]">{children}</div>;
@@ -260,6 +260,112 @@ export function RevenuePanels({ overview }: { overview: DashboardOverview }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function DatabaseMonitorPanel({
+  monitor,
+  onOpenDetails,
+}: {
+  monitor: AdminSystemMonitor;
+  onOpenDetails?: () => void;
+}) {
+  const { locale } = useLanguage();
+  const usagePercent =
+    monitor.database.fsTotalSizeMB && monitor.database.usedStorageMB
+      ? Math.min(
+          100,
+          Math.round((monitor.database.usedStorageMB / monitor.database.fsTotalSizeMB) * 100),
+        )
+      : Math.max(0, Math.min(100, Math.round((monitor.database.storageSizeMB / Math.max(monitor.database.dataSizeMB, 1)) * 10)));
+
+  return (
+    <div className="rounded-[24px] border border-[#e8edf7] bg-white p-5 shadow-[0_18px_35px_-28px_rgba(63,94,160,0.35)] dark:border-white/10 dark:bg-[#161f36]">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-lg font-bold text-[#1f2638] dark:text-white">
+            {locale === "en" ? "Database Monitor" : "ডেটাবেজ মনিটর"}
+          </p>
+          <p className="mt-1 text-sm text-[#7f8ba3] dark:text-[#9aa8c0]">
+            {locale === "en"
+              ? `Mongo ${monitor.database.mongoVersion} on ${monitor.database.storageEngine}`
+              : `${monitor.database.storageEngine} এ Mongo ${monitor.database.mongoVersion}`}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenDetails}
+          className="inline-flex items-center gap-2 rounded-full bg-[#f3f6fd] px-3 py-1 text-xs font-semibold text-[#4f6bff] dark:bg-white/8 dark:text-[#aab5ff]"
+        >
+          <ServerCog size={14} />
+          {locale === "en" ? "Details" : "বিস্তারিত"}
+        </button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MonitorStat
+          icon={<Database size={16} />}
+          label={locale === "en" ? "Used Storage" : "ব্যবহৃত স্টোরেজ"}
+          value={`${monitor.database.storageSizeMB.toLocaleString()} MB`}
+        />
+        <MonitorStat
+          icon={<HardDrive size={16} />}
+          label={locale === "en" ? "Free Storage" : "ফ্রি স্টোরেজ"}
+          value={
+            monitor.database.freeStorageMB === null
+              ? locale === "en"
+                ? "Not available"
+                : "নেই"
+              : `${monitor.database.freeStorageMB.toLocaleString()} MB`
+          }
+        />
+        <MonitorStat
+          icon={<Activity size={16} />}
+          label={locale === "en" ? "Connections" : "কানেকশন"}
+          value={`${monitor.database.connections.current} / ${monitor.database.connections.available}`}
+        />
+        <MonitorStat
+          icon={<ServerCog size={16} />}
+          label={locale === "en" ? "Collections" : "কলেকশন"}
+          value={monitor.database.collections.toLocaleString()}
+        />
+      </div>
+
+      <div className="mt-4">
+        <div className="flex items-center justify-between text-xs font-semibold text-[#7f8ba3] dark:text-[#9aa8c0]">
+          <span>{locale === "en" ? "Storage usage" : "স্টোরেজ ব্যবহার"}</span>
+          <span>{usagePercent}%</span>
+        </div>
+        <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#e6edf8] dark:bg-white/8">
+          <div
+            className="h-full rounded-full bg-linear-to-r from-[#4f6bff] via-[#7b3dc8] to-[#ecaa81]"
+            style={{ width: `${usagePercent}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MonitorStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-[18px] border border-[#e8edf7] bg-[#f8fbff] px-4 py-4 dark:border-white/8 dark:bg-[#11192c]">
+      <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#4f6bff] dark:bg-white/8 dark:text-[#aab5ff]">
+        {icon}
+      </div>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7f8ba3] dark:text-[#8ea0bf]">
+        {label}
+      </p>
+      <p className="mt-2 text-base font-bold text-[#1f2638] dark:text-white">{value}</p>
     </div>
   );
 }
