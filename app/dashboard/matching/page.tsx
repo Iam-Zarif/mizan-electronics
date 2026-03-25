@@ -578,6 +578,14 @@ export default function DashboardMatchingPage() {
               </div>
             </div>
 
+            {!pagination.rows.length ? (
+              <div className="rounded-2xl border border-dashed border-[#dbe4f4] px-4 py-10 text-center text-sm text-[#7f8ba3] dark:border-white/10 dark:text-[#a7b3c9]">
+                {locale === "en"
+                  ? "No purchased customers matched the current search or sorting filters."
+                  : "বর্তমান সার্চ বা ফিল্টারের সাথে কোনো সার্ভিস নেওয়া কাস্টমার মেলেনি।"}
+              </div>
+            ) : null}
+
             <PaginationControls pagination={pagination.meta} onPageChange={setPage} />
           </div>
         ) : null}
