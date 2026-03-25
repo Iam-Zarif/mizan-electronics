@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n";
 
@@ -33,16 +33,15 @@ const slidesMobile = [
 export default function Hero() {
   const { locale } = useLanguage();
   const [index, setIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const update = () => setIsMobile(window.innerWidth < 640);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const slides = isMobile ? slidesMobile : slidesDesktop;
+  const slides = useMemo(
+    () =>
+      slidesDesktop.map((desktopSlide, slideIndex) => ({
+        id: desktopSlide.id,
+        desktopImage: desktopSlide.image,
+        mobileImage: slidesMobile[slideIndex]?.image ?? desktopSlide.image,
+      })),
+    [],
+  );
 
   useEffect(() => {
     const timer = setInterval(() => setIndex((p) => (p + 1) % slides.length), 4200);
@@ -59,10 +58,19 @@ export default function Hero() {
               className={`absolute inset-0 transition-opacity duration-500 ease-out ${i === index ? "opacity-100" : "opacity-0"}`}
             >
               <Image
-                src={slide.image}
+                src={slide.mobileImage}
                 alt={`hero-${slide.id}-${locale}`}
                 fill
-                className="object-cover"
+                className="object-cover sm:hidden"
+                priority={i === 0}
+                loading={i === 0 ? "eager" : "lazy"}
+                sizes="100vw"
+              />
+              <Image
+                src={slide.desktopImage}
+                alt={`hero-${slide.id}-${locale}-desktop`}
+                fill
+                className="hidden object-cover sm:block"
                 priority={i === 0}
                 loading={i === 0 ? "eager" : "lazy"}
                 sizes="100vw"

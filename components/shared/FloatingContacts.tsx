@@ -39,6 +39,8 @@ const FloatingContacts = () => {
         href="https://wa.me/8801949397234"
         target="_blank"
         rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        title="Chat on WhatsApp"
         onClick={(event) =>
           void handleContactClick(event, {
             channel: "whatsapp",
@@ -51,10 +53,13 @@ const FloatingContacts = () => {
       >
         <span className="absolute inset-0 rounded-full bg-green-400 opacity-40 blur-xl"></span>
         <FaWhatsapp className="relative text-2xl" />
+        <span className="sr-only">Chat on WhatsApp</span>
       </a>
 
       <a
         href="tel:+8801949397234"
+        aria-label="Call Mizan AC Servicing"
+        title="Call Mizan AC Servicing"
         onClick={(event) =>
           void handleContactClick(event, {
             channel: "phone",
@@ -66,12 +71,15 @@ const FloatingContacts = () => {
       >
         <span className="absolute inset-0 rounded-full bg-blue-400 opacity-40 blur-xl"></span>
         <FaPhoneAlt className="relative text-xl" />
+        <span className="sr-only">Call Mizan AC Servicing</span>
       </a>
 
       <a
         href="https://m.me/mizanACservicing"
         target="_blank"
         rel="noopener noreferrer"
+        aria-label="Open Messenger chat"
+        title="Open Messenger chat"
         onClick={(event) =>
           void handleContactClick(event, {
             channel: "messenger",
@@ -84,6 +92,7 @@ const FloatingContacts = () => {
       >
         <span className="absolute inset-0 rounded-full bg-indigo-400 opacity-40 blur-xl"></span>
         <FaFacebookMessenger className="relative text-2xl" />
+        <span className="sr-only">Open Messenger chat</span>
       </a>
     </div>
   );

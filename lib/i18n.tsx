@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { useProvider } from "@/Providers/AuthProviders";
@@ -328,6 +328,7 @@ interface LanguageContextValue {
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
+const GUEST_LANGUAGE_EVENT = "mizan:guest-language";
 
 function getNested(path: string, dict: TranslationDict): string {
   return path.split(".").reduce<string | TranslationDict>((acc, key) => {
@@ -338,13 +339,29 @@ function getNested(path: string, dict: TranslationDict): string {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { user, languagePreference, setLanguagePreference } = useProvider();
-  const [guestLocale, setGuestLocale] = useState<Locale>(() => {
-    if (typeof window === "undefined") {
-      return "bn";
-    }
+  const guestLocale = useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") {
+        return () => undefined;
+      }
 
-    return window.localStorage.getItem("mizan-lang") === "en" ? "en" : "bn";
-  });
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key === "mizan-lang") {
+          onStoreChange();
+        }
+      };
+      const handleGuestLanguage = () => onStoreChange();
+
+      window.addEventListener("storage", handleStorage);
+      window.addEventListener(GUEST_LANGUAGE_EVENT, handleGuestLanguage);
+      return () => {
+        window.removeEventListener("storage", handleStorage);
+        window.removeEventListener(GUEST_LANGUAGE_EVENT, handleGuestLanguage);
+      };
+    },
+    (): Locale => (window.localStorage.getItem("mizan-lang") === "en" ? "en" : "bn"),
+    (): Locale => "bn",
+  );
   const locale = user ? (languagePreference === "en" ? "en" : "bn") : guestLocale;
 
   useEffect(() => {
@@ -354,7 +371,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   const handleSetLocale = useCallback(async (nextLocale: Locale) => {
-    setGuestLocale(nextLocale);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("mizan-lang", nextLocale);
+      window.dispatchEvent(new Event(GUEST_LANGUAGE_EVENT));
+    }
 
     if (user) {
       await setLanguagePreference(nextLocale);

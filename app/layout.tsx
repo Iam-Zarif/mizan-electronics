@@ -118,17 +118,31 @@ const organizationStructuredData = {
   ],
 };
 
+const themeBootstrapScript = `
+(() => {
+  try {
+    const storedTheme = window.localStorage.getItem("mizan-theme");
+    const storedLang = window.localStorage.getItem("mizan-lang");
+    const theme = storedTheme === "dark" ? "dark" : "light";
+    const locale = storedLang === "en" ? "en" : "bn";
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.lang = locale;
+  } catch {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="bn" translate="no" className="notranslate">
+    <html lang="bn" translate="no" className="notranslate" suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} notranslate bg-neutral-100 dark:bg-neutral-900 antialiased`}
       >
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <AuthProvider>
           <LanguageProvider>
             <FirebaseAnalytics />

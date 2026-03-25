@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import {
   BadgeCheck,
   Camera,
+  KeyRound,
   Loader2,
   LogOut,
   Mail,
@@ -17,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
+import { api, getErrorMessage } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n";
 import { isAdminUser } from "@/lib/auth";
 import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
@@ -43,6 +45,13 @@ export function ProfileDetails() {
   const [verificationNow, setVerificationNow] = useState(Date.now());
   const [isSendingVerificationOtp, setIsSendingVerificationOtp] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordMode, setPasswordMode] = useState<"current" | "otp">("current");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSendingPasswordOtp, setIsSendingPasswordOtp] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -50,6 +59,12 @@ export function ProfileDetails() {
   const [form, setForm] = useState({
     f_name: "",
     phone: "",
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    otp: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
@@ -162,6 +177,155 @@ export function ProfileDetails() {
       window.location.replace("/");
     } catch {
       setError(t("profile.logoutFailed"));
+    }
+  };
+
+  const resetPasswordState = () => {
+    setPasswordMode("current");
+    setPasswordSuccess("");
+    setPasswordError("");
+    setPasswordForm({
+      currentPassword: "",
+      otp: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  };
+
+  const openPasswordModal = () => {
+    resetPasswordState();
+    setIsPasswordModalOpen(true);
+  };
+
+  const closePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+    resetPasswordState();
+  };
+
+  const validateNextPassword = () => {
+    const trimmedPassword = passwordForm.newPassword.trim();
+    if (!trimmedPassword) {
+      setPasswordError(
+        locale === "en" ? "New password is required." : "নতুন পাসওয়ার্ড দিন।",
+      );
+      return null;
+    }
+
+    if (trimmedPassword.length < 8) {
+      setPasswordError(
+        locale === "en"
+          ? "Password must be at least 8 characters."
+          : "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।",
+      );
+      return null;
+    }
+
+    if (trimmedPassword !== passwordForm.confirmPassword.trim()) {
+      setPasswordError(
+        locale === "en"
+          ? "New password and confirm password do not match."
+          : "নতুন পাসওয়ার্ড ও কনফার্ম পাসওয়ার্ড মেলেনি।",
+      );
+      return null;
+    }
+
+    return trimmedPassword;
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+    const newPassword = validateNextPassword();
+    if (!newPassword) return;
+    if (!passwordForm.currentPassword.trim()) {
+      setPasswordError(
+        locale === "en"
+          ? "Current password is required."
+          : "বর্তমান পাসওয়ার্ড দিন।",
+      );
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      await api.post("/profile/password/change", {
+        currentPassword: passwordForm.currentPassword,
+        newPassword,
+      });
+      setPasswordSuccess(
+        locale === "en"
+          ? "Password updated successfully."
+          : "পাসওয়ার্ড সফলভাবে আপডেট হয়েছে।",
+      );
+      setPasswordForm((current) => ({
+        ...current,
+        currentPassword: "",
+        otp: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
+    } catch (passwordUpdateError) {
+      setPasswordError(getErrorMessage(passwordUpdateError));
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleSendPasswordOtp = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    try {
+      setIsSendingPasswordOtp(true);
+      await api.post("/profile/password/send-otp");
+      setPasswordMode("otp");
+      setPasswordSuccess(
+        locale === "en"
+          ? "Password reset OTP sent to your email."
+          : "পাসওয়ার্ড রিসেট OTP আপনার ইমেইলে পাঠানো হয়েছে।",
+      );
+    } catch (passwordOtpError) {
+      setPasswordError(getErrorMessage(passwordOtpError));
+    } finally {
+      setIsSendingPasswordOtp(false);
+    }
+  };
+
+  const handleResetPasswordWithOtp = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+    const newPassword = validateNextPassword();
+    if (!newPassword) return;
+
+    if (passwordForm.otp.trim().length !== 6) {
+      setPasswordError(
+        locale === "en" ? "Enter the 6-digit OTP." : "৬ সংখ্যার OTP দিন।",
+      );
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      await api.post("/profile/password/reset-with-otp", {
+        otp: passwordForm.otp.trim(),
+        newPassword,
+      });
+      setPasswordSuccess(
+        locale === "en"
+          ? "Password reset successfully."
+          : "পাসওয়ার্ড সফলভাবে রিসেট হয়েছে।",
+      );
+      setPasswordForm({
+        currentPassword: "",
+        otp: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordMode("current");
+    } catch (passwordResetError) {
+      setPasswordError(getErrorMessage(passwordResetError));
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -354,6 +518,14 @@ export function ProfileDetails() {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:gap-3">
+          <button
+            type="button"
+            onClick={openPasswordModal}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800 sm:w-auto"
+          >
+            <KeyRound size={15} />
+            {locale === "en" ? "Change Password" : "পাসওয়ার্ড পরিবর্তন"}
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -589,6 +761,192 @@ export function ProfileDetails() {
                   {isVerifyingEmail
                     ? t("profile.verifying")
                     : t("profile.verifySubmit")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isPasswordModalOpen ? (
+        <div className="fixed inset-0 z-90 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
+            <button
+              type="button"
+              onClick={closePasswordModal}
+              className="absolute right-4 top-4 rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-2">
+              <p className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {locale === "en" ? "Change password" : "পাসওয়ার্ড পরিবর্তন"}
+              </p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                {locale === "en"
+                  ? "Use your current password, or send an OTP to your email if you forgot it."
+                  : "বর্তমান পাসওয়ার্ড দিয়ে পরিবর্তন করুন, অথবা ভুলে গেলে ইমেইলে OTP নিন।"}
+              </p>
+            </div>
+
+            <div className="mt-5 flex rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordMode("current");
+                  setPasswordError("");
+                  setPasswordSuccess("");
+                }}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  passwordMode === "current"
+                    ? "bg-white text-neutral-900 shadow dark:bg-neutral-700 dark:text-white"
+                    : "text-neutral-600 dark:text-neutral-300"
+                }`}
+              >
+                {locale === "en" ? "Current password" : "বর্তমান পাসওয়ার্ড"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordMode("otp");
+                  setPasswordError("");
+                  setPasswordSuccess("");
+                }}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  passwordMode === "otp"
+                    ? "bg-white text-neutral-900 shadow dark:bg-neutral-700 dark:text-white"
+                    : "text-neutral-600 dark:text-neutral-300"
+                }`}
+              >
+                {locale === "en" ? "Email OTP" : "ইমেইল OTP"}
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {passwordMode === "current" ? (
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                    {locale === "en" ? "Current password" : "বর্তমান পাসওয়ার্ড"}
+                  </span>
+                  <input
+                    type="password"
+                    value={passwordForm.currentPassword}
+                    onChange={(event) =>
+                      setPasswordForm((current) => ({
+                        ...current,
+                        currentPassword: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
+                  />
+                </label>
+              ) : (
+                <div className="space-y-3 rounded-2xl border border-indigo-200/70 bg-indigo-50/60 p-4 dark:border-indigo-500/20 dark:bg-indigo-950/20">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-200">
+                    {locale === "en"
+                      ? `We will send a 6-digit OTP to ${maskEmail(user.email)}.`
+                      : `${maskEmail(user.email)} ইমেইলে ৬ সংখ্যার OTP পাঠানো হবে।`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void handleSendPasswordOtp()}
+                    disabled={isSendingPasswordOtp}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 px-4 py-3 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:opacity-60 dark:border-indigo-400/30 dark:hover:bg-indigo-950/35"
+                  >
+                    {isSendingPasswordOtp ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : null}
+                    {locale === "en" ? "Send OTP" : "OTP পাঠান"}
+                  </button>
+                  <label className="block space-y-2">
+                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                      OTP
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={passwordForm.otp}
+                      onChange={(event) =>
+                        setPasswordForm((current) => ({
+                          ...current,
+                          otp: event.target.value.replace(/\D/g, "").slice(0, 6),
+                        }))
+                      }
+                      className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
+                    />
+                  </label>
+                </div>
+              )}
+
+              <label className="block space-y-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                  {locale === "en" ? "New password" : "নতুন পাসওয়ার্ড"}
+                </span>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(event) =>
+                    setPasswordForm((current) => ({
+                      ...current,
+                      newPassword: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
+                />
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                  {locale === "en" ? "Confirm new password" : "নতুন পাসওয়ার্ড আবার লিখুন"}
+                </span>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(event) =>
+                    setPasswordForm((current) => ({
+                      ...current,
+                      confirmPassword: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
+                />
+              </label>
+
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                {locale === "en"
+                  ? "Use at least 8 characters with uppercase, lowercase, number and symbol."
+                  : "কমপক্ষে ৮ অক্ষর, বড় হাতের অক্ষর, ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন ব্যবহার করুন।"}
+              </p>
+
+              {passwordError ? <p className="text-sm text-red-500">{passwordError}</p> : null}
+              {passwordSuccess ? (
+                <p className="text-sm text-green-600">{passwordSuccess}</p>
+              ) : null}
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={
+                    passwordMode === "current"
+                      ? () => void handleChangePassword()
+                      : () => void handleResetPasswordWithOtp()
+                  }
+                  disabled={isChangingPassword || isResettingPassword}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-3 text-sm font-semibold text-white shadow disabled:opacity-60"
+                >
+                  {isChangingPassword || isResettingPassword ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : null}
+                  {passwordMode === "current"
+                    ? locale === "en"
+                      ? "Update password"
+                      : "পাসওয়ার্ড আপডেট করুন"
+                    : locale === "en"
+                      ? "Reset with OTP"
+                      : "OTP দিয়ে রিসেট করুন"}
                 </button>
               </div>
             </div>

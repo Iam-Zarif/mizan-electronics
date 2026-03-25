@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ArrowUpDown, Download, FileText, Receipt, Search, Wallet } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpDown, Download, FileText, Loader2, Receipt, Search, Wallet } from "lucide-react";
 import { AdminSurface } from "@/components/admin/AdminSections";
 import { ApiEmptyState, ApiErrorState, ApiSkeletonBlock } from "@/components/shared/ApiState";
 import { PaginationControls } from "@/components/shared/PaginationControls";
 import { useApiQuery } from "@/hooks/use-api-query";
-import { getAdminInvoices } from "@/lib/dashboard-api";
+import { getAdminInvoices, type AdminInvoiceRow } from "@/lib/dashboard-api";
+import { downloadAdminInvoicePdf } from "@/lib/invoice-pdf";
 import { useLanguage } from "@/lib/i18n";
 
 const currencyFormatter = new Intl.NumberFormat("bn-BD");
@@ -25,10 +26,28 @@ export default function DashboardInvoicesPage() {
   const [paymentStatus, setPaymentStatus] = useState<"all" | "paid" | "partial" | "unpaid">("all");
   const [sort, setSort] = useState("latest");
   const [page, setPage] = useState(1);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
 
   const { data, isLoading, error, refresh } = useApiQuery(
     () => getAdminInvoices({ search: query, paymentStatus, sort, page, limit: 12 }),
     [query, paymentStatus, sort, page],
+  );
+
+  useEffect(() => {
+    if (!data?.rows.length) {
+      setSelectedInvoiceId(null);
+      return;
+    }
+
+    setSelectedInvoiceId((current) =>
+      current && data.rows.some((row) => row._id === current) ? current : data.rows[0]._id,
+    );
+  }, [data]);
+
+  const selectedInvoice = useMemo<AdminInvoiceRow | null>(
+    () => data?.rows.find((row) => row._id === selectedInvoiceId) ?? null,
+    [data, selectedInvoiceId],
   );
 
   const invoiceStats = useMemo(
@@ -84,6 +103,15 @@ export default function DashboardInvoicesPage() {
         : [],
     [data],
   );
+
+  const handleDownloadPdf = async (invoice: AdminInvoiceRow) => {
+    try {
+      setDownloadingInvoiceId(invoice._id);
+      await downloadAdminInvoicePdf(invoice);
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
+  };
 
   return (
     <AdminSurface>
@@ -232,19 +260,25 @@ export default function DashboardInvoicesPage() {
 
                 <div className="overflow-x-auto">
                   <div className="min-w-[700px]">
-                    <div className="grid grid-cols-[0.8fr_1fr_1.15fr_0.75fr_0.7fr_0.7fr] gap-3 rounded-2xl bg-[#f8fbff] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7f8ba3] dark:bg-[#11192c]">
+                    <div className="grid grid-cols-[0.8fr_1fr_1.05fr_0.7fr_0.65fr_0.7fr_0.7fr] gap-3 rounded-2xl bg-[#f8fbff] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7f8ba3] dark:bg-[#11192c]">
                       <span>{locale === "en" ? "Invoice" : "ইনভয়েস"}</span>
                       <span>{locale === "en" ? "Customer" : "কাস্টমার"}</span>
                       <span>{locale === "en" ? "Service" : "সার্ভিস"}</span>
                       <span>{locale === "en" ? "Amount" : "এমাউন্ট"}</span>
                       <span>{locale === "en" ? "Due" : "বকেয়া"}</span>
                       <span>{locale === "en" ? "Status" : "স্ট্যাটাস"}</span>
+                      <span>{locale === "en" ? "PDF" : "পিডিএফ"}</span>
                     </div>
                     <div className="mt-3 space-y-3">
                       {data.rows.map((row) => (
                         <div
                           key={row._id}
-                          className="grid grid-cols-[0.8fr_1fr_1.15fr_0.75fr_0.7fr_0.7fr] gap-3 rounded-2xl border border-[#e8edf7] px-4 py-4 dark:border-white/10"
+                          onClick={() => setSelectedInvoiceId(row._id)}
+                          className={`grid cursor-pointer grid-cols-[0.8fr_1fr_1.05fr_0.7fr_0.65fr_0.7fr_0.7fr] gap-3 rounded-2xl border px-4 py-4 dark:border-white/10 ${
+                            selectedInvoiceId === row._id
+                              ? "border-[#2160ba] bg-[#f8fbff] dark:border-[#4f6bff] dark:bg-[#11192c]"
+                              : "border-[#e8edf7]"
+                          }`}
                         >
                           <div>
                             <span className="font-semibold text-[#1f2638] dark:text-white">
@@ -273,6 +307,22 @@ export default function DashboardInvoicesPage() {
                           >
                             {row.paymentStatus}
                           </span>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void handleDownloadPdf(row);
+                            }}
+                            disabled={downloadingInvoiceId === row._id}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2160ba] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                          >
+                            {downloadingInvoiceId === row._id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Download size={14} />
+                            )}
+                            {locale === "en" ? "PDF" : "পিডিএফ"}
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -293,20 +343,36 @@ export default function DashboardInvoicesPage() {
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <p className="font-semibold text-[#1f2638] dark:text-white">
-                          Mizan AC Servicing
+                          {selectedInvoice?.invoiceNo
+                            ? `${locale === "en" ? "Invoice" : "ইনভয়েস"} ${selectedInvoice.invoiceNo}`
+                            : "Mizan AC Servicing"}
                         </p>
                         <p className="mt-1 text-sm text-[#7f8ba3]">
-                          {locale === "en"
-                            ? "Current template block stays ready for invoice PDF flow."
-                            : "ইনভয়েস পিডিএফ ফ্লোর জন্য বর্তমান টেমপ্লেট ব্লক প্রস্তুত আছে।"}
+                          {selectedInvoice
+                            ? locale === "en"
+                              ? `${selectedInvoice.customerName} · ${selectedInvoice.serviceTitleEn}`
+                              : `${selectedInvoice.customerName} · ${selectedInvoice.serviceTitleBn}`
+                            : locale === "en"
+                              ? "Select an invoice row to download the PDF."
+                              : "পিডিএফ ডাউনলোড করতে একটি ইনভয়েস নির্বাচন করুন।"}
                         </p>
                       </div>
                       <button
                         type="button"
+                        onClick={() => selectedInvoice ? void handleDownloadPdf(selectedInvoice) : undefined}
+                        disabled={!selectedInvoice || downloadingInvoiceId === selectedInvoice._id}
                         className="inline-flex items-center gap-2 rounded-2xl bg-[#2160ba] px-4 py-2 text-sm font-semibold text-white"
                       >
-                        <Download size={16} />
-                        PDF
+                        {selectedInvoice && downloadingInvoiceId === selectedInvoice._id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Download size={16} />
+                        )}
+                        {selectedInvoice && downloadingInvoiceId === selectedInvoice._id
+                          ? locale === "en"
+                            ? "Downloading..."
+                            : "ডাউনলোড হচ্ছে..."
+                          : "PDF"}
                       </button>
                     </div>
                   </div>
@@ -317,7 +383,7 @@ export default function DashboardInvoicesPage() {
                         {locale === "en" ? "Collected" : "সংগৃহীত"}
                       </p>
                       <p className="mt-2 text-2xl font-bold text-[#1f2638] dark:text-white">
-                        {formatTaka(data.stats.totalCollected)}
+                        {formatTaka(selectedInvoice?.amountPaid ?? data.stats.totalCollected)}
                       </p>
                     </div>
                     <div className="rounded-2xl bg-[#f8fbff] p-4 dark:bg-[#11192c]">
@@ -325,10 +391,50 @@ export default function DashboardInvoicesPage() {
                         {locale === "en" ? "Outstanding" : "বকেয়া"}
                       </p>
                       <p className="mt-2 text-2xl font-bold text-[#1f2638] dark:text-white">
-                        {formatTaka(data.stats.outstanding)}
+                        {formatTaka(selectedInvoice?.due ?? data.stats.outstanding)}
                       </p>
                     </div>
                   </div>
+
+                  {selectedInvoice ? (
+                    <div className="mt-4 rounded-2xl bg-[#f8fbff] p-4 text-sm text-[#60708d] dark:bg-[#11192c] dark:text-[#a7b3c9]">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-[#1f2638] dark:text-white">
+                            {selectedInvoice.customerName}
+                          </p>
+                          <p className="mt-1">{selectedInvoice.customerPhone || (locale === "en" ? "Phone empty" : "ফোন খালি")}</p>
+                          <p className="mt-1">{selectedInvoice.customerEmail || (locale === "en" ? "Email empty" : "ইমেইল খালি")}</p>
+                          <p className="mt-2">{(locale === "en" ? selectedInvoice.addressEn : selectedInvoice.addressBn) || (locale === "en" ? "Address empty" : "ঠিকানা খালি")}</p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-center text-xs font-semibold capitalize ${paymentStatusTone[selectedInvoice.paymentStatus]}`}
+                        >
+                          {selectedInvoice.paymentStatus}
+                        </span>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        {selectedInvoice.items.map((item, index) => (
+                          <div
+                            key={`${selectedInvoice._id}-${index}`}
+                            className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 dark:bg-[#161f36]"
+                          >
+                            <div>
+                              <p className="font-medium text-[#1f2638] dark:text-white">
+                                {locale === "en" ? item.descriptionEn : item.descriptionBn}
+                              </p>
+                              <p className="text-xs text-[#7f8ba3]">
+                                {locale === "en" ? "Qty" : "পরিমাণ"}: {item.qty}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-[#1f2638] dark:text-white">
+                              {formatTaka(item.total)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-[24px] border border-[#e8edf7] bg-white p-5 shadow-[0_18px_35px_-28px_rgba(63,94,160,0.35)] dark:border-white/10 dark:bg-[#161f36]">

@@ -52,7 +52,7 @@ const Footer = () => {
             </div>
 
             <div className="flex flex-col items-center md:items-start">
-              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-500">
+              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
                 {t("footer.navigation")}
               </p>
               <ul className="space-y-3 text-sm font-medium">
@@ -63,7 +63,7 @@ const Footer = () => {
             </div>
 
             <div className="flex flex-col items-center md:items-start">
-              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-500">
+              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
                 {locale === "en" ? "Service Categories" : "সার্ভিস ক্যাটাগরি"}
               </p>
               <ul className="space-y-3 text-sm font-medium">
@@ -77,7 +77,7 @@ const Footer = () => {
             </div>
 
             <div className="flex flex-col items-center md:items-start">
-              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-500">
+              <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
                 {t("footer.follow")}
               </p>
               <div className="flex items-center gap-5">
@@ -85,24 +85,27 @@ const Footer = () => {
                   href="https://www.facebook.com/mizanACservicing"
                   icon={<FaFacebookF />}
                   color="text-blue-600"
+                  label="Follow on Facebook"
                 />
 
                 <SocialIcon
                   href="https://www.youtube.com/@MizanACservicing"
                   icon={<FaYoutube />}
                   color="text-red-500"
+                  label="Watch on YouTube"
                 />
 
                 <SocialIcon
                   href="https://wa.me/8801949397234"
                   icon={<FaWhatsapp />}
                   color="text-green-500"
+                  label="Chat on WhatsApp"
                 />
               </div>
             </div>
           </div>
 
-          <div className="mt-14 border-t border-black/5 dark:border-white/10 py-3     text-center text-xs tracking-wide text-neutral-500">
+          <div className="mt-14 border-t border-black/5 py-3 text-center text-xs tracking-wide text-neutral-600 dark:border-white/10 dark:text-neutral-300">
             © {new Date().getFullYear()} Mizan AC Servicing. {t("footer.rights")}
           </div>
         </motion.div>
@@ -136,14 +139,18 @@ const SocialIcon = ({
   href,
   icon,
   color,
+  label,
 }: {
   href: string;
   icon: React.ReactNode;
   color: string;
+  label: string;
 }) => (
   <Link
     href={href}
     target="_blank"
+    aria-label={label}
+    title={label}
     className={`
       group relative flex h-11 w-11 items-center justify-center rounded-full
       ${color}
@@ -156,5 +163,6 @@ const SocialIcon = ({
     <span className="text-[18px] drop-shadow-sm group-hover:drop-shadow-md">
       {icon}
     </span>
+    <span className="sr-only">{label}</span>
   </Link>
 );

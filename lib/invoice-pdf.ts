@@ -1,5 +1,6 @@
 "use client";
 
+import type { AdminInvoiceRow } from "@/lib/dashboard-api";
 import type { AuthUser } from "@/lib/auth";
 import type { ProfileServiceHistory } from "@/lib/profile-static";
 
@@ -24,16 +25,36 @@ const loadImageAsDataUrl = async (url: string) => {
 const formatPdfMoney = (value: number) =>
   `Tk ${new Intl.NumberFormat("en-US").format(Math.round(value || 0))}`;
 
-const getAmountWords = (service: ProfileServiceHistory) => {
+type InvoicePdfLineItem = {
+  descriptionBn: string;
+  descriptionEn: string;
+  qty: number;
+  unitPrice: number;
+  total: number;
+};
+
+type InvoicePdfPayload = {
+  invoiceNo: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  addressBn: string;
+  addressEn: string;
+  completedAtLabel: string;
+  dueDateLabel: string;
+  subtotal: number;
+  amountPaid: number;
+  due: number;
+  items: InvoicePdfLineItem[];
+};
+
+const getAmountWords = (service: Pick<InvoicePdfPayload, "due" | "amountPaid">) => {
   if (service.due <= 0) return "Paid in full";
   if (service.amountPaid <= 0) return "Payment pending";
   return "Partial payment received";
 };
 
-export const downloadInvoicePdf = async (
-  service: ProfileServiceHistory,
-  user: AuthUser,
-) => {
+const buildInvoicePdf = async (invoice: InvoicePdfPayload) => {
   const { jsPDF } = await import("jspdf/dist/jspdf.es.min.js");
   const doc = new jsPDF({
     orientation: "portrait",
@@ -79,15 +100,15 @@ export const downloadInvoicePdf = async (
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text(user.f_name || "Customer", 49, 55);
-  doc.text(service.addressEn || service.addressBn || "—", 32, 67);
-  doc.text(service.invoice === "—" ? "N/A" : service.invoice, CONTENT_RIGHT, 55, {
+  doc.text(invoice.customerName || "Customer", 49, 55);
+  doc.text(invoice.addressEn || invoice.addressBn || "—", 32, 67);
+  doc.text(invoice.invoiceNo || "N/A", CONTENT_RIGHT, 55, {
     align: "right",
   });
-  doc.text(service.dateEn || service.dateBn || "—", CONTENT_RIGHT, 67, {
+  doc.text(invoice.completedAtLabel || "—", CONTENT_RIGHT, 67, {
     align: "right",
   });
-  doc.text(service.dueDateEn || service.dueDateBn || "—", CONTENT_RIGHT, 79, {
+  doc.text(invoice.dueDateLabel || "—", CONTENT_RIGHT, 79, {
     align: "right",
   });
 
@@ -121,7 +142,7 @@ export const downloadInvoicePdf = async (
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10.5);
 
-  service.items.forEach((item, index) => {
+  invoice.items.forEach((item, index) => {
     const description = item.descriptionEn || item.descriptionBn || "Service item";
     const descriptionLines = doc.splitTextToSize(description, 92);
     const rowHeight = Math.max(10, descriptionLines.length * 4.8);
@@ -159,15 +180,15 @@ export const downloadInvoicePdf = async (
   doc.text("Bkash / Cash", tableX + 50, footerTop + 24);
   doc.text("01665146666", tableX + 40, footerTop + 34);
 
-  doc.text(formatPdfMoney(service.subtotal), CONTENT_RIGHT - 3, footerTop + 8, { align: "right" });
-  doc.text(formatPdfMoney(service.amountPaid), CONTENT_RIGHT - 3, footerTop + 20, { align: "right" });
-  doc.text(formatPdfMoney(service.due), CONTENT_RIGHT - 3, footerTop + 32, { align: "right" });
+  doc.text(formatPdfMoney(invoice.subtotal), CONTENT_RIGHT - 3, footerTop + 8, { align: "right" });
+  doc.text(formatPdfMoney(invoice.amountPaid), CONTENT_RIGHT - 3, footerTop + 20, { align: "right" });
+  doc.text(formatPdfMoney(invoice.due), CONTENT_RIGHT - 3, footerTop + 32, { align: "right" });
 
   doc.rect(tableX, footerBottom, tableW, 12);
   doc.setFont("helvetica", "bold");
   doc.text("Amount In Words:", tableX + 3, footerBottom + 8);
   doc.setFont("helvetica", "normal");
-  doc.text(getAmountWords(service), tableX + 42, footerBottom + 8);
+  doc.text(getAmountWords(invoice), tableX + 42, footerBottom + 8);
 
   const signatureLineY = 279;
 
@@ -179,5 +200,52 @@ export const downloadInvoicePdf = async (
   doc.text("Customer Signed", 66, signatureLineY + 6, { align: "center" });
   doc.text("Authorized Signed", 151, signatureLineY + 6, { align: "center" });
 
-  doc.save(`${service.invoice === "—" ? service.id : service.invoice}.pdf`);
+  doc.save(`${invoice.invoiceNo || "invoice"}.pdf`);
+};
+
+export const downloadInvoicePdf = async (
+  service: ProfileServiceHistory,
+  user: AuthUser,
+) => {
+  await buildInvoicePdf({
+    invoiceNo: service.invoice === "—" ? service.id : service.invoice,
+    customerName: user.f_name || "Customer",
+    addressBn: service.addressBn,
+    addressEn: service.addressEn,
+    completedAtLabel: service.dateEn || service.dateBn || "—",
+    dueDateLabel: service.dueDateEn || service.dueDateBn || "—",
+    subtotal: service.subtotal,
+    amountPaid: service.amountPaid,
+    due: service.due,
+    items: service.items,
+  });
+};
+
+export const downloadAdminInvoicePdf = async (
+  invoice: AdminInvoiceRow,
+) => {
+  await buildInvoicePdf({
+    invoiceNo: invoice.invoiceNo,
+    customerName: invoice.customerName,
+    customerEmail: invoice.customerEmail,
+    customerPhone: invoice.customerPhone,
+    addressBn: invoice.addressBn,
+    addressEn: invoice.addressEn,
+    completedAtLabel: new Date(invoice.completedAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    dueDateLabel: invoice.dueDate
+      ? new Date(invoice.dueDate).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "—",
+    subtotal: invoice.subtotal,
+    amountPaid: invoice.amountPaid,
+    due: invoice.due,
+    items: invoice.items,
+  });
 };

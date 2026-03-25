@@ -85,6 +85,10 @@ export type AdminInvoiceRow = {
   _id: string;
   invoiceNo: string;
   customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  addressBn: string;
+  addressEn: string;
   serviceTitleBn: string;
   serviceTitleEn: string;
   subtotal: number;
@@ -92,6 +96,16 @@ export type AdminInvoiceRow = {
   due: number;
   paymentStatus: "paid" | "partial" | "unpaid";
   completedAt: string;
+  dueDate: string | null;
+  noteBn: string;
+  noteEn: string;
+  items: Array<{
+    descriptionBn: string;
+    descriptionEn: string;
+    qty: number;
+    unitPrice: number;
+    total: number;
+  }>;
 };
 
 export type AdminInvoicesResponse = {
@@ -241,6 +255,42 @@ export type AdminContactClickRow = {
 export type AdminContactClicksResponse = {
   rows: AdminContactClickRow[];
   pagination: PaginationMeta;
+};
+
+export type AdminSettingsResponse = {
+  profile: {
+    name: string;
+    email: string;
+    phone: string;
+    avatarUrl: string | null;
+  };
+  businessContact: {
+    supportPhone: string;
+    supportAddress: string;
+    savedProfileAddress: string;
+  };
+  billing: {
+    billingEmail: string;
+    bkashNumber: string;
+    bankName: string;
+    bankAccountName: string;
+    bankAccountNumber: string;
+  };
+  security: {
+    emailVerified: boolean;
+    provider: "local" | "google" | "facebook";
+    role: "admin" | "user";
+    activeDevices: number;
+    savedAddresses: number;
+    recentAccess: Array<{
+      id: string;
+      title: string;
+      provider: "local" | "google" | "facebook";
+      ipAddress: string;
+      createdAt: string;
+      isLatest: boolean;
+    }>;
+  };
 };
 
 export type ProfileService = {
@@ -478,6 +528,22 @@ const unwrap = async <T>(promise: Promise<{ data: { success?: boolean; data: T }
 
 export const getAdminOverview = () =>
   unwrap<DashboardOverview>(api.get("/admin/overview"));
+
+export const getAdminSettings = () =>
+  unwrap<AdminSettingsResponse>(api.get("/admin/settings"));
+
+export const updateAdminSettings = async (payload: {
+  supportPhone: string;
+  supportAddress: string;
+  billingEmail: string;
+  bkashNumber: string;
+  bankName: string;
+  bankAccountName: string;
+  bankAccountNumber: string;
+}) => {
+  const { data } = await api.put("/admin/settings", payload);
+  return data.data as AdminSettingsResponse;
+};
 
 export const getAdminUsers = (params: {
   search?: string;

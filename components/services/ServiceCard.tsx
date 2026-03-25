@@ -23,7 +23,6 @@ type Props = {
   categoryName: string;
   imageHeightClass?: string;
   showProcess?: boolean;
-  summaryHiddenOnMobile?: boolean;
   className?: string;
   imagePriority?: boolean;
 };
@@ -35,7 +34,6 @@ export default function ServiceCard({
   categoryName,
   imageHeightClass = "h-56",
   showProcess = false,
-  summaryHiddenOnMobile = true,
   className = "",
   imagePriority = false,
 }: Props) {
@@ -60,7 +58,7 @@ export default function ServiceCard({
       <div className="space-y-3 px-4 py-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{title}</h4>
+            <p className="text-lg font-bold text-neutral-900 dark:text-white">{title}</p>
             <p
               className={` mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2`}
             >
