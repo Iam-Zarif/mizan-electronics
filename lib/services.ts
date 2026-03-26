@@ -322,7 +322,7 @@ export const serviceItems: ServiceItem[] = [
     price: "৳৭০০ - ৳১,০০০",
     slug: "ac-performance-check",
     images: [
-      "https://cdn-ileifhf.nitrocdn.com/MVPPGHIsSpZGbxQrdFBTeqEqVpcuPLJo/assets/images/optimized/rev-1627df1/www.evergreenaircon.co.uk/wp-content/uploads/2020/08/TCBEHVDBs7wz0NJVqovM_Services-or-Commercial-1024x683.jpg",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1200&q=80",
     ],
     process: ["তাপমাত্রা রিড", "প্রেসার রিড", "বিদ্যুৎ ড্র", "রিপোর্ট"],
   },
