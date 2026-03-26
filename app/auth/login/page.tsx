@@ -5,9 +5,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { FaGoogle, FaFacebookF } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, LockOpen } from "lucide-react";
+import { LoaderCircle, Lock, LockOpen } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
-import BrandLogo from "@/components/shared/BrandLogo";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { emailSchema, getFieldError, loginSchema } from "@/lib/auth-validation";
 
 export default function LoginPage() {
@@ -91,17 +91,7 @@ export default function LoginPage() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-lg rounded-3xl border border-black/5 p-4 backdrop-blur-xl lg:max-w-md lg:bg-white/70 lg:p-8 lg:shadow-[0_30px_80px_-35px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-black/60"
-    >
-        <div className="flex justify-center">
-          <BrandLogo size={48} />
-        </div>
-        <h1 className="mt-3 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-center text-3xl font-extrabold text-transparent">
-          Welcome Back
-        </h1>
+    <AuthShell title="Welcome Back" imageSide="right">
         <form onSubmit={handleSubmit} className="mt-8 w-full space-y-4">
           <input
             type="email"
@@ -170,9 +160,16 @@ export default function LoginPage() {
             type="submit"
             whileTap={{ scale: 0.97 }}
             disabled={loading}
-            className="w-full rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 py-3 text-sm font-semibold text-white shadow-md hover:opacity-95 disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 py-3 text-sm font-semibold text-white shadow-md hover:opacity-95 disabled:opacity-60"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <>
+                <LoaderCircle size={16} className="animate-spin" />
+                <span>Logging in...</span>
+              </>
+            ) : (
+              "Login"
+            )}
           </motion.button>
         </form>
         <div className="mt-2 flex w-full items-center justify-between text-sm">
@@ -229,7 +226,7 @@ export default function LoginPage() {
             Register
           </Link>
         </p>
-    </motion.div>
+    </AuthShell>
   );
 }
 
