@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
@@ -37,6 +37,8 @@ const Navbar = () => {
   const [openServices, setOpenServices] = useState(false);
   const [openLang, setOpenLang] = useState(false);
   const [openMobile, setOpenMobile] = useState(false);
+  const servicesDropdownRef = useRef<HTMLDivElement | null>(null);
+  const languageDropdownRef = useRef<HTMLDivElement | null>(null);
   const { locale, setLocale, t } = useLanguage();
   const { user, isAuthLoading, themePreference, setThemePreference } = useProvider();
   const accountHref = user ? "/profile" : "/auth/login";
@@ -44,6 +46,11 @@ const Navbar = () => {
   const showDashboard = isAdminUser(user);
   const showUserNotifications = Boolean(user) && !showDashboard;
   const isDark = themePreference === "dark";
+  const closeAllMenus = () => {
+    setOpenServices(false);
+    setOpenLang(false);
+    setOpenMobile(false);
+  };
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -59,6 +66,23 @@ const Navbar = () => {
     };
   }, [openMobile]);
 
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (servicesDropdownRef.current && !servicesDropdownRef.current.contains(target)) {
+        setOpenServices(false);
+      }
+
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(target)) {
+        setOpenLang(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
+
   if (pathname.startsWith("/auth")) {
     return null;
   }
@@ -72,7 +96,7 @@ const Navbar = () => {
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center justify-between rounded-full  border border-neutral-100 dark:border-white/10 lg:py-2.5 pt-3 pb-2 bg-white/60 px-4 backdrop-blur-xl shadow-lg dark:bg-black/50"
           >
-            <Link href="/" className="flex items-center gap-2 cursor-pointer">
+            <Link href="/" onClick={closeAllMenus} className="flex items-center gap-2 cursor-pointer">
               <BrandLogo />
               <span className="hidden sm:block font-extrabold tracking-wide bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] bg-clip-text text-transparent">
                 Mizan AC Servicing
@@ -80,9 +104,15 @@ const Navbar = () => {
             </Link>
 
             <nav className="hidden md:flex items-center gap-6 px-5 text-sm">
-              <NavItem href="/" label={t("nav.home")} active={pathname === "/"} icon={pathname === "/" ? <HiHome /> : <HiOutlineHome />} />
+              <NavItem
+                href="/"
+                label={t("nav.home")}
+                active={pathname === "/"}
+                icon={pathname === "/" ? <HiHome /> : <HiOutlineHome />}
+                onClick={closeAllMenus}
+              />
 
-              <div className="relative">
+              <div ref={servicesDropdownRef} className="relative">
                 <button
                   onClick={() => setOpenServices((p) => !p)}
                   className={`group flex items-center gap-1 rounded-xl px-3 py-2 cursor-pointer transition ${
@@ -103,7 +133,8 @@ const Navbar = () => {
                         <Link
                           key={href}
                           href={href}
-                          className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                          onClick={() => setOpenServices(false)}
+                          className="group flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                         >
                           <Icon className="text-2xl text-[#6366f1]" />
                           <div className="flex items-center justify-between w-full">
@@ -121,7 +152,7 @@ const Navbar = () => {
                 )}
               </div>
 
-              <div className="relative">
+              <div ref={languageDropdownRef} className="relative">
                 <button
                   onClick={() => setOpenLang((p) => !p)}
                   className="flex items-center gap-2 rounded-xl px-3 py-2 text-gray-700 transition hover:text-black dark:text-gray-200 cursor-pointer"
@@ -163,6 +194,7 @@ const Navbar = () => {
               {showDashboard ? (
                 <Link
                   href="/dashboard"
+                  onClick={closeAllMenus}
                   className="hidden sm:flex items-center justify-center gap-2 rounded-full border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50"
                 >
                   <LayoutDashboard size={16} />
@@ -172,6 +204,7 @@ const Navbar = () => {
               {!showDashboard ? (
                 <Link
                   href={accountHref}
+                  onClick={closeAllMenus}
                   className="hidden sm:flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm"
                 >
                   {isAuthLoading ? <AuthLoadingLabel locale={locale} /> : accountLabel}
@@ -311,14 +344,17 @@ const NavItem = ({
   icon,
   label,
   active,
+  onClick,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }) => (
   <Link
     href={href}
+    onClick={onClick}
     className={`group flex items-center gap-2 rounded-xl px-3 py-2 cursor-pointer transition ${
       active ? "font-semibold text-[#6366f1]" : "text-gray-700 hover:text-black dark:text-gray-200"
     }`}
