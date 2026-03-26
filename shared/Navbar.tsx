@@ -32,6 +32,13 @@ const AuthLoadingLabel = ({ locale }: { locale: "bn" | "en" }) => (
   </span>
 );
 
+const NavbarActionSkeleton = () => (
+  <span
+    aria-hidden="true"
+    className="hidden h-10 w-[152px] rounded-full bg-neutral-200/80 dark:bg-white/10 sm:flex animate-pulse"
+  />
+);
+
 const Navbar = () => {
   const pathname = usePathname();
   const [openServices, setOpenServices] = useState(false);
@@ -190,26 +197,31 @@ const Navbar = () => {
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
-              {showUserNotifications ? <NotificationDropdown /> : null}
-              {showDashboard ? (
-                <Link
-                  href="/dashboard"
-                  onClick={closeAllMenus}
-                  className="hidden sm:flex items-center justify-center gap-2 rounded-full border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50"
-                >
-                  <LayoutDashboard size={16} />
-                  {t("nav.dashboard")}
-                </Link>
-              ) : null}
-              {!showDashboard ? (
-                <Link
-                  href={accountHref}
-                  onClick={closeAllMenus}
-                  className="hidden sm:flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-                >
-                  {isAuthLoading ? <AuthLoadingLabel locale={locale} /> : accountLabel}
-                </Link>
-              ) : null}
+              <div className="flex min-w-10 items-center justify-end">
+                {showUserNotifications ? <NotificationDropdown /> : <span aria-hidden="true" className="h-10 w-10" />}
+              </div>
+              <div className="flex min-w-[152px] items-center justify-end">
+                {isAuthLoading ? (
+                  <NavbarActionSkeleton />
+                ) : showDashboard ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={closeAllMenus}
+                    className="hidden w-[152px] items-center justify-center gap-2 rounded-full border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50 sm:flex"
+                  >
+                    <LayoutDashboard size={16} />
+                    {t("nav.dashboard")}
+                  </Link>
+                ) : (
+                  <Link
+                    href={accountHref}
+                    onClick={closeAllMenus}
+                    className="hidden w-[152px] items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm sm:flex"
+                  >
+                    {accountLabel}
+                  </Link>
+                )}
+              </div>
 
               <button
                 onClick={() => void setThemePreference(isDark ? "light" : "dark")}

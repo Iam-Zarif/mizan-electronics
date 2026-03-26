@@ -64,7 +64,7 @@ export default function Hero() {
                 className="object-cover sm:hidden"
                 priority={i === 0}
                 loading={i === 0 ? "eager" : "lazy"}
-                sizes="100vw"
+                sizes="(max-width: 639px) 100vw, 0px"
               />
               <Image
                 src={slide.desktopImage}
@@ -73,7 +73,7 @@ export default function Hero() {
                 className="hidden object-cover sm:block"
                 priority={i === 0}
                 loading={i === 0 ? "eager" : "lazy"}
-                sizes="100vw"
+                sizes="(max-width: 639px) 0px, (max-width: 1024px) 100vw, 1280px"
               />
             </div>
           ))}
