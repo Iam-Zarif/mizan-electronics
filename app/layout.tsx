@@ -157,7 +157,7 @@ export default function RootLayout({
                 __html: JSON.stringify(organizationStructuredData),
               }}
             />
-            {children}
+            <main className="min-h-screen">{children}</main>
             <Footer />
           </LanguageProvider>
         </AuthProvider>
