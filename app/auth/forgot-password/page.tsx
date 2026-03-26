@@ -156,6 +156,7 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSendOtp} className="mt-8 space-y-4">
           <input
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={copy.email}
@@ -184,6 +185,7 @@ export default function ForgotPasswordPage() {
           <input
             type="text"
             inputMode="numeric"
+            autoComplete="one-time-code"
             maxLength={6}
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
@@ -194,6 +196,7 @@ export default function ForgotPasswordPage() {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder={copy.newPassword}

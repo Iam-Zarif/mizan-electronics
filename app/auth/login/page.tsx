@@ -147,6 +147,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="mt-8 w-full space-y-4">
           <input
             type="email"
+            autoComplete="email"
             placeholder={copy.email}
             value={form.email}
             onFocus={() => setActiveField("email")}
@@ -172,6 +173,7 @@ export default function LoginPage() {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               placeholder={copy.password}
               value={form.password}
               onFocus={() => setActiveField("password")}

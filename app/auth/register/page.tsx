@@ -227,6 +227,7 @@ export default function RegisterPage() {
         <div>
           <input
             name="f_name"
+            autoComplete="name"
             value={form.f_name}
             onChange={(e) => handleFieldChange("f_name", e.target.value)}
             onFocus={() => setActiveField("f_name")}
@@ -245,6 +246,7 @@ export default function RegisterPage() {
         <div>
           <input
             name="email"
+            autoComplete="email"
             value={form.email}
             onChange={(e) => handleFieldChange("email", e.target.value)}
             onFocus={() => setActiveField("email")}
@@ -263,6 +265,7 @@ export default function RegisterPage() {
         <div>
           <input
             name="phone"
+            autoComplete="tel"
             value={form.phone}
             onChange={(e) => handleFieldChange("phone", e.target.value)}
             onFocus={() => setActiveField("phone")}
@@ -283,6 +286,7 @@ export default function RegisterPage() {
           <div className="relative">
             <input
               name="password"
+              autoComplete="new-password"
               value={form.password}
               onChange={(e) => handleFieldChange("password", e.target.value)}
               onFocus={() => setActiveField("password")}
@@ -310,6 +314,7 @@ export default function RegisterPage() {
           <div className="relative">
             <input
               name="confirmPassword"
+              autoComplete="new-password"
               value={form.confirmPassword}
               onChange={(e) =>
                 handleFieldChange("confirmPassword", e.target.value)

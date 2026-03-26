@@ -34,6 +34,7 @@ export type AuthUser = {
   f_name: string;
   email: string;
   phone: string | null;
+  provider?: "local" | "google" | "facebook";
   avatar: Avatar | null;
   addresses: Address[];
   isVerified?: boolean;
@@ -61,6 +62,10 @@ export const normalizeUser = (input: Record<string, unknown>): AuthUser => ({
   f_name: String(input.f_name ?? ""),
   email: String(input.email ?? ""),
   phone: typeof input.phone === "string" ? input.phone : null,
+  provider:
+    input.provider === "google" || input.provider === "facebook"
+      ? input.provider
+      : "local",
   avatar:
     input.avatar && typeof input.avatar === "object"
       ? {

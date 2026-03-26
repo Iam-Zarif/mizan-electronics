@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { api, getErrorMessage } from "@/lib/api";
+import { translateAuthError } from "@/lib/auth-validation";
 import { useLanguage } from "@/lib/i18n";
 import { isAdminUser } from "@/lib/auth";
 import { getOptimizedCloudinaryUrl } from "@/lib/cloudinary";
@@ -66,6 +67,7 @@ export function ProfileDetails() {
     newPassword: "",
     confirmPassword: "",
   });
+  const isPasswordProviderLocal = (user?.provider ?? "local") === "local";
 
   useEffect(() => {
     if (!user) return;
@@ -265,7 +267,7 @@ export function ProfileDetails() {
         confirmPassword: "",
       }));
     } catch (passwordUpdateError) {
-      setPasswordError(getErrorMessage(passwordUpdateError));
+      setPasswordError(translateAuthError(getErrorMessage(passwordUpdateError)));
     } finally {
       setIsChangingPassword(false);
     }
@@ -285,7 +287,7 @@ export function ProfileDetails() {
           : "পাসওয়ার্ড রিসেট OTP আপনার ইমেইলে পাঠানো হয়েছে।",
       );
     } catch (passwordOtpError) {
-      setPasswordError(getErrorMessage(passwordOtpError));
+      setPasswordError(translateAuthError(getErrorMessage(passwordOtpError)));
     } finally {
       setIsSendingPasswordOtp(false);
     }
@@ -323,7 +325,7 @@ export function ProfileDetails() {
       });
       setPasswordMode("current");
     } catch (passwordResetError) {
-      setPasswordError(getErrorMessage(passwordResetError));
+      setPasswordError(translateAuthError(getErrorMessage(passwordResetError)));
     } finally {
       setIsResettingPassword(false);
     }
@@ -518,14 +520,23 @@ export function ProfileDetails() {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:gap-3">
-          <button
-            type="button"
-            onClick={openPasswordModal}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800 sm:w-auto"
-          >
-            <KeyRound size={15} />
-            {locale === "en" ? "Change Password" : "পাসওয়ার্ড পরিবর্তন"}
-          </button>
+          {isPasswordProviderLocal ? (
+            <button
+              type="button"
+              onClick={openPasswordModal}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800 sm:w-auto"
+            >
+              <KeyRound size={15} />
+              {locale === "en" ? "Change Password" : "পাসওয়ার্ড পরিবর্তন"}
+            </button>
+          ) : (
+            <div className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-300 sm:w-auto">
+              <KeyRound size={15} />
+              {locale === "en"
+                ? "Password is managed by your Google account"
+                : "পাসওয়ার্ড আপনার Google অ্যাকাউন্ট দ্বারা নিয়ন্ত্রিত"}
+            </div>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -768,7 +779,7 @@ export function ProfileDetails() {
         </div>
       ) : null}
 
-      {isPasswordModalOpen ? (
+      {isPasswordModalOpen && isPasswordProviderLocal ? (
         <div className="fixed inset-0 z-90 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-neutral-900">
             <button
