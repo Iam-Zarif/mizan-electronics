@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
 import { FaFacebookF, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
@@ -15,17 +14,12 @@ const Footer = () => {
   }
   return (
     <footer className="relative pt-8 lg:pt-14 overflow-hidden w-full">
-      <motion.div
+      <div
         className="absolute -z-10 right-[-25%] bottom-[-30%] h-130 w-130 rounded-full bg-[#e18b94]/25 blur-[180px]"
-        animate={{ x: [0, -140, 0], y: [0, 100, 0] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
       />
 
       <div className="mx-auto max-w-7xl px-4 pb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
           className="
             rounded-[2.5rem]
             border border-black/5 dark:border-white/10
@@ -108,7 +102,7 @@ const Footer = () => {
           <div className="mt-14 border-t border-black/5 py-3 text-center text-xs tracking-wide text-neutral-600 dark:border-white/10 dark:text-neutral-300">
             © {new Date().getFullYear()} Mizan AC Servicing. {t("footer.rights")}
           </div>
-        </motion.div>
+        </div>
       </div>
     </footer>
   );
