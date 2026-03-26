@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, LockOpen } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { useLanguage } from "@/lib/i18n";
 import {
   bangladeshPhoneSchema,
   emailSchema,
@@ -16,6 +17,7 @@ import {
   normalizeBangladeshPhone,
   passwordSchema,
   registerSchema,
+  translateAuthError,
 } from "@/lib/auth-validation";
 
 type RegisterForm = {
@@ -47,15 +49,16 @@ const getRegisterFieldErrors = (form: RegisterForm): RegisterErrors => ({
   password: getFieldError(passwordSchema, form.password),
   confirmPassword:
     !form.confirmPassword
-      ? "Please confirm your password"
+      ? "পাসওয়ার্ড নিশ্চিত করুন"
       : form.password !== form.confirmPassword
-        ? "Passwords do not match"
+        ? "দুইটি পাসওয়ার্ড মিলছে না"
         : "",
 });
 
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
   const { register, loginWithGoogle } = useProvider();
   const [form, setForm] = useState<RegisterForm>({
     f_name: "",
@@ -86,6 +89,44 @@ export default function RegisterPage() {
   const fieldErrors = useMemo(() => getRegisterFieldErrors(form), [form]);
   const redirectTo = searchParams.get("redirect") || "/";
   const loginHref = `/auth/login?redirect=${encodeURIComponent(redirectTo)}`;
+  const copy =
+    locale === "en"
+      ? {
+          title: "Create Account",
+          name: "Full name",
+          email: "Email address",
+          phone: "Bangladesh phone number",
+          password: "Password",
+          confirmPassword: "Confirm password",
+          remember: "Remember me",
+          submit: "Register",
+          loading: "Registering...",
+          divider: "OR",
+          google: "Google",
+          facebook: "Facebook",
+          connecting: "Connecting...",
+          haveAccount: "Already have an account?",
+          login: "Login",
+          invalidInput: "Please check your input",
+        }
+      : {
+          title: "অ্যাকাউন্ট তৈরি করুন",
+          name: "পূর্ণ নাম",
+          email: "ইমেইল ঠিকানা",
+          phone: "বাংলাদেশি ফোন নম্বর",
+          password: "পাসওয়ার্ড",
+          confirmPassword: "পাসওয়ার্ড নিশ্চিত করুন",
+          remember: "আমাকে মনে রাখুন",
+          submit: "রেজিস্টার",
+          loading: "রেজিস্টার হচ্ছে...",
+          divider: "অথবা",
+          google: "গুগল",
+          facebook: "ফেসবুক",
+          connecting: "সংযোগ হচ্ছে...",
+          haveAccount: "আগে থেকেই অ্যাকাউন্ট আছে?",
+          login: "লগইন",
+          invalidInput: "ইনপুট ঠিক আছে কি না যাচাই করুন",
+        };
 
   const handleFieldChange = (name: keyof RegisterForm, value: string | boolean) => {
     setForm((prev) => {
@@ -125,7 +166,11 @@ export default function RegisterPage() {
 
     const parsed = registerSchema.safeParse(form);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Please check your input");
+      setError(
+        translateAuthError(
+          parsed.error.issues[0]?.message ?? copy.invalidInput,
+        ),
+      );
       return;
     }
 
@@ -142,9 +187,11 @@ export default function RegisterPage() {
       router.refresh();
     } catch (submissionError) {
       setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Registration failed",
+        translateAuthError(
+          submissionError instanceof Error
+            ? submissionError.message
+            : "Registration failed",
+        ),
       );
     } finally {
       setLoading(false);
@@ -160,9 +207,11 @@ export default function RegisterPage() {
       router.refresh();
     } catch (submissionError) {
       setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Google login failed",
+        translateAuthError(
+          submissionError instanceof Error
+            ? submissionError.message
+            : "Google login failed",
+        ),
       );
     } finally {
       setGoogleLoading(false);
@@ -170,7 +219,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthShell title="Create Account" imageSide="left">
+    <AuthShell
+      title={copy.title}
+      imageSide="left"
+    >
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <div>
           <input
@@ -180,7 +232,7 @@ export default function RegisterPage() {
             onFocus={() => setActiveField("f_name")}
             onBlur={() => handleBlur("f_name")}
             type="text"
-            placeholder="Full name"
+            placeholder={copy.name}
             className={getInputClassName(fieldErrors.f_name, touched.f_name)}
           />
           {getActiveMessage("f_name") ? (
@@ -198,7 +250,7 @@ export default function RegisterPage() {
             onFocus={() => setActiveField("email")}
             onBlur={() => handleBlur("email")}
             type="email"
-            placeholder="Email address"
+            placeholder={copy.email}
             className={getInputClassName(fieldErrors.email, touched.email)}
           />
           {getActiveMessage("email") ? (
@@ -217,7 +269,7 @@ export default function RegisterPage() {
             onBlur={() => handleBlur("phone")}
             type="tel"
             inputMode="numeric"
-            placeholder="Bangladesh phone number"
+            placeholder={copy.phone}
             className={getInputClassName(fieldErrors.phone, touched.phone)}
           />
           {getActiveMessage("phone") ? (
@@ -236,7 +288,7 @@ export default function RegisterPage() {
               onFocus={() => setActiveField("password")}
               onBlur={() => handleBlur("password")}
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder={copy.password}
               className={`${getInputClassName(fieldErrors.password, touched.password)} pr-12`}
             />
             <button
@@ -265,7 +317,7 @@ export default function RegisterPage() {
               onFocus={() => setActiveField("confirmPassword")}
               onBlur={() => handleBlur("confirmPassword")}
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm password"
+              placeholder={copy.confirmPassword}
               className={`${getInputClassName(fieldErrors.confirmPassword, touched.confirmPassword)} pr-12`}
             />
             <button
@@ -295,7 +347,7 @@ export default function RegisterPage() {
             type="checkbox"
             className="accent-indigo-500"
           />
-          Remember me
+          {copy.remember}
         </label>
 
         {error ? <p className="text-sm font-medium text-red-500">{error}</p> : null}
@@ -306,13 +358,13 @@ export default function RegisterPage() {
           whileTap={{ scale: 0.97 }}
           className="w-full cursor-pointer rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 py-3 text-sm font-semibold text-white shadow-md hover:opacity-95 disabled:opacity-60"
         >
-          {loading ? "Registering..." : "Register"}
+          {loading ? copy.loading : copy.submit}
         </motion.button>
       </form>
 
       <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />
-        <span className="text-xs text-neutral-500">OR</span>
+        <span className="text-xs text-neutral-500">{copy.divider}</span>
         <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />
       </div>
 
@@ -321,25 +373,25 @@ export default function RegisterPage() {
           onClick={() => void handleGoogleLogin()}
           disabled={googleLoading}
           icon={<FaGoogle />}
-          label={googleLoading ? "Connecting..." : "Google"}
+          label={googleLoading ? copy.connecting : copy.google}
           className="text-red-500 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
         />
         <SocialButton
           icon={<FaFacebookF />}
-          label="Facebook"
+          label={copy.facebook}
           className="text-blue-600 shadow-[0_4px_6px_rgba(59,130,246,0.10)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.45)]"
         />
       </div>
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
-          Already have an account?{" "}
+      <p className="mt-6 text-center text-sm text-neutral-500">
+        {copy.haveAccount}{" "}
         <Link
           href={loginHref}
           className="font-semibold text-indigo-500 hover:underline"
         >
-            Login
-          </Link>
-        </p>
+          {copy.login}
+        </Link>
+      </p>
     </AuthShell>
   );
 }

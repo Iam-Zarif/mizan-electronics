@@ -8,19 +8,25 @@ import { Lock, LockOpen } from "lucide-react";
 import { z } from "zod";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { api, getErrorMessage } from "@/lib/api";
-import { emailSchema } from "@/lib/auth-validation";
+import {
+  emailSchema,
+  passwordSchema,
+  translateAuthError,
+} from "@/lib/auth-validation";
+import { useLanguage } from "@/lib/i18n";
 
 const forgotEmailSchema = z.object({
   email: emailSchema,
 });
 
 const resetSchema = z.object({
-  otp: z.string().length(6, "OTP must be 6 digits"),
-  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  otp: z.string().length(6, "OTP অবশ্যই ৬ সংখ্যার হতে হবে"),
+  newPassword: passwordSchema,
 });
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [step, setStep] = useState<"email" | "reset">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -29,6 +35,44 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const copy =
+    locale === "en"
+      ? {
+          title: "Forgot Password",
+          emailStep: "Enter your email to receive an OTP.",
+          resetStep: "Enter the OTP and set a new password.",
+          email: "Email address",
+          sendOtp: "Send OTP",
+          sendingOtp: "Sending OTP...",
+          otp: "6-digit OTP",
+          newPassword: "New password",
+          resetPassword: "Reset Password",
+          updating: "Updating...",
+          successOtp: "OTP sent to your email",
+          successReset: "Password updated successfully",
+          back: "Back to login",
+          remember: "Remembered your password?",
+          invalidEmail: "Please check your email",
+          invalidInput: "Please check your input",
+        }
+      : {
+          title: "পাসওয়ার্ড ভুলে গেছেন",
+          emailStep: "OTP পাওয়ার জন্য আপনার ইমেইল দিন।",
+          resetStep: "OTP দিন এবং নতুন পাসওয়ার্ড সেট করুন।",
+          email: "ইমেইল ঠিকানা",
+          sendOtp: "OTP পাঠান",
+          sendingOtp: "OTP পাঠানো হচ্ছে...",
+          otp: "৬ সংখ্যার OTP",
+          newPassword: "নতুন পাসওয়ার্ড",
+          resetPassword: "পাসওয়ার্ড রিসেট করুন",
+          updating: "আপডেট হচ্ছে...",
+          successOtp: "আপনার ইমেইলে OTP পাঠানো হয়েছে",
+          successReset: "পাসওয়ার্ড সফলভাবে আপডেট হয়েছে",
+          back: "লগইনে ফিরে যান",
+          remember: "পাসওয়ার্ড মনে পড়েছে?",
+          invalidEmail: "ইমেইল ঠিক আছে কি না যাচাই করুন",
+          invalidInput: "ইনপুট ঠিক আছে কি না যাচাই করুন",
+        };
 
   const handleSendOtp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,17 +81,21 @@ export default function ForgotPasswordPage() {
 
     const parsed = forgotEmailSchema.safeParse({ email });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Please check your email");
+      setError(
+        translateAuthError(
+          parsed.error.issues[0]?.message ?? copy.invalidEmail,
+        ),
+      );
       return;
     }
 
     try {
       setLoading(true);
       await api.post("/auth/forgot-password", { email });
-      setSuccess("OTP sent to your email");
+      setSuccess(copy.successOtp);
       setStep("reset");
     } catch (submissionError) {
-      setError(getErrorMessage(submissionError));
+      setError(translateAuthError(getErrorMessage(submissionError)));
     } finally {
       setLoading(false);
     }
@@ -60,7 +108,11 @@ export default function ForgotPasswordPage() {
 
     const parsed = resetSchema.safeParse({ otp, newPassword });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Please check your input");
+      setError(
+        translateAuthError(
+          parsed.error.issues[0]?.message ?? copy.invalidInput,
+        ),
+      );
       return;
     }
 
@@ -71,12 +123,12 @@ export default function ForgotPasswordPage() {
         otp,
         newPassword,
       });
-      setSuccess("Password updated successfully");
+      setSuccess(copy.successReset);
       setTimeout(() => {
         router.push("/auth/login");
       }, 1200);
     } catch (submissionError) {
-      setError(getErrorMessage(submissionError));
+      setError(translateAuthError(getErrorMessage(submissionError)));
     } finally {
       setLoading(false);
     }
@@ -92,12 +144,12 @@ export default function ForgotPasswordPage() {
         <BrandLogo size={48} />
       </div>
       <h1 className="mt-3 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-center text-3xl font-extrabold text-transparent">
-        Forgot Password
+        {copy.title}
       </h1>
       <p className="mt-2 text-center text-sm text-neutral-500">
         {step === "email"
-          ? "Enter your email to receive an OTP."
-          : "Enter the OTP and set a new password."}
+          ? copy.emailStep
+          : copy.resetStep}
       </p>
 
       {step === "email" ? (
@@ -106,7 +158,7 @@ export default function ForgotPasswordPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
+            placeholder={copy.email}
             className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
           />
 
@@ -124,7 +176,7 @@ export default function ForgotPasswordPage() {
             disabled={loading}
             className="w-full rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 py-3 text-sm font-semibold text-white shadow-md hover:opacity-95 disabled:opacity-60"
           >
-            {loading ? "Sending OTP..." : "Send OTP"}
+            {loading ? copy.sendingOtp : copy.sendOtp}
           </motion.button>
         </form>
       ) : (
@@ -135,7 +187,7 @@ export default function ForgotPasswordPage() {
             maxLength={6}
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
-            placeholder="6-digit OTP"
+            placeholder={copy.otp}
             className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
           />
 
@@ -144,7 +196,7 @@ export default function ForgotPasswordPage() {
               type={showPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="New password"
+              placeholder={copy.newPassword}
               className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 pr-12 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10"
             />
             <button
@@ -170,18 +222,18 @@ export default function ForgotPasswordPage() {
             disabled={loading}
             className="w-full rounded-xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 py-3 text-sm font-semibold text-white shadow-md hover:opacity-95 disabled:opacity-60"
           >
-            {loading ? "Updating..." : "Reset Password"}
+            {loading ? copy.updating : copy.resetPassword}
           </motion.button>
         </form>
       )}
 
       <p className="mt-6 text-center text-sm text-neutral-500">
-        Remembered your password?{" "}
+        {copy.remember}{" "}
         <Link
           href="/auth/login"
           className="font-semibold text-indigo-500 hover:underline"
         >
-          Back to login
+          {copy.back}
         </Link>
       </p>
     </motion.div>

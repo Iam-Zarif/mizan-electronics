@@ -30,7 +30,7 @@ export const bangladeshPhoneSchema = z.string().superRefine((value, ctx) => {
   if (!normalized) {
     ctx.addIssue({
       code: "custom",
-      message: "Phone number is required",
+      message: "ফোন নম্বর দিতে হবে",
     });
     return;
   }
@@ -38,7 +38,7 @@ export const bangladeshPhoneSchema = z.string().superRefine((value, ctx) => {
   if (!/^01\d{9}$/.test(normalized)) {
     ctx.addIssue({
       code: "custom",
-      message: "Use a valid Bangladesh mobile number",
+      message: "সঠিক বাংলাদেশি মোবাইল নম্বর দিন",
     });
     return;
   }
@@ -46,7 +46,7 @@ export const bangladeshPhoneSchema = z.string().superRefine((value, ctx) => {
   if (!validBangladeshPrefixes.has(normalized.slice(0, 3))) {
     ctx.addIssue({
       code: "custom",
-      message: "Unsupported Bangladesh operator code",
+      message: "এই বাংলাদেশি অপারেটর কোড সমর্থিত নয়",
     });
   }
 });
@@ -61,72 +61,76 @@ const providerDomains = new Map<string, string[]>([
   ["webmail", ["webmail.com"]],
 ]);
 
-export const emailSchema = z.string().trim().min(1, "Email is required").superRefine((value, ctx) => {
-  const normalized = value.trim().toLowerCase();
+export const emailSchema = z
+  .string()
+  .trim()
+  .min(1, "ইমেইল ঠিকানা দিতে হবে")
+  .superRefine((value, ctx) => {
+    const normalized = value.trim().toLowerCase();
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Use a valid email address",
-    });
-    return;
-  }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "সঠিক ইমেইল ঠিকানা দিন",
+      });
+      return;
+    }
 
-  const [, domain = ""] = normalized.split("@");
-  const segments = domain.split(".");
+    const [, domain = ""] = normalized.split("@");
+    const segments = domain.split(".");
 
-  if (segments.length < 2 || segments.some((segment) => !segment.trim())) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Use a valid email address",
-    });
-    return;
-  }
+    if (segments.length < 2 || segments.some((segment) => !segment.trim())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "সঠিক ইমেইল ঠিকানা দিন",
+      });
+      return;
+    }
 
-  const tld = segments.at(-1) ?? "";
-  if (!/^[a-z]{2,24}$/.test(tld)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Use a valid email address",
-    });
-    return;
-  }
+    const tld = segments.at(-1) ?? "";
+    if (!/^[a-z]{2,24}$/.test(tld)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "সঠিক ইমেইল ঠিকানা দিন",
+      });
+      return;
+    }
 
-  const providerKey = segments[0];
-  const allowedDomains = providerDomains.get(providerKey);
+    const providerKey = segments[0];
+    const allowedDomains = providerDomains.get(providerKey);
 
-  if (allowedDomains && !allowedDomains.includes(domain)) {
-    ctx.addIssue({
-      code: "custom",
-      message: `Use the correct ${providerKey} domain`,
-    });
-    return;
-  }
+    if (allowedDomains && !allowedDomains.includes(domain)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `সঠিক ${providerKey} ডোমেইন ব্যবহার করুন`,
+      });
+      return;
+    }
 
-  if (!allowedDomains && domain.length < 4) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Use a valid email address",
-    });
-  }
-});
+    if (!allowedDomains && domain.length < 4) {
+      ctx.addIssue({
+        code: "custom",
+        message: "সঠিক ইমেইল ঠিকানা দিন",
+      });
+    }
+  });
 
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .regex(/[A-Z]/, "Password must include an uppercase letter")
-  .regex(/[a-z]/, "Password must include a lowercase letter")
-  .regex(/\d/, "Password must include a number")
-  .regex(/[^A-Za-z0-9]/, "Password must include a special character");
+  .min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে")
+  .regex(/[A-Z]/, "পাসওয়ার্ডে অন্তত একটি বড় হাতের অক্ষর থাকতে হবে")
+  .regex(/[a-z]/, "পাসওয়ার্ডে অন্তত একটি ছোট হাতের অক্ষর থাকতে হবে")
+  .regex(/\d/, "পাসওয়ার্ডে অন্তত একটি সংখ্যা থাকতে হবে")
+  .regex(/[^A-Za-z0-9]/, "পাসওয়ার্ডে অন্তত একটি বিশেষ চিহ্ন থাকতে হবে");
 
-export const nameSchema = z.string().trim().min(2, "Full name is required");
+export const nameSchema = z.string().trim().min(2, "পূর্ণ নাম দিতে হবে");
 
 export const getFieldError = <T>(
   schema: z.ZodType<T>,
   value: unknown,
 ) => {
   const parsed = schema.safeParse(value);
-  return parsed.success ? "" : parsed.error.issues[0]?.message ?? "Invalid value";
+  return parsed.success ? "" : parsed.error.issues[0]?.message ?? "সঠিক মান দিন";
 };
 
 export const registerSchema = z
@@ -135,7 +139,7 @@ export const registerSchema = z
     phone: bangladeshPhoneSchema,
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    confirmPassword: z.string().min(1, "পাসওয়ার্ড নিশ্চিত করুন"),
     rememberMe: z.boolean(),
   })
   .superRefine((data, ctx) => {
@@ -143,24 +147,54 @@ export const registerSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["confirmPassword"],
-        message: "Passwords do not match",
+        message: "দুইটি পাসওয়ার্ড মিলছে না",
       });
     }
   });
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, "পাসওয়ার্ড দিতে হবে"),
 });
 
 export const getPasswordChecks = (value: string) => [
-  { key: "length", label: "At least 8 characters", valid: value.length >= 8 },
-  { key: "upper", label: "One uppercase letter", valid: /[A-Z]/.test(value) },
-  { key: "lower", label: "One lowercase letter", valid: /[a-z]/.test(value) },
-  { key: "number", label: "One number", valid: /\d/.test(value) },
+  { key: "length", label: "কমপক্ষে ৮ অক্ষর", valid: value.length >= 8 },
+  { key: "upper", label: "একটি বড় হাতের অক্ষর", valid: /[A-Z]/.test(value) },
+  { key: "lower", label: "একটি ছোট হাতের অক্ষর", valid: /[a-z]/.test(value) },
+  { key: "number", label: "একটি সংখ্যা", valid: /\d/.test(value) },
   {
     key: "special",
-    label: "One special character",
+    label: "একটি বিশেষ চিহ্ন",
     valid: /[^A-Za-z0-9]/.test(value),
   },
 ] as const;
+
+const authErrorTranslations: Array<[string, string]> = [
+  ["Password is required", "পাসওয়ার্ড দিতে হবে"],
+  ["Please confirm your password", "পাসওয়ার্ড নিশ্চিত করুন"],
+  ["Passwords do not match", "দুইটি পাসওয়ার্ড মিলছে না"],
+  ["Please check your input", "ইনপুট ঠিক আছে কি না যাচাই করুন"],
+  ["Please check your email", "ইমেইল ঠিক আছে কি না যাচাই করুন"],
+  ["Login failed", "লগইন ব্যর্থ হয়েছে"],
+  ["Registration failed", "রেজিস্ট্রেশন ব্যর্থ হয়েছে"],
+  ["Google login failed", "গুগল লগইন ব্যর্থ হয়েছে"],
+  ["OTP must be 6 digits", "OTP অবশ্যই ৬ সংখ্যার হতে হবে"],
+  ["Password must be at least 6 characters", "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"],
+  ["Invalid credentials", "ইমেইল বা পাসওয়ার্ড সঠিক নয়"],
+  ["User already exists", "এই তথ্য দিয়ে আগে থেকেই একটি অ্যাকাউন্ট রয়েছে"],
+  ["OTP sent to your email", "আপনার ইমেইলে OTP পাঠানো হয়েছে"],
+  ["Invalid OTP", "OTP সঠিক নয়"],
+  ["OTP expired", "OTP এর সময়সীমা শেষ হয়েছে"],
+  ["User not found", "কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি"],
+  ["Too many requests", "খুব বেশি অনুরোধ করা হয়েছে, কিছুক্ষণ পরে আবার চেষ্টা করুন"],
+];
+
+export const translateAuthError = (message: string) => {
+  for (const [source, target] of authErrorTranslations) {
+    if (message.includes(source)) {
+      return target;
+    }
+  }
+
+  return message;
+};

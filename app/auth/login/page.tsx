@@ -8,11 +8,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle, Lock, LockOpen } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
 import { AuthShell } from "@/components/auth/AuthShell";
-import { emailSchema, getFieldError, loginSchema } from "@/lib/auth-validation";
+import {
+  emailSchema,
+  getFieldError,
+  loginSchema,
+  translateAuthError,
+} from "@/lib/auth-validation";
+import { useLanguage } from "@/lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
   const { login, loginWithGoogle } = useProvider();
   const [form, setForm] = useState({
     email: "",
@@ -34,7 +41,40 @@ export default function LoginPage() {
   const redirectTo = searchParams.get("redirect") || "/";
   const registerHref = `/auth/register?redirect=${encodeURIComponent(redirectTo)}`;
   const emailError = getFieldError(emailSchema, form.email);
-  const passwordError = !form.password ? "Password is required" : "";
+  const passwordError = !form.password ? "পাসওয়ার্ড দিতে হবে" : "";
+  const copy =
+    locale === "en"
+      ? {
+          title: "Welcome Back",
+          email: "Email address",
+          password: "Password",
+          loading: "Logging in...",
+          submit: "Login",
+          remember: "Remember me",
+          forgot: "Forgot password?",
+          divider: "OR",
+          google: "Google",
+          facebook: "Facebook",
+          connecting: "Connecting...",
+          noAccount: "Don’t have an account?",
+          register: "Register",
+        }
+      : {
+          title: "আবার স্বাগতম",
+          email: "ইমেইল ঠিকানা",
+          password: "পাসওয়ার্ড",
+          loading: "লগইন হচ্ছে...",
+          submit: "লগইন",
+          remember: "আমাকে মনে রাখুন",
+          forgot: "পাসওয়ার্ড ভুলে গেছেন?",
+          divider: "অথবা",
+          google: "গুগল",
+          facebook: "ফেসবুক",
+          connecting: "সংযোগ হচ্ছে...",
+          noAccount: "অ্যাকাউন্ট নেই?",
+          register: "রেজিস্টার করুন",
+          invalidInput: "ইনপুট ঠিক আছে কি না যাচাই করুন",
+        };
   const activeMessage =
     activeField === "email"
       ? emailError
@@ -52,7 +92,11 @@ export default function LoginPage() {
 
     const parsed = loginSchema.safeParse(form);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Please check your input");
+      setError(
+        translateAuthError(
+          parsed.error.issues[0]?.message ?? copy.invalidInput,
+        ),
+      );
       return;
     }
 
@@ -63,9 +107,11 @@ export default function LoginPage() {
       router.refresh();
     } catch (submissionError) {
       setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Login failed",
+        translateAuthError(
+          submissionError instanceof Error
+            ? submissionError.message
+            : "Login failed",
+        ),
       );
     } finally {
       setLoading(false);
@@ -81,9 +127,11 @@ export default function LoginPage() {
       router.refresh();
     } catch (submissionError) {
       setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Google login failed",
+        translateAuthError(
+          submissionError instanceof Error
+            ? submissionError.message
+            : "Google login failed",
+        ),
       );
     } finally {
       setGoogleLoading(false);
@@ -91,11 +139,15 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthShell title="Welcome Back" imageSide="right">
+    <AuthShell
+      title={copy.title}
+      imageSide="right"
+    >
+        <div className="mx-auto w-full max-w-[27rem]">
         <form onSubmit={handleSubmit} className="mt-8 w-full space-y-4">
           <input
             type="email"
-            placeholder="Email address"
+            placeholder={copy.email}
             value={form.email}
             onFocus={() => setActiveField("email")}
             onBlur={() => {
@@ -120,7 +172,7 @@ export default function LoginPage() {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder={copy.password}
               value={form.password}
               onFocus={() => setActiveField("password")}
               onBlur={() => {
@@ -165,10 +217,10 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <LoaderCircle size={16} className="animate-spin" />
-                <span>Logging in...</span>
+                <span>{copy.loading}</span>
               </>
             ) : (
-              "Login"
+              copy.submit
             )}
           </motion.button>
         </form>
@@ -185,20 +237,20 @@ export default function LoginPage() {
               }
               className="accent-indigo-500"
             />
-            Remember me
+            {copy.remember}
           </label>
 
           <Link
             href="/auth/forgot-password"
             className="font-medium text-indigo-500 hover:underline"
           >
-            Forgot password?
+            {copy.forgot}
           </Link>
         </div>
 
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />
-          <span className="text-xs text-neutral-500">OR</span>
+          <span className="text-xs text-neutral-500">{copy.divider}</span>
           <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />
         </div>
 
@@ -207,25 +259,26 @@ export default function LoginPage() {
             onClick={() => void handleGoogleLogin()}
             disabled={googleLoading}
             icon={<FaGoogle />}
-            label={googleLoading ? "Connecting..." : "Google"}
+            label={googleLoading ? copy.connecting : copy.google}
             className="text-red-500 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
           />
           <SocialButton
             icon={<FaFacebookF />}
-            label="Facebook"
+            label={copy.facebook}
             className="text-blue-600 shadow-[0_4px_6px_rgba(59,130,246,0.10)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.45)]"
           />
         </div>
 
         <p className="mt-6 text-center text-sm text-neutral-500">
-          Don’t have an account?{" "}
+          {copy.noAccount}{" "}
           <Link
             href={registerHref}
             className="font-semibold text-indigo-500 hover:underline"
           >
-            Register
+            {copy.register}
           </Link>
         </p>
+        </div>
     </AuthShell>
   );
 }
