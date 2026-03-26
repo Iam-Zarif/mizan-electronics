@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { Sun, Moon, ChevronDown, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard, BellRing, LoaderCircle } from "lucide-react";
 import { GoArrowUpRight } from "react-icons/go";
@@ -98,11 +97,7 @@ const Navbar = () => {
     <>
       <div className="fixed top-1 lg:top-6 z-50 w-full px-4">
         <div className="mx-auto max-w-7xl">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="flex items-center justify-between rounded-full  border border-neutral-100 dark:border-white/10 lg:py-2.5 pt-3 pb-2 bg-white/60 px-4 backdrop-blur-xl shadow-lg dark:bg-black/50"
-          >
+          <header className="flex items-center justify-between rounded-full  border border-neutral-100 dark:border-white/10 lg:py-2.5 pt-3 pb-2 bg-white/60 px-4 backdrop-blur-xl shadow-lg dark:bg-black/50">
             <Link href="/" onClick={closeAllMenus} className="flex items-center gap-2 cursor-pointer">
               <BrandLogo />
               <span className="hidden sm:block font-extrabold tracking-wide bg-linear-to-r from-[#ec4899] via-[#6366f1] to-[#e18b94] bg-clip-text text-transparent">
@@ -243,7 +238,7 @@ const Navbar = () => {
             >
               <HiMenu size={22} />
             </button>
-          </motion.header>
+          </header>
         </div>
       </div>
 

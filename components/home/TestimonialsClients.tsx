@@ -62,17 +62,9 @@ export default function TestimonialsClients({
 
   return (
     <section className="relative py-14 overflow-hidden">
-      <motion.div
-        className="absolute -z-10 left-[-25%] top-[10%] h-[32.5rem] w-[32.5rem] rounded-full bg-indigo-500/20 blur-[160px]"
-        animate={{ x: [0, 120, 0], y: [0, -80, 0] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-      />
+      <div className="absolute -z-10 left-[-25%] top-[10%] h-[32.5rem] w-[32.5rem] rounded-full bg-indigo-500/20 blur-[160px]" />
 
-      <motion.div
-        className="absolute -z-10 right-[-25%] bottom-[0%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/20 blur-[160px]"
-        animate={{ x: [0, -120, 0], y: [0, 80, 0] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      />
+      <div className="absolute -z-10 right-[-25%] bottom-[0%] h-[32.5rem] w-[32.5rem] rounded-full bg-[#e18b94]/20 blur-[160px]" />
 
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-16 text-center">
@@ -88,10 +80,10 @@ export default function TestimonialsClients({
         <AnimatePresence mode="wait">
           <motion.div
             key={safeIndex}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -40 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
             className="grid gap-2.5 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center"
           >
             {visible.map((t, i) => {
