@@ -131,7 +131,7 @@ export default function TestimonialsClients({
 
                   <div>
                     <p className="text-xl font-bold">{t.customerName}</p>
-                    <p className="text-sm text-neutral-500">{location}</p>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-300">{location}</p>
                   </div>
                 </div>
 
@@ -139,7 +139,7 @@ export default function TestimonialsClients({
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="h-5 w-5 fill-amber-400" />
                   ))}
-                  <span className="ml-2 text-sm font-medium text-neutral-500">
+                  <span className="ml-2 text-sm font-medium text-neutral-600 dark:text-neutral-300">
                     {t.rating}
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export default function TestimonialsClients({
         </div>
 
         <div className="mt-20">
-          <p className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-neutral-500">
+          <p className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
             {locale === "en" ? "Trusted by leading brands" : "বিশ্বস্ত ব্র্যান্ডের আস্থা"}
           </p>
 

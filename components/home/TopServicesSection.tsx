@@ -62,6 +62,8 @@ export default function TopServicesSection() {
             <button
               type="button"
               onClick={scrollPrev}
+              aria-label={locale === "en" ? "Previous services" : "আগের সার্ভিস"}
+              title={locale === "en" ? "Previous services" : "আগের সার্ভিস"}
               className="rounded-full border border-white/30 bg-white/70 p-2 shadow-sm backdrop-blur hover:border-[#6366f1]/60 dark:border-white/10 dark:bg-neutral-900"
             >
               <ChevronLeft size={18} />
@@ -69,6 +71,8 @@ export default function TopServicesSection() {
             <button
               type="button"
               onClick={scrollNext}
+              aria-label={locale === "en" ? "Next services" : "পরের সার্ভিস"}
+              title={locale === "en" ? "Next services" : "পরের সার্ভিস"}
               className="rounded-full border border-white/30 bg-white/70 p-2 shadow-sm backdrop-blur hover:border-[#6366f1]/60 dark:border-white/10 dark:bg-neutral-900"
             >
               <ChevronRight size={18} />

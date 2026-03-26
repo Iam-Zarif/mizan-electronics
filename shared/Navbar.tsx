@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { Sun, Moon, ChevronDown, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard, BellRing } from "lucide-react";
+import { Sun, Moon, ChevronDown, Wrench, Plug, Snowflake, Truck, Cog, Settings, LayoutDashboard, BellRing, LoaderCircle } from "lucide-react";
 import { GoArrowUpRight } from "react-icons/go";
 import { HiMenu, HiX } from "react-icons/hi";
 import { HiOutlineHome, HiHome } from "react-icons/hi";
@@ -24,6 +24,13 @@ const serviceLinks = [
   { href: "/services/category/shifting", bn: "এসি শিফটিং ও আনইনস্টল", en: "AC Shifting & Removal", icon: Truck },
   { href: "/services/category/spares", bn: "এসি কম্প্রেসর ও স্পেয়ার পার্টস", en: "AC Compressor & Spares", icon: Settings },
 ];
+
+const AuthLoadingLabel = ({ locale }: { locale: "bn" | "en" }) => (
+  <span className="inline-flex items-center gap-2">
+    <LoaderCircle size={16} className="animate-spin" />
+    <span>{locale === "en" ? "Loading" : "লোড হচ্ছে"}</span>
+  </span>
+);
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -167,7 +174,7 @@ const Navbar = () => {
                   href={accountHref}
                   className="hidden sm:flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] px-4 py-2 text-sm font-semibold text-white shadow-sm"
                 >
-                  {isAuthLoading ? "..." : accountLabel}
+                  {isAuthLoading ? <AuthLoadingLabel locale={locale} /> : accountLabel}
                 </Link>
               ) : null}
 
@@ -235,7 +242,7 @@ const Navbar = () => {
                   onClick={() => setOpenMobile(false)}
                   className="block rounded-lg px-3 py-2 text-center bg-linear-to-r from-[#2160ba] via-[#7b3dc8] to-[#ecaa81] text-white font-semibold hover:opacity-90"
                 >
-                  {isAuthLoading ? "..." : accountLabel}
+                  {isAuthLoading ? <AuthLoadingLabel locale={locale} /> : accountLabel}
                 </Link>
               ) : null}
               {showUserNotifications ? (

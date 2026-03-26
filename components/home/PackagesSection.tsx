@@ -50,7 +50,7 @@ export default function PackagesSection({
                 whileHover={{ y: -4 }}
                 className="relative flex h-full flex-col rounded-3xl border border-white/15 bg-white/85 p-6 shadow-[0_25px_60px_-40px_rgba(0,0,0,0.35)] backdrop-blur dark:border-white/10 dark:bg-neutral-900/70"
               >
-                <span className="absolute right-0 top-0 rounded-xl bg-[#c86f36] px-4 py-1 text-xs font-bold text-white shadow">
+                <span className="absolute right-0 top-0 rounded-xl bg-[#9f4b16] px-4 py-1 text-xs font-bold text-white shadow">
                   {pack.price}
                 </span>
 
