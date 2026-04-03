@@ -268,7 +268,7 @@ export default function LoginPage() {
               />
             }
             label={googleLoading ? copy.connecting : copy.google}
-            className="text-red-500 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
+            className="text-neutral-800 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
           />
         </div>
 
