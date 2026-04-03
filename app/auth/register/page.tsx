@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { FaGoogle } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, LockOpen } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
@@ -375,7 +375,15 @@ export default function RegisterPage() {
         <SocialButton
           onClick={() => void handleGoogleLogin()}
           disabled={googleLoading}
-          icon={<FaGoogle />}
+          icon={
+            <Image
+              src="/auth/google.png"
+              alt="Google"
+              width={18}
+              height={18}
+              className="h-[18px] w-[18px]"
+            />
+          }
           label={googleLoading ? copy.connecting : copy.google}
           className="text-red-500 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
         />
