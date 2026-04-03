@@ -59,7 +59,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale } = useLanguage();
-  const { register, loginWithGoogle } = useProvider();
+  const { register, loginWithGoogle, loginWithFacebook } = useProvider();
   const [form, setForm] = useState<RegisterForm>({
     f_name: "",
     phone: "",
@@ -79,6 +79,7 @@ export default function RegisterPage() {
   });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -215,6 +216,26 @@ export default function RegisterPage() {
       );
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    try {
+      setError("");
+      setFacebookLoading(true);
+      await loginWithFacebook(form.rememberMe);
+      router.push(redirectTo);
+      router.refresh();
+    } catch (submissionError) {
+      setError(
+        translateAuthError(
+          submissionError instanceof Error
+            ? submissionError.message
+            : "Facebook login failed",
+        ),
+      );
+    } finally {
+      setFacebookLoading(false);
     }
   };
 
@@ -382,8 +403,10 @@ export default function RegisterPage() {
           className="text-red-500 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
         />
         <SocialButton
+          onClick={() => void handleFacebookLogin()}
+          disabled={facebookLoading}
           icon={<FaFacebookF />}
-          label={copy.facebook}
+          label={facebookLoading ? copy.connecting : copy.facebook}
           className="text-blue-600 shadow-[0_4px_6px_rgba(59,130,246,0.10)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.45)]"
         />
       </div>

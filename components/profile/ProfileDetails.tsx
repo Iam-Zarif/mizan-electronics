@@ -529,14 +529,7 @@ export function ProfileDetails() {
               <KeyRound size={15} />
               {locale === "en" ? "Change Password" : "পাসওয়ার্ড পরিবর্তন"}
             </button>
-          ) : (
-            <div className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-300 sm:w-auto">
-              <KeyRound size={15} />
-              {locale === "en"
-                ? "Password is managed by your Google account"
-                : "পাসওয়ার্ড আপনার Google অ্যাকাউন্ট দ্বারা নিয়ন্ত্রিত"}
-            </div>
-          )}
+          ) : null}
           <button
             type="button"
             onClick={() => {

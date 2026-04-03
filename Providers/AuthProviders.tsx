@@ -10,6 +10,7 @@ import {
 } from "react";
 import { api, getErrorMessage } from "@/lib/api";
 import { signInWithPopup } from "firebase/auth";
+import { loginWithFacebookPopup } from "@/lib/facebook";
 import {
   normalizeUser,
   type Address,
@@ -40,6 +41,7 @@ type AuthContextType = {
     rememberMe: boolean,
   ) => Promise<AuthUser>;
   loginWithGoogle: (rememberMe: boolean) => Promise<AuthUser>;
+  loginWithFacebook: (rememberMe: boolean) => Promise<AuthUser>;
   sendVerificationOtp: () => Promise<string>;
   verifyEmail: (otp: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
@@ -194,6 +196,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       await api.post("/auth/google", {
         idToken,
+        rememberMe,
+      });
+
+      const profile = await refreshProfile();
+      if (!profile) throw new Error("Failed to load profile");
+      return profile;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  };
+
+  const loginWithFacebook = async (rememberMe: boolean) => {
+    try {
+      const credential = await loginWithFacebookPopup();
+
+      await api.post("/auth/facebook", {
+        accessToken: credential.accessToken,
+        userId: credential.userId,
         rememberMe,
       });
 
@@ -380,6 +400,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         register,
         login,
         loginWithGoogle,
+        loginWithFacebook,
         sendVerificationOtp,
         verifyEmail,
         logout,
