@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { FaGoogle, FaFacebookF } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle, Lock, LockOpen } from "lucide-react";
 import { useProvider } from "@/Providers/AuthProviders";
@@ -20,7 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale } = useLanguage();
-  const { login, loginWithGoogle, loginWithFacebook } = useProvider();
+  const { login, loginWithGoogle } = useProvider();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -28,7 +28,6 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [facebookLoading, setFacebookLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState({
@@ -55,7 +54,6 @@ export default function LoginPage() {
           forgot: "Forgot password?",
           divider: "OR",
           google: "Google",
-          facebook: "Facebook",
           connecting: "Connecting...",
           noAccount: "Don’t have an account?",
           register: "Register",
@@ -70,7 +68,6 @@ export default function LoginPage() {
           forgot: "পাসওয়ার্ড ভুলে গেছেন?",
           divider: "অথবা",
           google: "গুগল",
-          facebook: "ফেসবুক",
           connecting: "সংযোগ হচ্ছে...",
           noAccount: "অ্যাকাউন্ট নেই?",
           register: "রেজিস্টার করুন",
@@ -136,26 +133,6 @@ export default function LoginPage() {
       );
     } finally {
       setGoogleLoading(false);
-    }
-  };
-
-  const handleFacebookLogin = async () => {
-    try {
-      setError("");
-      setFacebookLoading(true);
-      await loginWithFacebook(form.rememberMe);
-      router.push(redirectTo);
-      router.refresh();
-    } catch (submissionError) {
-      setError(
-        translateAuthError(
-          submissionError instanceof Error
-            ? submissionError.message
-            : "Facebook login failed",
-        ),
-      );
-    } finally {
-      setFacebookLoading(false);
     }
   };
 
@@ -284,13 +261,6 @@ export default function LoginPage() {
             icon={<FaGoogle />}
             label={googleLoading ? copy.connecting : copy.google}
             className="text-red-500 shadow-[0_4px_6px_rgba(239,68,68,0.10)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.45)]"
-          />
-          <SocialButton
-            onClick={() => void handleFacebookLogin()}
-            disabled={facebookLoading}
-            icon={<FaFacebookF />}
-            label={facebookLoading ? copy.connecting : copy.facebook}
-            className="text-blue-600 shadow-[0_4px_6px_rgba(59,130,246,0.10)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.45)]"
           />
         </div>
 
