@@ -28,8 +28,18 @@ declare global {
 
 const FACEBOOK_SDK_ID = "facebook-jssdk";
 const FACEBOOK_SDK_SRC = "https://connect.facebook.net/en_US/sdk.js";
-const FACEBOOK_API_VERSION =
-  process.env.NEXT_PUBLIC_FACEBOOK_GRAPH_API_VERSION ?? "v25.0";
+const DEFAULT_FACEBOOK_API_VERSION = "v25.0";
+
+const normalizeFacebookApiVersion = (value?: string) => {
+  const normalized = value?.trim().replace(/^['"]|['"]$/g, "") ?? "";
+  return /^v\d+\.\d+$/.test(normalized)
+    ? normalized
+    : DEFAULT_FACEBOOK_API_VERSION;
+};
+
+const FACEBOOK_API_VERSION = normalizeFacebookApiVersion(
+  process.env.NEXT_PUBLIC_FACEBOOK_GRAPH_API_VERSION,
+);
 
 let facebookSdkPromise: Promise<void> | null = null;
 
