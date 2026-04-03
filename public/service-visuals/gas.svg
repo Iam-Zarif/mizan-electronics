@@ -1,0 +1,20 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#F8FAFC"/>
+  <rect x="72" y="72" width="1056" height="756" rx="40" fill="url(#bg)"/>
+  <rect x="206" y="212" width="788" height="188" rx="32" fill="#FFF" stroke="#D1FAE5" stroke-width="16"/>
+  <rect x="264" y="266" width="672" height="44" rx="22" fill="#A7F3D0"/>
+  <rect x="264" y="332" width="394" height="24" rx="12" fill="#D1FAE5"/>
+  <circle cx="428" cy="608" r="92" fill="#ECFDF5" stroke="#059669" stroke-width="18"/>
+  <path d="M428 572V610L454 636" stroke="#059669" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="654" y="518" width="118" height="182" rx="22" fill="#10B981"/>
+  <rect x="690" y="474" width="46" height="58" rx="16" fill="#34D399"/>
+  <path d="M772 566H860C906 566 944 604 944 650V670" stroke="#047857" stroke-width="20" stroke-linecap="round"/>
+  <text x="96" y="760" fill="#111827" font-size="56" font-weight="700" font-family="Arial, sans-serif">AC Gas &amp; Cooling System</text>
+  <text x="96" y="820" fill="#047857" font-size="28" font-family="Arial, sans-serif">Gas refill, leak detection, pressure check and cooling balance</text>
+  <defs>
+    <linearGradient id="bg" x1="72" y1="72" x2="1128" y2="828" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ECFDF5"/>
+      <stop offset="1" stop-color="#CCFBF1"/>
+    </linearGradient>
+  </defs>
+</svg>

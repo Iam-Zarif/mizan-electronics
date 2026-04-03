@@ -1,0 +1,20 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#F8FAFC"/>
+  <rect x="72" y="72" width="1056" height="756" rx="40" fill="url(#bg)"/>
+  <rect x="206" y="212" width="788" height="188" rx="32" fill="#FFF" stroke="#DBEAFE" stroke-width="16"/>
+  <rect x="264" y="266" width="672" height="44" rx="22" fill="#C7D2FE"/>
+  <rect x="264" y="332" width="392" height="24" rx="12" fill="#E0E7FF"/>
+  <path d="M342 620L456 506L570 620" stroke="#4F46E5" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M408 618V700H504V618" stroke="#4F46E5" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M704 520L840 656" stroke="#7C3AED" stroke-width="34" stroke-linecap="round"/>
+  <path d="M822 492L868 446" stroke="#7C3AED" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="678" cy="494" r="30" fill="#C4B5FD"/>
+  <text x="96" y="760" fill="#111827" font-size="56" font-weight="700" font-family="Arial, sans-serif">AC Installation &amp; Re-Installation</text>
+  <text x="96" y="820" fill="#4338CA" font-size="28" font-family="Arial, sans-serif">Split, window and commercial setup with proper fitting</text>
+  <defs>
+    <linearGradient id="bg" x1="72" y1="72" x2="1128" y2="828" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEF2FF"/>
+      <stop offset="1" stop-color="#EDE9FE"/>
+    </linearGradient>
+  </defs>
+</svg>

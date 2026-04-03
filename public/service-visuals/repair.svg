@@ -1,0 +1,20 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#F8FAFC"/>
+  <rect x="72" y="72" width="1056" height="756" rx="40" fill="url(#bg)"/>
+  <rect x="204" y="210" width="792" height="190" rx="30" fill="#FFF" stroke="#E5E7EB" stroke-width="16"/>
+  <rect x="264" y="266" width="672" height="44" rx="22" fill="#E2E8F0"/>
+  <rect x="264" y="332" width="408" height="24" rx="12" fill="#CBD5E1"/>
+  <path d="M352 670L458 564" stroke="#F97316" stroke-width="34" stroke-linecap="round"/>
+  <path d="M436 542L480 586" stroke="#F97316" stroke-width="34" stroke-linecap="round"/>
+  <path d="M676 548C734 490 828 490 886 548" stroke="#DC2626" stroke-width="28" stroke-linecap="round"/>
+  <path d="M676 548L742 614" stroke="#DC2626" stroke-width="28" stroke-linecap="round"/>
+  <path d="M886 548L820 614" stroke="#DC2626" stroke-width="28" stroke-linecap="round"/>
+  <text x="96" y="760" fill="#111827" font-size="56" font-weight="700" font-family="Arial, sans-serif">AC Repair &amp; Troubleshooting</text>
+  <text x="96" y="820" fill="#B45309" font-size="28" font-family="Arial, sans-serif">Cooling issues, leaks, PCB, motor and electrical fixes</text>
+  <defs>
+    <linearGradient id="bg" x1="72" y1="72" x2="1128" y2="828" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7ED"/>
+      <stop offset="1" stop-color="#FEE2E2"/>
+    </linearGradient>
+  </defs>
+</svg>

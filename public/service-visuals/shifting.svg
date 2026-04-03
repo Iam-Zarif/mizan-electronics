@@ -1,0 +1,22 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#F8FAFC"/>
+  <rect x="72" y="72" width="1056" height="756" rx="40" fill="url(#bg)"/>
+  <rect x="206" y="212" width="788" height="188" rx="32" fill="#FFF" stroke="#E0E7FF" stroke-width="16"/>
+  <rect x="264" y="266" width="672" height="44" rx="22" fill="#C7D2FE"/>
+  <rect x="264" y="332" width="392" height="24" rx="12" fill="#E0E7FF"/>
+  <rect x="332" y="520" width="166" height="128" rx="18" fill="#F59E0B"/>
+  <path d="M332 564H498" stroke="#FCD34D" stroke-width="16"/>
+  <path d="M416 520V648" stroke="#FCD34D" stroke-width="16"/>
+  <path d="M604 548H806" stroke="#2563EB" stroke-width="24" stroke-linecap="round"/>
+  <path d="M762 504L806 548L762 592" stroke="#2563EB" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="560" cy="688" r="28" fill="#1E293B"/>
+  <circle cx="702" cy="688" r="28" fill="#1E293B"/>
+  <text x="96" y="760" fill="#111827" font-size="56" font-weight="700" font-family="Arial, sans-serif">AC Shifting &amp; Removal</text>
+  <text x="96" y="820" fill="#1D4ED8" font-size="28" font-family="Arial, sans-serif">Safe uninstallation, moving and relocation support</text>
+  <defs>
+    <linearGradient id="bg" x1="72" y1="72" x2="1128" y2="828" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF6FF"/>
+      <stop offset="1" stop-color="#FEF3C7"/>
+    </linearGradient>
+  </defs>
+</svg>
