@@ -12,6 +12,7 @@ import { PaginationControls } from "@/components/shared/PaginationControls";
 import { SuccessToast } from "@/components/shared/SuccessToast";
 import { dispatchAdminSidebarRefresh } from "@/lib/admin-sidebar-events";
 import {
+  deleteAllAdminNotifications,
   deleteAdminNotification,
   getAdminNotifications,
   markAdminNotificationRead,
@@ -54,6 +55,7 @@ export default function DashboardNotificationsPage() {
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
@@ -148,6 +150,51 @@ export default function DashboardNotificationsPage() {
     }
   };
 
+  const deleteAll = async () => {
+    if (!data?.rows.length || isDeletingAll) return;
+
+    const confirmed = window.confirm(
+      locale === "en"
+        ? "Delete all admin notifications permanently?"
+        : "সব অ্যাডমিন নোটিফিকেশন স্থায়ীভাবে ডিলিট করবেন?",
+    );
+
+    if (!confirmed) return;
+
+    setIsDeletingAll(true);
+    try {
+      await deleteAllAdminNotifications();
+      setData((current) =>
+        current
+          ? {
+              rows: [],
+              counts: {
+                total: 0,
+                unread: 0,
+              },
+              pagination: {
+                ...current.pagination,
+                totalItems: 0,
+                totalPages: 1,
+                page: 1,
+                hasPreviousPage: false,
+                hasNextPage: false,
+              },
+            }
+          : current,
+      );
+      setPage(1);
+      setActionSuccess(
+        locale === "en"
+          ? "All notifications deleted successfully."
+          : "সব নোটিফিকেশন সফলভাবে ডিলিট হয়েছে।",
+      );
+      dispatchAdminSidebarRefresh();
+    } finally {
+      setIsDeletingAll(false);
+    }
+  };
+
   return (
     <AdminSurface>
       <div className="space-y-5">
@@ -197,6 +244,24 @@ export default function DashboardNotificationsPage() {
                 >
                   <CheckCheck size={16} />
                   {locale === "en" ? "Mark all read" : "সব রিড করুন"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void deleteAll()}
+                  disabled={isDeletingAll || data.counts.total === 0}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200"
+                >
+                  {isDeletingAll ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      {locale === "en" ? "Deleting all..." : "সব ডিলিট হচ্ছে..."}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      {locale === "en" ? "Delete all" : "সব ডিলিট করুন"}
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"

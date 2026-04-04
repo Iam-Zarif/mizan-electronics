@@ -690,6 +690,11 @@ export const deleteAdminNotification = async (notificationId: string) => {
   return data;
 };
 
+export const deleteAllAdminNotifications = async () => {
+  const { data } = await api.delete("/admin/notifications");
+  return data;
+};
+
 export const getAdminAlerts = (params?: {
   status?: string;
   sort?: string;
