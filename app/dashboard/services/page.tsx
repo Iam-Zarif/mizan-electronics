@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import {
   BadgePlus,
@@ -104,6 +104,10 @@ export default function DashboardServicesPage() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const editStateRef = useRef<EditFormState | null>(null);
+  const categoryStateRef = useRef<CategoryFormState | null>(null);
+  const pendingServiceUploadRef = useRef<Promise<string[]> | null>(null);
+  const pendingCategoryUploadRef = useRef<Promise<string | null> | null>(null);
 
   const { data, isLoading, error, refresh, setData } = useApiQuery(
     () => getAdminServices({ page: 1, limit: 100 }),
@@ -127,6 +131,14 @@ export default function DashboardServicesPage() {
   useEffect(() => {
     setPage(1);
   }, [search]);
+
+  useEffect(() => {
+    editStateRef.current = editState;
+  }, [editState]);
+
+  useEffect(() => {
+    categoryStateRef.current = categoryState;
+  }, [categoryState]);
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -258,16 +270,45 @@ export default function DashboardServicesPage() {
     setIsCategoryModalOpen(true);
   };
 
+  const patchServiceRow = (rows: AdminServiceCategoryRow[], updatedService: AdminServiceRow) =>
+    rows
+      .map((category) => ({
+        ...category,
+        services: category.services.filter((service) => service._id !== updatedService._id),
+      }))
+      .map((category) =>
+        category.id === updatedService.categoryId
+          ? {
+              ...category,
+              services: [...category.services, updatedService].sort((a, b) =>
+                a.title.localeCompare(b.title),
+              ),
+            }
+          : category,
+      );
+
   const handleSave = async () => {
-    if (!editingService || !editState) return;
+    if (!editingService) return;
+
+    if (pendingServiceUploadRef.current) {
+      setActionSuccess(
+        locale === "en"
+          ? "Image upload is finishing in the background. Saving will continue automatically."
+          : "ছবি ব্যাকগ্রাউন্ডে আপলোড হচ্ছে। আপলোড শেষ হলেই সেভ সম্পন্ন হবে।",
+      );
+      await pendingServiceUploadRef.current.catch(() => null);
+    }
+
+    const latestEditState = editStateRef.current;
+    if (!latestEditState) return;
 
     const payload: AdminServiceUpdateInput = {
-      categoryId: editState.categoryId,
-      title: editState.title.trim(),
-      summary: editState.summary.trim(),
-      price: editState.price.trim(),
-      images: editState.images,
-      process: normalizeMultiline(editState.processText),
+      categoryId: latestEditState.categoryId,
+      title: latestEditState.title.trim(),
+      summary: latestEditState.summary.trim(),
+      price: latestEditState.price.trim(),
+      images: latestEditState.images,
+      process: normalizeMultiline(latestEditState.processText),
     };
 
     setIsSaving(true);
@@ -281,24 +322,9 @@ export default function DashboardServicesPage() {
       setData((current) => {
         if (!current) return current;
 
-        const nextRows = current.rows
-          .map((category) => ({
-            ...category,
-            services: category.services.filter((service) => service._id !== editingService._id),
-          }))
-          .map((category) =>
-            category.id === updatedService.categoryId
-              ? { ...category, services: [...category.services, updatedService] }
-              : category,
-          )
-          .map((category) => ({
-            ...category,
-            services: [...category.services].sort((a, b) => a.title.localeCompare(b.title)),
-          }));
-
         return {
           ...current,
-          rows: nextRows,
+          rows: patchServiceRow(current.rows, updatedService),
           pagination: current.pagination,
         };
       });
@@ -309,7 +335,6 @@ export default function DashboardServicesPage() {
       dispatchAdminSidebarRefresh();
       setEditingService(null);
       setEditState(null);
-      void refresh();
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
@@ -381,10 +406,22 @@ export default function DashboardServicesPage() {
   };
 
   const handleSaveCategory = async () => {
+    if (pendingCategoryUploadRef.current) {
+      setActionSuccess(
+        locale === "en"
+          ? "Category image upload is finishing in the background. Saving will continue automatically."
+          : "ক্যাটাগরি ইমেজ ব্যাকগ্রাউন্ডে আপলোড হচ্ছে। আপলোড শেষ হলেই সেভ সম্পন্ন হবে।",
+      );
+      await pendingCategoryUploadRef.current.catch(() => null);
+    }
+
+    const latestCategoryState = categoryStateRef.current;
+    if (!latestCategoryState) return;
+
     const payload: AdminServiceCategoryCreateInput | AdminServiceCategoryUpdateInput = {
-      name: categoryState.name.trim(),
-      description: categoryState.description.trim(),
-      image: categoryState.image.trim(),
+      name: latestCategoryState.name.trim(),
+      description: latestCategoryState.description.trim(),
+      image: latestCategoryState.image.trim(),
     };
 
     setIsCategorySaving(true);
@@ -450,9 +487,16 @@ export default function DashboardServicesPage() {
 
     setIsUploadingImages(true);
     setActionError(null);
+    setActionSuccess(
+      locale === "en"
+        ? "Uploading image in the background..."
+        : "ছবি ব্যাকগ্রাউন্ডে আপলোড হচ্ছে...",
+    );
 
     try {
-      const uploadedUrls = await uploadCloudinaryImages(files);
+      const uploadTask = uploadCloudinaryImages(files);
+      pendingServiceUploadRef.current = uploadTask;
+      const uploadedUrls = await uploadTask;
 
       setEditState((current) =>
         current
@@ -465,6 +509,7 @@ export default function DashboardServicesPage() {
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
+      pendingServiceUploadRef.current = null;
       setIsUploadingImages(false);
     }
   };
@@ -474,9 +519,16 @@ export default function DashboardServicesPage() {
 
     setIsUploadingCategoryImage(true);
     setActionError(null);
+    setActionSuccess(
+      locale === "en"
+        ? "Category image is uploading in the background..."
+        : "ক্যাটাগরি ইমেজ ব্যাকগ্রাউন্ডে আপলোড হচ্ছে...",
+    );
 
     try {
-      const [uploadedUrl] = await uploadCloudinaryImages(files);
+      const uploadTask = uploadCloudinaryImages(files).then((items) => items[0] ?? null);
+      pendingCategoryUploadRef.current = uploadTask;
+      const uploadedUrl = await uploadTask;
       if (!uploadedUrl) return;
       setCategoryState((current) => ({
         ...current,
@@ -485,6 +537,7 @@ export default function DashboardServicesPage() {
     } catch (nextError) {
       setActionError(getErrorMessage(nextError));
     } finally {
+      pendingCategoryUploadRef.current = null;
       setIsUploadingCategoryImage(false);
     }
   };
